@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FormData, QuoteData } from '../App';
 import { ArrowRight, Calculator, Home, Sparkles } from 'lucide-react';
 
 interface EstimatorProps {
   onGenerateQuote: (data: QuoteData) => void;
   onBackToHome: () => void;
+  externalProjectDescription?: string;
 }
 
-export function Estimator({ onGenerateQuote, onBackToHome }: EstimatorProps) {
+export function Estimator({ onGenerateQuote, onBackToHome, externalProjectDescription }: EstimatorProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -16,7 +17,7 @@ export function Estimator({ onGenerateQuote, onBackToHome }: EstimatorProps) {
     workEmail: '',
     mobilePhone: '',
     projectType: 'custom',
-    projectDescription: '',
+    projectDescription: externalProjectDescription || '',
     selectedCRMs: [],
     selectedClouds: [],
     selectedIntegrations: [],
@@ -25,6 +26,16 @@ export function Estimator({ onGenerateQuote, onBackToHome }: EstimatorProps) {
     deliveryTeam: 'nearshore',
     powerUps: [],
   });
+
+  // Update formData when externalProjectDescription changes
+  useEffect(() => {
+    if (externalProjectDescription) {
+      setFormData(prev => ({
+        ...prev,
+        projectDescription: externalProjectDescription
+      }));
+    }
+  }, [externalProjectDescription]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

@@ -178,8 +178,8 @@
       line-height: 1.5;
     }
 
-    input {
-      font-size: var(--text-base);
+    input, textarea {
+      font-size: 0.75rem;
       font-weight: var(--font-weight-normal);
       line-height: 1.5;
     }
@@ -253,5 +253,31 @@ html {
   /* Page margins */
   @page {
     margin: 1cm;
+  }
+}
+
+@layer utilities {
+  .chat-scroll-area {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  
+  .chat-scroll-area::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .chat-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .chat-scroll-area::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 9999px;
+  }
+  
+  .chat-scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.8);
   }
 }

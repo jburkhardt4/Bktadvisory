@@ -127,7 +127,7 @@ export function Quote({ data, onBack }: QuoteProps) {
               JB
             </div>
             <div>
-              <h3 className="text-slate-900 mb-1">John "JB" Burkhardt</h3>
+              <h3 className="text-slate-900 mb-1">John Burkhardt</h3>
               <p className="text-slate-600">Salesforce & AI Systems Architect</p>
               <p className="text-slate-600">Former Carter Funds DD Project Manager</p>
             </div>

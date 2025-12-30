@@ -51,6 +51,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'estimator' | 'quote'>('home');
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [estimatorPrompt, setEstimatorPrompt] = useState('');
 
   const handleGenerateQuote = (data: QuoteData) => {
     setQuoteData(data);
@@ -73,11 +74,26 @@ function App() {
     setIsBookingModalOpen(true);
   };
 
+  const handleInsertPrompt = (prompt: string) => {
+    setEstimatorPrompt(prompt);
+    // If not already on estimator, go there
+    if (currentPage !== 'estimator') {
+      setCurrentPage('estimator');
+    }
+  };
+
   if (currentPage === 'estimator') {
     return (
       <>
-        <Estimator onGenerateQuote={handleGenerateQuote} onBackToHome={handleNavigateToHome} />
-        <AIChatbot currentPage="estimator" />
+        <Estimator 
+          onGenerateQuote={handleGenerateQuote} 
+          onBackToHome={handleNavigateToHome} 
+          externalProjectDescription={estimatorPrompt}
+        />
+        <AIChatbot 
+          currentPage="estimator" 
+          onInsertPrompt={handleInsertPrompt}
+        />
       </>
     );
   }
@@ -86,7 +102,10 @@ function App() {
     return (
       <>
         <Quote data={quoteData!} onBack={handleBackToEstimator} />
-        <AIChatbot currentPage="quote" />
+        <AIChatbot 
+          currentPage="quote" 
+          onInsertPrompt={handleInsertPrompt}
+        />
       </>
     );
   }
@@ -114,7 +133,10 @@ function App() {
       </div>
       <Footer onOpenBooking={handleOpenBooking} />
       <BookingModal isOpen={isBookingModalOpen} onOpenChange={setIsBookingModalOpen} />
-      <AIChatbot currentPage="home" />
+      <AIChatbot 
+        currentPage="home" 
+        onInsertPrompt={handleInsertPrompt}
+      />
     </div>
   );
 }

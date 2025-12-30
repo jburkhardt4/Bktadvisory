@@ -19,7 +19,7 @@ export function Hero({ onOpenBooking }: { onOpenBooking: () => void }) {
           {/* Left: Content */}
           <div className="space-y-8">
             <div className="space-y-2">
-              <p className="text-neutral-600">John "JB" Burkhardt · BKT Advisory</p>
+              <p className="text-neutral-600">John Burkhardt · BKT Advisory</p>
               <h1 className="text-neutral-900">
                 Building Predictable Growth Engines via Salesforce & AI Agents.
               </h1>

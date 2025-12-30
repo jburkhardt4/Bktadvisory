@@ -1,42 +1,26 @@
 import { useState, useEffect } from 'react';
 import { FormData, QuoteData } from '../App';
-import { ArrowRight, Calculator, Home, Sparkles } from 'lucide-react';
+import { ArrowRight, Calculator, Home, Sparkles, Wand2 } from 'lucide-react';
 
 interface EstimatorProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   onGenerateQuote: (data: QuoteData) => void;
   onBackToHome: () => void;
-  externalProjectDescription?: string;
+  onTriggerAIAction: (type: 'generate' | 'autofill') => void;
 }
 
-export function Estimator({ onGenerateQuote, onBackToHome, externalProjectDescription }: EstimatorProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    website: '',
-    workEmail: '',
-    mobilePhone: '',
-    projectType: 'custom',
-    projectDescription: externalProjectDescription || '',
-    selectedCRMs: [],
-    selectedClouds: [],
-    selectedIntegrations: [],
-    selectedAITools: [],
-    additionalModules: [],
-    deliveryTeam: 'nearshore',
-    powerUps: [],
-  });
-
-  // Update formData when externalProjectDescription changes
-  useEffect(() => {
-    if (externalProjectDescription) {
-      setFormData(prev => ({
-        ...prev,
-        projectDescription: externalProjectDescription
-      }));
-    }
-  }, [externalProjectDescription]);
-
+export function Estimator({ 
+  formData, 
+  setFormData, 
+  currentStep, 
+  setCurrentStep, 
+  onGenerateQuote, 
+  onBackToHome,
+  onTriggerAIAction
+}: EstimatorProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Pricing configuration
@@ -135,6 +119,10 @@ export function Estimator({ onGenerateQuote, onBackToHome, externalProjectDescri
   const handlePrevStep = () => {
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
+
+  const showGenerateFromSelections = 
+    formData.selectedCRMs.length > 0 && 
+    (formData.selectedClouds.length > 0 || formData.selectedIntegrations.length > 0);
 
   const calculateQuote = () => {
     // Calculate base hours
@@ -376,12 +364,47 @@ export function Estimator({ onGenerateQuote, onBackToHome, externalProjectDescri
                     </p>
                   </div>
                 </div>
-                <textarea
-                  value={formData.projectDescription}
-                  onChange={(e) => handleInputChange('projectDescription', e.target.value)}
-                  className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px] bg-white"
-                  placeholder="Describe your project objectives, current infrastructure, pain points, desired automations, deliverables, timeline, and any other relevant details..."
-                />
+                <div className="relative">
+                  <textarea
+                    value={formData.projectDescription}
+                    onChange={(e) => handleInputChange('projectDescription', e.target.value)}
+                    className="w-full px-4 py-3 pb-12 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px] bg-white"
+                    placeholder="Describe your project objectives, current infrastructure, pain points, desired automations, deliverables, timeline, and any other relevant details..."
+                  />
+                  
+                  {/* AI Toolbar */}
+                  <div className="absolute bottom-3 left-3 flex gap-2">
+                    {showGenerateFromSelections ? (
+                      <button
+                        onClick={() => onTriggerAIAction('generate')}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm"
+                        title="Generate project description from selected configurations"
+                      >
+                        <Wand2 size={14} />
+                        Generate from Selections
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onTriggerAIAction('autofill')}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-md hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm group"
+                        title="Autofill tech stack from current project description"
+                      >
+                        <Sparkles size={14} className="group-hover:text-blue-500" />
+                        Autofill Configuration
+                      </button>
+                    )}
+                    {showGenerateFromSelections && (
+                      <button
+                        onClick={() => onTriggerAIAction('autofill')}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-md hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm group"
+                        title="Autofill tech stack from current project description"
+                      >
+                        <Sparkles size={14} className="group-hover:text-blue-500" />
+                        Autofill Configuration
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* CRMs */}

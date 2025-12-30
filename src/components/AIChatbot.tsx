@@ -20,12 +20,20 @@ interface Message {
 
 interface AIChatbotProps {
   currentPage: "home" | "estimator" | "quote";
+  currentStep?: number;
+  formData?: any;
   onInsertPrompt?: (prompt: string) => void;
+  onAutofill?: (data: any) => void;
+  aiActionTrigger?: { type: 'generate' | 'autofill', timestamp: number } | null;
 }
 
 export function AIChatbot({
   currentPage,
+  currentStep = 1,
+  formData,
   onInsertPrompt,
+  onAutofill,
+  aiActionTrigger,
 }: AIChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -70,6 +78,18 @@ export function AIChatbot({
   useEffect(() => {
     setHasGreeted(false);
   }, [currentPage]);
+
+  // Handle external AI triggers
+  useEffect(() => {
+    if (aiActionTrigger) {
+      setIsOpen(true);
+      if (aiActionTrigger.type === 'generate') {
+        handleGenerateFromSelections();
+      } else if (aiActionTrigger.type === 'autofill') {
+        handleAutofillFromDescription();
+      }
+    }
+  }, [aiActionTrigger]);
 
   // Auto-resize textarea and adjust padding for scrollbar
   useEffect(() => {
@@ -149,6 +169,7 @@ export function AIChatbot({
 
       let botText = data.content || "";
       let isJson = false;
+      let parsedJson = null;
 
       // Try to detect and parse JSON from the response text
       try {
@@ -162,19 +183,38 @@ export function AIChatbot({
 
         // Simple check if it looks like JSON
         if (jsonStr.startsWith('{') || jsonStr.startsWith('[')) {
-          const jsonObj = JSON.parse(jsonStr);
+          parsedJson = JSON.parse(jsonStr);
           isJson = true;
-          // Convert JSON to readable markdown for the chat
-          botText =
-            `**PROJECT SCOPE**\n\n` +
-            Object.entries(jsonObj)
-              .map(([key, value]) => {
-                const formattedKey = key
-                  .replace(/_/g, " ")
-                  .toUpperCase();
-                return `**${formattedKey}**\n${value}`;
-              })
-              .join("\n\n");
+          
+          // If it's a configuration object for autofill
+          if (parsedJson.selectedCRMs || parsedJson.selectedClouds || parsedJson.selectedIntegrations) {
+            botText = "I've analyzed your project description and found the following configuration. Would you like to apply these to your estimator?";
+            // Auto-apply if it's an autofill request? 
+            // The user said "Action: ... update the Step 2 & 3 checkboxes."
+            // So we'll apply it and also show a message.
+            if (onAutofill) {
+              onAutofill(parsedJson);
+              botText = "✅ **Estimator Updated!** I've automatically selected the CRMs, Clouds, and Tools based on your description.\n\n" + 
+                        "**Configuration Applied:**\n" +
+                        (parsedJson.selectedCRMs?.length ? `- **CRMs:** ${parsedJson.selectedCRMs.join(', ')}\n` : "") +
+                        (parsedJson.selectedClouds?.length ? `- **Clouds:** ${parsedJson.selectedClouds.join(', ')}\n` : "") +
+                        (parsedJson.selectedIntegrations?.length ? `- **Integrations:** ${parsedJson.selectedIntegrations.join(', ')}\n` : "") +
+                        (parsedJson.selectedAITools?.length ? `- **AI Tools:** ${parsedJson.selectedAITools.join(', ')}\n` : "") +
+                        (parsedJson.additionalModules?.length ? `- **Modules:** ${parsedJson.additionalModules.join(', ')}\n` : "");
+            }
+          } else {
+            // Convert other JSON to readable markdown for the chat
+            botText =
+              `**PROJECT SCOPE**\n\n` +
+              Object.entries(parsedJson)
+                .map(([key, value]) => {
+                  const formattedKey = key
+                    .replace(/_/g, " ")
+                    .toUpperCase();
+                  return `**${formattedKey}**\n${value}`;
+                })
+                .join("\n\n");
+          }
         }
       } catch (e) {
         // Not JSON, continue with original text
@@ -215,6 +255,39 @@ export function AIChatbot({
       onInsertPrompt(text);
       setIsOpen(false);
     }
+  };
+
+  const handleGenerateFromSelections = () => {
+    if (!formData) return;
+    const prompt = `Write a comprehensive project description based on these configurations: 
+      - CRMs: ${formData.selectedCRMs.join(', ') || 'None selected'}
+      - Clouds: ${formData.selectedClouds.join(', ') || 'None selected'}
+      - Integrations: ${formData.selectedIntegrations.join(', ') || 'None selected'}
+      - AI Tools: ${formData.selectedAITools.join(', ') || 'None selected'}
+      - Modules: ${formData.additionalModules.join(', ') || 'None selected'}
+      
+      Format it as a professional project overview for BKT Advisory.`;
+    handleSendMessage(prompt);
+  };
+
+  const handleAutofillFromDescription = () => {
+    if (!formData?.projectDescription?.trim()) {
+      handleSendMessage("I'd like to autofill the estimator, but the project description is empty. Can you please provide details using this format?\n\n- **Systems:** (e.g. Salesforce, Slack)\n- **Pain Points:** (e.g. manual data entry)\n- **Goals:** (e.g. automate lead routing)\n- **Users:** (e.g. 50 sales reps)");
+      return;
+    }
+
+    const prompt = `Parse the following project description and return ONLY a JSON object containing the matching configurations. 
+      Description: "${formData.projectDescription}"
+      
+      Use these keys: selectedCRMs, selectedClouds, selectedIntegrations, selectedAITools, additionalModules.
+      
+      Valid options for CRMs: Salesforce, Dynamics 365, GoHighLevel, HubSpot, Zoho.
+      Valid Clouds: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Experience Cloud.
+      Valid Integrations: Slack, DocuSign, Jira, Google Workspace, Microsoft 365, Zapier, MuleSoft.
+      Valid AI Tools: OpenAI ChatGPT, Gemini, Copilot, Claude.
+      Valid Modules: Reporting and Dashboards, Workflow Automation, Custom Development, Lead Management, Data Migration, User Training.`;
+    
+    handleSendMessage(prompt);
   };
 
   return (
@@ -338,22 +411,35 @@ export function AIChatbot({
             {/* Quick Prompts */}
             <div className="mb-3 flex flex-wrap gap-2">
               {(currentPage === "estimator"
-                ? [
-                    "Write Project Description based on my configurations.",
-                    "Autofill the Project Estimator from my Project Description.",
-                  ]
+                ? (currentStep >= 2 
+                    ? [
+                        "Write Project Description based on my configurations.",
+                        "Autofill the Project Estimator from my Project Description.",
+                      ]
+                    : ["Please write me a project description."]
+                  )
                 : [
                     "Schedule a call with John Burkhardt.",
                     "Guide me through the Project Estimator and get a Quote.",
                     "Please write me a project description.",
                   ]
               ).map((prompt, i) => {
-                const isPrimaryAI = prompt === "Write Project Description based on my configurations.";
+                const isPrimaryAI = 
+                  prompt === "Write Project Description based on my configurations." || 
+                  prompt === "Autofill the Project Estimator from my Project Description.";
                 
                 return (
                   <button
                     key={i}
-                    onClick={() => handleSendMessage(prompt)}
+                    onClick={() => {
+                      if (prompt === "Write Project Description based on my configurations.") {
+                        handleGenerateFromSelections();
+                      } else if (prompt === "Autofill the Project Estimator from my Project Description.") {
+                        handleAutofillFromDescription();
+                      } else {
+                        handleSendMessage(prompt);
+                      }
+                    }}
                     disabled={isLoading}
                     className={`text-xs px-3 py-1.5 rounded-full transition-all text-left border flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
                       isPrimaryAI

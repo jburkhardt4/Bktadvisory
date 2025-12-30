@@ -47,11 +47,30 @@ export interface QuoteData {
   estimatedWeeks: number;
 }
 
+const initialFormData: FormData = {
+  firstName: '',
+  lastName: '',
+  website: '',
+  workEmail: '',
+  mobilePhone: '',
+  projectType: 'custom',
+  projectDescription: '',
+  selectedCRMs: [],
+  selectedClouds: [],
+  selectedIntegrations: [],
+  selectedAITools: [],
+  additionalModules: [],
+  deliveryTeam: 'nearshore',
+  powerUps: [],
+};
+
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'estimator' | 'quote'>('home');
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [estimatorPrompt, setEstimatorPrompt] = useState('');
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [aiActionTrigger, setAiActionTrigger] = useState<{ type: 'generate' | 'autofill', timestamp: number } | null>(null);
 
   const handleGenerateQuote = (data: QuoteData) => {
     setQuoteData(data);
@@ -60,6 +79,10 @@ function App() {
 
   const handleNavigateToEstimator = () => {
     setCurrentPage('estimator');
+    // Ensure we start at step 1 if it's the first time or reset
+    if (currentPage !== 'estimator') {
+      setCurrentStep(1);
+    }
   };
 
   const handleNavigateToHome = () => {
@@ -75,24 +98,48 @@ function App() {
   };
 
   const handleInsertPrompt = (prompt: string) => {
-    setEstimatorPrompt(prompt);
-    // If not already on estimator, go there
+    setFormData(prev => ({ ...prev, projectDescription: prompt }));
     if (currentPage !== 'estimator') {
       setCurrentPage('estimator');
+      setCurrentStep(2); // If they come from home with a prompt, take them to the details step
     }
+  };
+
+  const handleAutofillData = (partialData: Partial<FormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...partialData,
+      // Rule 3: Delivery Team defaults to Nearshore, Power-Ups unchecked
+      deliveryTeam: partialData.deliveryTeam || 'nearshore',
+      powerUps: partialData.powerUps || [],
+    }));
+  };
+
+  const handleTriggerAIAction = (type: 'generate' | 'autofill') => {
+    setAiActionTrigger({ type, timestamp: Date.now() });
+    // Open chatbot if closed? 
+    // Actually, let's just let the chatbot handle it.
   };
 
   if (currentPage === 'estimator') {
     return (
       <>
         <Estimator 
+          formData={formData}
+          setFormData={setFormData}
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
           onGenerateQuote={handleGenerateQuote} 
-          onBackToHome={handleNavigateToHome} 
-          externalProjectDescription={estimatorPrompt}
+          onBackToHome={handleNavigateToHome}
+          onTriggerAIAction={handleTriggerAIAction}
         />
         <AIChatbot 
           currentPage="estimator" 
+          currentStep={currentStep}
+          formData={formData}
           onInsertPrompt={handleInsertPrompt}
+          onAutofill={handleAutofillData}
+          aiActionTrigger={aiActionTrigger}
         />
       </>
     );

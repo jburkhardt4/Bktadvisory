@@ -24,7 +24,7 @@ export function Navigation({
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div>
-            <span className="text-neutral-900 text-[24px]">BKT Advisory</span>
+            <a href="#home" className="text-neutral-900 text-[24px]">BKT Advisory</a>
           </div>
 
           {/* Desktop Navigation */}
@@ -41,9 +41,9 @@ export function Navigation({
             <button onClick={() => scrollToSection('about')} className="text-neutral-600 hover:text-neutral-900 transition-colors">
               About
             </button>
-            <button onClick={onNavigateToEstimator} className="text-neutral-600 hover:text-neutral-900 transition-colors">
+            <a href="#estimator" className="text-neutral-600 hover:text-neutral-900 transition-colors">
               Project Estimator
-            </button>
+            </a>
             <button onClick={onOpenBooking} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               Book Strategy Call
             </button>
@@ -74,9 +74,9 @@ export function Navigation({
               <button onClick={() => scrollToSection('about')} className="text-neutral-600 hover:text-neutral-900 transition-colors text-left">
                 About
               </button>
-              <button onClick={() => { onNavigateToEstimator(); setIsOpen(false); }} className="text-neutral-600 hover:text-neutral-900 transition-colors text-left">
+              <a href="#estimator" onClick={() => setIsOpen(false)} className="text-neutral-600 hover:text-neutral-900 transition-colors text-left">
                 Project Estimator
-              </button>
+              </a>
               <button onClick={() => { onOpenBooking(); setIsOpen(false); }} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center">
                 Book Strategy Call
               </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
 import { Hero } from './components/Hero';
 import { StatsBar } from './components/StatsBar';
@@ -72,13 +72,45 @@ function App() {
   const [currentStep, setCurrentStep] = useState(1);
   const [aiActionTrigger, setAiActionTrigger] = useState<{ type: 'generate' | 'autofill', timestamp: number } | null>(null);
 
+  // Initialize page based on hash on first load
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove the '#'
+    if (hash === 'estimator') {
+      setCurrentPage('estimator');
+      setCurrentStep(1);
+    } else if (hash === 'quote' && quoteData) {
+      setCurrentPage('quote');
+    } else if (hash === 'home' || hash === '') {
+      setCurrentPage('home');
+    }
+  }, []);
+
+  // Listen for hash changes (browser back/forward)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash === 'estimator') {
+        setCurrentPage('estimator');
+      } else if (hash === 'quote' && quoteData) {
+        setCurrentPage('quote');
+      } else if (hash === 'home' || hash === '') {
+        setCurrentPage('home');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [quoteData]);
+
   const handleGenerateQuote = (data: QuoteData) => {
     setQuoteData(data);
     setCurrentPage('quote');
+    window.location.hash = 'quote';
   };
 
   const handleNavigateToEstimator = () => {
     setCurrentPage('estimator');
+    window.location.hash = 'estimator';
     // Ensure we start at step 1 if it's the first time or reset
     if (currentPage !== 'estimator') {
       setCurrentStep(1);
@@ -87,10 +119,12 @@ function App() {
 
   const handleNavigateToHome = () => {
     setCurrentPage('home');
+    window.location.hash = 'home';
   };
 
   const handleBackToEstimator = () => {
     setCurrentPage('estimator');
+    window.location.hash = 'estimator';
   };
 
   const handleOpenBooking = () => {

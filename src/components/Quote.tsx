@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { QuoteData } from '../App';
-import { Download, ArrowLeft, Star } from 'lucide-react';
+import { Download, ArrowLeft, Star, Printer } from 'lucide-react';
 
 interface QuoteProps {
   data: QuoteData;
@@ -9,20 +9,9 @@ interface QuoteProps {
 
 export function Quote({ data, onBack }: QuoteProps) {
   const quoteRef = useRef<HTMLDivElement>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const generatedDate = new Date(data.generatedAt);
-  const dateStamp = generatedDate.toISOString().split('T')[0];
-  const fileName = `BKT-Advisory_Quote_${dateStamp}_${data.quoteId}.pdf`;
 
   const handleDownloadQuote = async () => {
     if (!quoteRef.current) return;
-    if (isGenerating) return;
-    setIsGenerating(true);
-    setErrorMessage('');
-    setStatusMessage('Preparing your quote for download...');
 
     // Check cooldown
     const lastNotificationTime = localStorage.getItem('lastQuoteNotification');
@@ -41,22 +30,12 @@ export function Quote({ data, onBack }: QuoteProps) {
 
     // Send notification if cooldown expired
     if (shouldNotify) {
-      try {
-        await handleNotify();
-        localStorage.setItem('lastQuoteNotification', now.toString());
-      } catch (error) {
-        console.error('Quote notification failed:', error);
-        setErrorMessage('We could not send your notification email, but your quote is ready to save.');
-      }
+      await handleNotify();
+      localStorage.setItem('lastQuoteNotification', now.toString());
     }
 
     // Use browser print functionality for PDF generation
-    const previousTitle = document.title;
-    document.title = fileName;
     window.print();
-    document.title = previousTitle;
-    setStatusMessage('If the download did not start, choose “Save as PDF” in your print dialog.');
-    setIsGenerating(false);
   };
 
   const handleNotify = async () => {
@@ -85,7 +64,8 @@ export function Quote({ data, onBack }: QuoteProps) {
     }
     */
 
-    setStatusMessage('Notification sent! You will receive a copy shortly.');
+    // Show success message
+    alert('Quote notification sent! You will receive a copy shortly.');
   };
 
   const upfrontPayment = Math.round(data.totalCost * 0.5);
@@ -103,29 +83,13 @@ export function Quote({ data, onBack }: QuoteProps) {
             <ArrowLeft size={20} />
             Back to Estimator
           </button>
-          <div className="flex flex-col items-end gap-2">
-            <button
-              onClick={handleDownloadQuote}
-              disabled={isGenerating}
-              aria-disabled={isGenerating}
-              aria-busy={isGenerating}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-colors ${
-                isGenerating ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-            >
-              <Download size={18} />
-              {isGenerating ? 'Preparing Quote...' : 'Download / Save Quote'}
-            </button>
-            {(statusMessage || errorMessage) && (
-              <p
-                className={`text-xs ${errorMessage ? 'text-red-300' : 'text-slate-300'} quote-print-hidden`}
-                role="status"
-                aria-live="polite"
-              >
-                {errorMessage || statusMessage}
-              </p>
-            )}
-          </div>
+          <button
+            onClick={handleDownloadQuote}
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            <Download size={18} />
+            Download / Save Quote
+          </button>
         </div>
       </header>
 
@@ -190,24 +154,10 @@ export function Quote({ data, onBack }: QuoteProps) {
                 <span className="text-slate-600">Client:</span>{' '}
                 <span>{data.formData.firstName} {data.formData.lastName}</span>
               </p>
-              <p>
-                <span className="text-slate-600">Quote ID:</span>{' '}
-                <span>{data.quoteId}</span>
-              </p>
-              <p>
-                <span className="text-slate-600">Generated:</span>{' '}
-                <span>{generatedDate.toLocaleString()}</span>
-              </p>
               {data.formData.website && (
                 <p>
                   <span className="text-slate-600">Website:</span>{' '}
                   <span>{data.formData.website}</span>
-                </p>
-              )}
-              {data.formData.projectDescription && (
-                <p>
-                  <span className="text-slate-600">Project Description:</span>{' '}
-                  <span>{data.formData.projectDescription}</span>
                 </p>
               )}
               {data.formData.selectedCRMs.length > 0 && (
@@ -366,7 +316,7 @@ export function Quote({ data, onBack }: QuoteProps) {
         </div>
 
         {/* Reviews Section */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border border-slate-200 p-8 quote-print-hidden">
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-slate-200 p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (

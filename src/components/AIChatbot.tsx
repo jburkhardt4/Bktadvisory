@@ -16,6 +16,7 @@ interface Message {
   sender: "user" | "bot";
   timestamp: Date;
   isJson?: boolean;
+  showActionButtons?: boolean; // New flag to control Copy/Use This Prompt buttons
 }
 
 interface AIChatbotProps {
@@ -117,7 +118,7 @@ export function AIChatbot({
     
   }, [inputValue]);
 
-  const handleSendMessage = async (textOverride?: string) => {
+  const handleSendMessage = async (textOverride?: string, showActionButtons: boolean = false) => {
     const text = typeof textOverride === "string" ? textOverride : inputValue;
     if (!text.trim()) return;
 
@@ -226,6 +227,7 @@ export function AIChatbot({
         sender: "bot",
         timestamp: new Date(),
         isJson: isJson,
+        showActionButtons: showActionButtons, // Use the parameter passed in
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -244,10 +246,34 @@ export function AIChatbot({
     }
   };
 
-  const handleCopy = (text: string, messageId: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(messageId);
-    setTimeout(() => setCopiedId(null), 2000);
+  const handleCopy = async (text: string, messageId: string) => {
+    try {
+      // Try modern Clipboard API first
+      await navigator.clipboard.writeText(text);
+      setCopiedId(messageId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      // Fallback to older method if Clipboard API is blocked
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+        setCopiedId(messageId);
+        setTimeout(() => setCopiedId(null), 2000);
+      } catch (fallbackErr) {
+        console.error('Failed to copy text:', fallbackErr);
+        // Still show the copied state to indicate the attempt
+        setCopiedId(messageId);
+        setTimeout(() => setCopiedId(null), 1000);
+      }
+    }
   };
 
   const handleUsePrompt = (text: string) => {
@@ -267,27 +293,53 @@ export function AIChatbot({
       - Modules: ${formData.additionalModules.join(', ') || 'None selected'}
       
       Format it as a professional project overview for BKT Advisory.`;
-    handleSendMessage(prompt);
+    handleSendMessage(prompt, true); // Pass true to show action buttons
   };
 
   const handleAutofillFromDescription = () => {
     if (!formData?.projectDescription?.trim()) {
+      setIsOpen(true); // Open chat when empty
       handleSendMessage("I'd like to autofill the estimator, but the project description is empty. Can you please provide details using this format?\n\n- **Systems:** (e.g. Salesforce, Slack)\n- **Pain Points:** (e.g. manual data entry)\n- **Goals:** (e.g. automate lead routing)\n- **Users:** (e.g. 50 sales reps)");
       return;
     }
 
+    // Check for critical information in the project description
+    const description = formData.projectDescription.toLowerCase();
+    const hasSystems = /salesforce|dynamics|gohighlevel|hubspot|monday|zoho|crm|slack|asana|jira|github|google|microsoft|zoom|docusign|make|zapier|n8n|mulesoft|cloud|integration/i.test(description);
+    const hasPainPoints = /pain|challenge|issue|problem|difficulty|struggle|bottleneck|manual|inefficient/i.test(description);
+    const hasGoals = /goal|outcome|objective|want|need|require|automate|improve|increase|reduce|streamline/i.test(description);
+    const hasAutomations = /automate|automation|workflow|integrate|integration|connect|sync/i.test(description);
+    const hasDeliverables = /deliver|deliverable|requirement|feature|functionality|capability|module/i.test(description);
+    
+    const missingCriticalInfo = [];
+    if (!hasSystems) missingCriticalInfo.push('**Current systems/infrastructure**');
+    if (!hasPainPoints) missingCriticalInfo.push('**Pain points/challenges**');
+    if (!hasGoals) missingCriticalInfo.push('**Desired outcomes & goals**');
+    if (!hasAutomations) missingCriticalInfo.push('**Required automations/integrations**');
+    if (!hasDeliverables) missingCriticalInfo.push('**Key deliverables/requirements**');
+
+    // If critical info is missing, open the chat and ask for it
+    if (missingCriticalInfo.length > 0) {
+      setIsOpen(true); // Open chat to request missing info
+      const missingList = missingCriticalInfo.join('\n• ');
+      handleSendMessage(`I'd like to autofill your estimator, but I need more information. Please add details about:\n\n• ${missingList}\n\nOptionally, you can also include:\n• Timeline & budget constraints\n\nThis will help me provide a more accurate configuration!`);
+      return;
+    }
+
+    // If all critical info is present, autofill silently (don't open chat)
     const prompt = `Parse the following project description and return ONLY a JSON object containing the matching configurations. 
       Description: "${formData.projectDescription}"
       
       Use these keys: selectedCRMs, selectedClouds, selectedIntegrations, selectedAITools, additionalModules.
       
-      Valid options for CRMs: Salesforce, Dynamics 365, GoHighLevel, HubSpot, Zoho.
-      Valid Clouds: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Experience Cloud.
-      Valid Integrations: Slack, DocuSign, Jira, Google Workspace, Microsoft 365, Zapier, MuleSoft.
+      Valid options for CRMs: Salesforce, Dynamics 365, GoHighLevel, HubSpot, Monday.com, Zoho.
+      Valid Clouds: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Financial Services Cloud, Experience Cloud, Agentforce.
+      Valid Integrations: Slack, Asana, Jira, GitHub, Google Workspace, Microsoft 365, Zoom, DocuSign, Make.com, Zapier, n8n, MuleSoft.
       Valid AI Tools: OpenAI ChatGPT, Gemini, Copilot, Claude.
       Valid Modules: Reporting and Dashboards, Workflow Automation, Custom Development, Lead Management, Data Migration, User Training.`;
     
-    handleSendMessage(prompt);
+    // Don't open chat - just send the message silently
+    handleSendMessage(prompt, true); // Pass true to show action buttons
   };
 
   return (
@@ -327,7 +379,7 @@ export function AIChatbot({
               <div>
                 <h3 className="text-white">AI Assistant</h3>
                 <p className="text-blue-100 text-sm">
-                  Powered by OpenAI o1
+                  Powered by OpenAI gpt-4.1
                 </p>
               </div>
             </div>
@@ -353,13 +405,7 @@ export function AIChatbot({
 
                   {/* Copy and Use Prompt buttons for bot messages that look like scopes */}
                   {message.sender === "bot" &&
-                    (message.isJson ||
-                      (message.text && message.text.includes(
-                        "**PROJECT SCOPE",
-                      )) ||
-                      (message.text && message.text.includes(
-                        "**OBJECTIVES**",
-                      ))) && (
+                    message.showActionButtons && (
                       <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200">
                         <button
                           onClick={() =>
@@ -416,7 +462,7 @@ export function AIChatbot({
                         "Write Project Description based on my configurations.",
                         "Autofill the Project Estimator from my Project Description.",
                       ]
-                    : ["Please write me a project description."]
+                    : []
                   )
                 : [
                     "Schedule a call with John Burkhardt.",

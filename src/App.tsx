@@ -35,8 +35,6 @@ export interface FormData {
 
 export interface QuoteData {
   formData: FormData;
-  quoteId: string;
-  generatedAt: string;
   baseHours: number;
   complexityMultiplier: number;
   adjustedHours: number;
@@ -73,6 +71,7 @@ function App() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [aiActionTrigger, setAiActionTrigger] = useState<{ type: 'generate' | 'autofill', timestamp: number } | null>(null);
+  const [aiUsageCount, setAiUsageCount] = useState({ generate: 0, autofill: 0 }); // Track AI button usage
 
   // Initialize page based on hash on first load
   useEffect(() => {
@@ -155,6 +154,7 @@ function App() {
     setAiActionTrigger({ type, timestamp: Date.now() });
     // Open chatbot if closed? 
     // Actually, let's just let the chatbot handle it.
+    setAiUsageCount(prev => ({ ...prev, [type]: prev[type] + 1 }));
   };
 
   if (currentPage === 'estimator') {
@@ -168,6 +168,7 @@ function App() {
           onGenerateQuote={handleGenerateQuote} 
           onBackToHome={handleNavigateToHome}
           onTriggerAIAction={handleTriggerAIAction}
+          aiUsageCount={aiUsageCount}
         />
         <AIChatbot 
           currentPage="estimator" 

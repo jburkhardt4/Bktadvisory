@@ -27,109 +27,135 @@ app.post("/make-server-defb8dbd/chat", async (c) => {
     const apiKey = Deno.env.get("OPENAI_API_KEY"); 
     const openai = new OpenAI({ apiKey });
 
-    let outputText = "";
-    let rawResponse = null;
+    // Build system prompt based on company guidelines
+    const systemPrompt = `You are an AI model acting as a Customer Success Manager and AI Assistant for BKT Advisory, a technology consultancy led by John "JB" Burkhardt.
 
-    // Helper to extract text according to OpenAI Responses API documentation
-    // Ref: https://platform.openai.com/docs/api-reference/responses/create
-    const extractTextFromResponse = (response: any) => {
-        if (!response || !response.output || !Array.isArray(response.output)) {
-            return "";
-        }
+PRIMARY OBJECTIVES
+1. When users express interest in meetings, consulting, or services, direct them to book a strategy call with John:
+   https://calendly.com/bktadvisory-john-burkhardt
+2. Help users prepare a Structured Project Description for the Tech Project Estimator by gathering required information in a strict, deterministic order and outputting only the approved format.
 
-        let text = "";
-        // filter for items where type is 'message'
-        const messages = response.output.filter((item: any) => item.type === 'message');
+Operate strictly within company scope. Follow the reasoning and data-gathering order exactly. Adhere to all output, pricing, and behavioral constraints.
 
-        for (const msg of messages) {
-            if (Array.isArray(msg.content)) {
-                for (const part of msg.content) {
-                    // Documentation specifies 'output_text', but we also check 'text' as safety
-                    if ((part.type === 'output_text' || part.type === 'text') && part.text) {
-                        text += part.text;
-                    }
-                }
-            }
-        }
-        return text;
-    };
+---
 
-    try {
-        if (openai.responses && typeof openai.responses.create === 'function') {
-            console.log("Using OpenAI SDK (responses.create)");
-            // @ts-ignore: Dynamic call for beta API
-            const response = await openai.responses.create({
-                prompt: {
-                    "id": "pmpt_69472c64fc748190abd8aaebb32c529902cb4874a9041596",
-                    "version": "2",
-                    "variables": {
-                        "current_page": current_page || "Unknown",
-                        "current_date": current_date || new Date().toISOString(),
-                        "project_goals": project_goals || "User asking for help"
-                    }
-                }
-            });
-            rawResponse = response;
-            outputText = extractTextFromResponse(response);
-        } else {
-            throw new Error("SDK does not support responses.create");
-        }
-    } catch (sdkError) {
-        console.log("Falling back to raw fetch due to:", sdkError);
-        
-        const raw = await fetch("https://api.openai.com/v1/responses", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                prompt: {
-                    "id": "pmpt_69472c64fc748190abd8aaebb32c529902cb4874a9041596",
-                    "version": "2",
-                    "variables": {
-                        "current_page": current_page,
-                        "current_date": current_date,
-                        "project_goals": project_goals
-                    }
-                }
-            })
-        });
+COMPANY CONTEXT
+- Founder: John "JB" Burkhardt — Salesforce & AI Systems Architect (5x Salesforce Certified)
+- Focus: Salesforce CRM, AI systems, RevOps, FinTech, InsurTech, advanced sales automation
+- Value: Shorten sales cycles, automate underwriting, operationalize AI on Salesforce
 
-        const data = await raw.json();
-        rawResponse = data;
-        
-        if (data.error) {
-            return c.json({ error: data.error.message }, 500);
-        }
-        
-        outputText = extractTextFromResponse(data);
-    }
+SESSION VARIABLES
+- Current Page: ${current_page}
+- Current Date: ${current_date}
 
-    // Final check: if outputText is still empty, try legacy extraction or report detailed structure
+---
+
+ENTRY PROTOCOL (CRITICAL)
+Before responding, determine whether the user has provided concrete project details (industry, CRM, pain points, goals).
+
+If NO details are provided:
+- Do NOT say "Thanks for the details so far."
+- Confirm you can help (e.g., "Of course," "Certainly")
+- Immediately ask concise, bulleted clarifying questions to begin data gathering.
+
+---
+
+SCHEDULING RULE (HIGHEST PRIORITY)
+If the user requests or implies interest in meetings, consulting, or services:
+Respond ONLY with:
+"You can book a strategy call with John Burkhardt directly here: https://calendly.com/bktadvisory-john-burkhardt"
+
+---
+
+PRICING & ESTIMATION RULES
+- Never provide prices, costs, or dollar amounts.
+- For any pricing or estimate request, respond EXACTLY with:
+"Our Tech Project Estimator can give you a tailored range based on your specific requirements. Would you like me to help you draft a description to get the best result?"
+
+---
+
+TECH STACK OPTIONS (IMPORTANT - Use these exact options)
+When parsing project descriptions for autofill, use ONLY these valid options:
+
+CRM Platforms: Salesforce, Dynamics 365, GoHighLevel, HubSpot, Monday.com, Zoho
+Salesforce Clouds: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Financial Services Cloud, Experience Cloud, Agentforce
+Integrations: Slack, Asana, Jira, GitHub, Google Workspace, Microsoft 365, Zoom, DocuSign, Make.com, Zapier, n8n, MuleSoft
+AI Tools: OpenAI ChatGPT, Gemini, Copilot, Claude
+Service Modules: Reporting and Dashboards, Workflow Automation, Custom Development, Lead Management, Data Migration, User Training
+
+---
+
+DATA GATHERING LOGIC (STRICT ORDER)
+Always collect information in this order:
+1. Current systems/infrastructure
+2. Pain points/challenges
+3. Desired outcomes & measurable goals
+4. Required automations/integrations
+5. Key deliverables/requirements
+6. Timeline & constraints (budget only if explicitly provided)
+
+- Ask only concise, bulleted questions.
+- No conversational filler.
+- Do not generate conclusions, recommendations, or scope until all sections are addressed.
+
+---
+
+STRUCTURED PROJECT DESCRIPTION FORMAT (STRICT)
+When generating a scope, output ONLY the following headers and bullet points.
+No commentary. No extra formatting.
+Use "[TBD]" where information is missing.
+
+PROJECT SCOPE & OBJECTIVES
+• Business goals and success metrics
+
+CURRENT INFRASTRUCTURE
+• Existing CRMs, tools, integrations, data sources
+
+PAIN POINTS & CHALLENGES
+• Manual processes, bottlenecks, risks, growth blockers
+
+AUTOMATIONS & INTEGRATIONS
+• Workflows to automate, platforms to integrate
+
+DELIVERABLES & REQUIREMENTS
+• Features, reports, roles, permissions, technical needs
+
+TIMELINE & CONSTRAINTS
+• Target dates, deadlines, dependencies, constraints
+
+Continue gathering missing data until all fields are complete.`;
+
+    const userMessage = project_goals || "User needs assistance";
+
+    console.log("Sending request to OpenAI Chat Completions API");
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+
+    const outputText = completion.choices[0]?.message?.content || "";
+    
     if (!outputText) {
-        // One final fallback attempt for any nested structures seen in previous errors
-        if (rawResponse?.response?.output) {
-             outputText = extractTextFromResponse(rawResponse.response);
-        }
-    }
-
-    if (!outputText) {
-        const debugStr = rawResponse ? JSON.stringify(rawResponse, null, 2) : "No response";
-        return c.json({ 
-            error: "OpenAI returned empty text. Full Response: " + debugStr.substring(0, 5000) 
-        }, 500);
+      return c.json({ 
+        error: "OpenAI returned empty response" 
+      }, 500);
     }
 
     return c.json({ 
-        content: outputText.trim(),
-        isJson: outputText.includes("**PROJECT SCOPE")
+      content: outputText.trim(),
+      isJson: outputText.includes("PROJECT SCOPE")
     });
 
   } catch (e) {
     console.error("Server Error:", e);
     // @ts-ignore: Error handling
-    return c.json({ error: e.message }, 500);
+    return c.json({ error: e.message || "Unknown server error" }, 500);
   }
 });
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FormData, QuoteData } from '../App';
 import { ArrowRight, Calculator, Home, Sparkles, Wand2 } from 'lucide-react';
 
@@ -10,6 +10,7 @@ interface EstimatorProps {
   onGenerateQuote: (data: QuoteData) => void;
   onBackToHome: () => void;
   onTriggerAIAction: (type: 'generate' | 'autofill') => void;
+  aiUsageCount: { generate: number; autofill: number };
 }
 
 export function Estimator({ 
@@ -19,51 +20,63 @@ export function Estimator({
   setCurrentStep, 
   onGenerateQuote, 
   onBackToHome,
-  onTriggerAIAction
+  onTriggerAIAction,
+  aiUsageCount
 }: EstimatorProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [scrollOpacity, setScrollOpacity] = useState(1);
+  const formContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Pricing configuration
+  // Pricing configuration - LEANER ESTIMATES
   const crmHours: Record<string, number> = {
-    'Salesforce': 80,
-    'Dynamics 365': 75,
-    'GoHighLevel': 60,
-    'HubSpot': 50,
-    'Zoho': 45,
+    'Salesforce': 50,         // Was 80
+    'Dynamics 365': 50,       // Was 75
+    'GoHighLevel': 30,        // Was 60
+    'HubSpot': 30,            // Was 50
+    'Monday.com': 35,         // New item
+    'Zoho': 25,               // Was 45
   };
 
   const cloudHours: Record<string, number> = {
-    'Sales Cloud': 40,
-    'Service Cloud': 45,
-    'Marketing Cloud': 50,
-    'Commerce Cloud': 55,
-    'Experience Cloud': 48,
+    'Sales Cloud': 25,            // Was 40
+    'Service Cloud': 30,          // Was 45
+    'Marketing Cloud': 35,        // Was 50
+    'Commerce Cloud': 40,         // Was 55
+    'Financial Services Cloud': 45,  // New item
+    'Experience Cloud': 35,       // Was 48
+    'Agentforce': 50,             // New item
   };
 
   const integrationHours: Record<string, number> = {
-    'Slack': 15,
-    'DocuSign': 20,
-    'Jira': 18,
-    'Google Workspace': 25,
-    'Microsoft 365': 25,
-    'Zapier': 12,
-    'MuleSoft': 60,
+    'Slack': 8,                   // Was 15
+    'Asana': 12,                  // New item
+    'Jira': 12,                   // Was 18
+    'GitHub': 15,                 // New item
+    'Google Workspace': 15,       // Was 25
+    'Microsoft 365': 15,          // Was 25
+    'Zoom': 8,                    // New item
+    'DocuSign': 12,               // Was 20
+    'Make.com': 15,               // New item
+    'Zapier': 5,                  // Was 12
+    'n8n': 15,                    // New item
+    'MuleSoft': 40,               // Was 60
   };
 
   const aiToolHours: Record<string, number> = {
-    'OpenAI ChatGPT': 25,
-    'Gemini': 25,
-    'Copilot': 20,
-    'Claude': 25,
+    'OpenAI ChatGPT': 15,   // Was 25
+    'Gemini': 15,           // Was 25
+    'Copilot': 12,          // Was 20
+    'Claude': 15,           // Was 25
   };
 
   const moduleHours: Record<string, number> = {
-    'Reporting and Dashboards': 30,
-    'Workflow Automation': 35,
-    'Custom Development': 50,
-    'Lead Management': 25,
-    'Data Migration': 40,
-    'User Training': 20,
+    'Reporting and Dashboards': 15,    // Was 30
+    'Workflow Automation': 20,         // Was 35
+    'Custom Development': 35,          // Was 50
+    'Lead Management': 15,             // Was 25
+    'Data Migration': 25,              // Was 40
+    'User Training': 8,                // Was 20
   };
 
   const powerUpRates: Record<string, number> = {
@@ -121,12 +134,17 @@ export function Estimator({
   };
 
   const showGenerateFromSelections = 
+    aiUsageCount.generate < 3 &&
     formData.selectedCRMs.length > 0 && 
     (formData.selectedClouds.length > 0 || formData.selectedIntegrations.length > 0);
 
+  const showAutofillConfiguration = 
+    aiUsageCount.autofill < 3 &&
+    formData.projectDescription.trim().length > 0;
+
   const calculateQuote = () => {
-    // Calculate base hours
-    let baseHours = 50; // Base project hours
+    // Calculate base hours - Reduced from 50 to 20
+    let baseHours = 20;
 
     formData.selectedCRMs.forEach(crm => {
       baseHours += crmHours[crm] || 0;
@@ -148,14 +166,15 @@ export function Estimator({
       baseHours += moduleHours[module] || 0;
     });
 
-    // Complexity multiplier based on number of selections
+    // Complexity multiplier - Increased threshold (only applies > 8 selections)
     const totalSelections = 
       formData.selectedCRMs.length + 
       formData.selectedClouds.length + 
       formData.selectedIntegrations.length +
       formData.selectedAITools.length;
     
-    const complexityMultiplier = totalSelections > 8 ? 1.2 : totalSelections > 5 ? 1.1 : 1;
+    // Multiplier kicks in later and is slightly gentler
+    const complexityMultiplier = totalSelections > 10 ? 1.15 : totalSelections > 7 ? 1.05 : 1;
     const adjustedHours = Math.round(baseHours * complexityMultiplier);
 
     // Calculate rates
@@ -173,12 +192,13 @@ export function Estimator({
 
     const finalHourlyRate = baseBlendedRate + powerUpRate;
     const totalCost = adjustedHours * finalHourlyRate;
-    const estimatedWeeks = Math.round(adjustedHours / 25);
+    
+    // CHANGED: Velocity divisor increased from 25 to 35 (implies faster delivery/fuller weeks)
+    // Using Math.max(1, ...) ensures we never show "0 weeks"
+    const estimatedWeeks = Math.max(1, Math.round(adjustedHours / 35));
 
     const quoteData: QuoteData = {
       formData,
-      quoteId: crypto.randomUUID ? crypto.randomUUID() : `BKT-${Date.now()}`,
-      generatedAt: new Date().toISOString(),
       baseHours,
       complexityMultiplier,
       adjustedHours,
@@ -193,6 +213,59 @@ export function Estimator({
 
     onGenerateQuote(quoteData);
   };
+
+  useEffect(() => {
+    const currentRef = formContainerRef.current;
+    if (currentRef) {
+      const handleScroll = () => {
+        const scrollTop = currentRef.scrollTop;
+        const maxScrollTop = currentRef.scrollHeight - currentRef.clientHeight;
+        setScrollOpacity(1 - (scrollTop / maxScrollTop));
+      };
+
+      currentRef.addEventListener('scroll', handleScroll);
+      return () => currentRef.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+  
+  // Track page scroll for top button fade effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      // Fade out over the first 200px of scroll
+      const fadeDistance = 200;
+      const opacity = Math.max(0, 1 - scrollTop / fadeDistance);
+      setScrollOpacity(opacity);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-resize textarea with 2x max height limit
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const minHeight = 150; // Initial min-height
+      const maxHeight = minHeight * 2; // 2x the original size
+      
+      // Reset height to get accurate scrollHeight
+      textarea.style.height = `${minHeight}px`;
+      
+      // Calculate new height based on content
+      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+      textarea.style.height = `${newHeight}px`;
+      
+      // Add overflow-y when content exceeds max height
+      if (textarea.scrollHeight > maxHeight) {
+        textarea.style.overflowY = 'auto';
+        textarea.classList.add('project-description-textarea');
+      } else {
+        textarea.style.overflowY = 'hidden';
+        textarea.classList.remove('project-description-textarea');
+      }
+    }
+  }, [formData.projectDescription]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -227,27 +300,33 @@ export function Estimator({
       {/* Progress Bar */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between mb-3">
-            {[1, 2, 3, 4].map(step => (
-              <div key={step} className="flex items-center flex-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  currentStep >= step ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
-                }`}>
-                  {step}
+          <div className="flex items-start justify-between gap-4">
+            {[
+              { num: 1, label: 'Contact Info' },
+              { num: 2, label: 'CRMs & Tools' },
+              { num: 3, label: 'Services' },
+              { num: 4, label: 'Team & Extras' }
+            ].map((step, index) => (
+              <div key={step.num} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-3 ${
+                    currentStep >= step.num ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    {step.num}
+                  </div>
+                  <span className={`text-sm text-center ${
+                    currentStep >= step.num ? 'text-slate-900' : 'text-slate-400'
+                  }`}>
+                    {step.label}
+                  </span>
                 </div>
-                {step < 4 && (
-                  <div className={`flex-1 h-1 mx-2 ${
-                    currentStep > step ? 'bg-blue-600' : 'bg-slate-200'
+                {index < 3 && (
+                  <div className={`flex-1 h-1 mx-2 mb-8 ${
+                    currentStep > step.num ? 'bg-blue-600' : 'bg-slate-200'
                   }`} />
                 )}
               </div>
             ))}
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className={currentStep >= 1 ? 'text-slate-900' : 'text-slate-400'}>Contact Info</span>
-            <span className={currentStep >= 2 ? 'text-slate-900' : 'text-slate-400'}>CRMs & Tools</span>
-            <span className={currentStep >= 3 ? 'text-slate-900' : 'text-slate-400'}>Services</span>
-            <span className={currentStep >= 4 ? 'text-slate-900' : 'text-slate-400'}>Team & Extras</span>
           </div>
         </div>
       </div>
@@ -255,6 +334,41 @@ export function Estimator({
       {/* Form Content */}
       <div className="max-w-4xl mx-auto px-8 py-12">
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+          
+          {/* Top Navigation Buttons (Smaller, Fade on Scroll) */}
+          {currentStep > 1 && (
+            <div 
+              className="flex justify-between mb-6 pb-4 border-b border-slate-200 transition-opacity duration-300"
+              style={{ opacity: scrollOpacity }}
+            >
+              <button
+                onClick={handlePrevStep}
+                className="px-4 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                style={{ transform: 'scale(0.75)', transformOrigin: 'left center' }}
+              >
+                ← Previous
+              </button>
+              
+              {currentStep < 4 ? (
+                <button
+                  onClick={handleNextStep}
+                  className="ml-auto flex items-center gap-2 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
+                >
+                  Next <ArrowRight size={14} />
+                </button>
+              ) : (
+                <button
+                  onClick={calculateQuote}
+                  className="ml-auto flex items-center gap-2 px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
+                >
+                  <Calculator size={16} />
+                  Get Instant Quote
+                </button>
+              )}
+            </div>
+          )}
           
           {/* Step 1: Contact Information */}
           {currentStep === 1 && (
@@ -368,6 +482,7 @@ export function Estimator({
                 </div>
                 <div className="relative">
                   <textarea
+                    ref={textareaRef}
                     value={formData.projectDescription}
                     onChange={(e) => handleInputChange('projectDescription', e.target.value)}
                     className="w-full px-4 py-3 pb-12 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px] bg-white"
@@ -376,33 +491,26 @@ export function Estimator({
                   
                   {/* AI Toolbar */}
                   <div className="absolute bottom-3 left-3 flex gap-2">
-                    {showGenerateFromSelections ? (
-                      <button
-                        onClick={() => onTriggerAIAction('generate')}
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm"
-                        title="Generate project description from selected configurations"
-                      >
-                        <Wand2 size={14} />
-                        Generate from Selections
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onTriggerAIAction('autofill')}
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-md hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm group"
-                        title="Autofill tech stack from current project description"
-                      >
-                        <Sparkles size={14} className="group-hover:text-blue-500" />
-                        Autofill Configuration
-                      </button>
-                    )}
                     {showGenerateFromSelections && (
                       <button
+                        onClick={() => onTriggerAIAction('generate')}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={`Generate project description from selected configurations (${3 - aiUsageCount.generate} uses left)`}
+                        disabled={aiUsageCount.generate >= 3}
+                      >
+                        <Wand2 size={14} />
+                        Generate from Selections {aiUsageCount.generate >= 3 && '(Max reached)'}
+                      </button>
+                    )}
+                    {showAutofillConfiguration && (
+                      <button
                         onClick={() => onTriggerAIAction('autofill')}
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-md hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm group"
-                        title="Autofill tech stack from current project description"
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-md hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm group disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={`Autofill tech stack from current project description (${3 - aiUsageCount.autofill} uses left)`}
+                        disabled={aiUsageCount.autofill >= 3}
                       >
                         <Sparkles size={14} className="group-hover:text-blue-500" />
-                        Autofill Configuration
+                        Autofill Configuration {aiUsageCount.autofill >= 3 && '(Max reached)'}
                       </button>
                     )}
                   </div>

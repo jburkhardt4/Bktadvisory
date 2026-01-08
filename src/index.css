@@ -2194,6 +2194,10 @@ html {
     display: none !important;
   }
 
+  .quote-print-hidden {
+    display: none !important;
+  }
+
   .bg-white.rounded-lg.shadow-sm {
     page-break-inside: avoid;
     box-shadow: none !important;

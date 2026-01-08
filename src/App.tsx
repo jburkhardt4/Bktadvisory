@@ -35,6 +35,8 @@ export interface FormData {
 
 export interface QuoteData {
   formData: FormData;
+  quoteId: string;
+  generatedAt: string;
   baseHours: number;
   complexityMultiplier: number;
   adjustedHours: number;

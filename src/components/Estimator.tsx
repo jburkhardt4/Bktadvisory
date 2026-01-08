@@ -177,6 +177,8 @@ export function Estimator({
 
     const quoteData: QuoteData = {
       formData,
+      quoteId: crypto.randomUUID ? crypto.randomUUID() : `BKT-${Date.now()}`,
+      generatedAt: new Date().toISOString(),
       baseHours,
       complexityMultiplier,
       adjustedHours,

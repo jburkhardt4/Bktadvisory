@@ -1,21 +1,27 @@
-import { useEffect } from "react";
-import { RouterProvider } from "react-router";
-import { router } from "./routes";
-import { AuthProvider } from "./contexts/AuthContext";
+import { useState, useEffect } from 'react';
+import { Navigation } from './components/Navigation';
+import { Footer } from './components/Footer';
+import { Estimator } from './components/Estimator';
+import { Quote } from './components/Quote';
+import { AIChatbot } from './components/AIChatbot';
+import { Toaster } from 'sonner@2.0.3';
+import { PWAHead } from './components/PWAHead';
 
-// BKT icon from Supabase Storage (Logos bucket)
-const BKT_ICON_URL =
-  "https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo.png";
-
-// Shared type exports (used by Estimator PWA components if present)
 export interface FormData {
+  // Contact Info
   firstName: string;
   lastName: string;
+  companyName: string;
   website: string;
   workEmail: string;
   mobilePhone: string;
+  
+  // Project Details
   projectType: string;
   projectDescription: string;
+  scopeProblems: string;
+  scopeRequirements: string;
+  scopeGoals: string;
   selectedCRMs: string[];
   selectedClouds: string[];
   selectedIntegrations: string[];
@@ -23,6 +29,8 @@ export interface FormData {
   additionalModules: string[];
   deliveryTeam: string;
   powerUps: string[];
+  uploadedFiles: { name: string; size: number; type: string }[];
+  valueStatement?: string;
 }
 
 export interface QuoteData {
@@ -39,132 +47,165 @@ export interface QuoteData {
   estimatedWeeks: number;
 }
 
+const initialFormData: FormData = {
+  firstName: '',
+  lastName: '',
+  companyName: '',
+  website: '',
+  workEmail: '',
+  mobilePhone: '',
+  projectType: 'custom',
+  projectDescription: '',
+  scopeProblems: '',
+  scopeRequirements: '',
+  scopeGoals: '',
+  selectedCRMs: [],
+  selectedClouds: [],
+  selectedIntegrations: [],
+  selectedAITools: [],
+  additionalModules: [],
+  deliveryTeam: 'nearshore',
+  powerUps: [],
+  uploadedFiles: [],
+};
+
 function App() {
+  const [showQuote, setShowQuote] = useState(false);
+  const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [aiActionTrigger, setAiActionTrigger] = useState<{ type: 'generate' | 'autofill', timestamp: number } | null>(null);
+  const [aiUsageCount, setAiUsageCount] = useState({ generate: 0, autofill: 0 }); // Track AI button usage
+
+  // Remove "Skip to main content" link (likely in index.html)
+  useEffect(() => {
+    const removeSkipLink = () => {
+      const links = document.querySelectorAll('a');
+      links.forEach(link => {
+        if (link.textContent && (link.textContent.includes('Skip to main content') || link.textContent.includes('Skip to content'))) {
+          link.remove();
+        }
+      });
+    };
+    
+    // Run immediately and after a short delay to catch any late injections
+    removeSkipLink();
+    setTimeout(removeSkipLink, 100);
+  }, []);
+
   // Load Google Calendar Appointment Scheduler scripts globally
   useEffect(() => {
-    if (
-      !document.querySelector(
-        'link[href*="calendar.google.com/calendar/scheduling-button-script.css"]',
-      )
-    ) {
-      const link = document.createElement("link");
-      link.href =
-        "https://calendar.google.com/calendar/scheduling-button-script.css";
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-    }
+    try {
+      // Add CSS link if not already present
+      if (!document.querySelector('link[href*="calendar.google.com/calendar/scheduling-button-script.css"]')) {
+        const link = document.createElement('link');
+        link.href = 'https://calendar.google.com/calendar/scheduling-button-script.css';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
 
-    if (
-      !document.querySelector(
-        'script[src*="calendar.google.com/calendar/scheduling-button-script.js"]',
-      )
-    ) {
-      const script = document.createElement("script");
-      script.src =
-        "https://calendar.google.com/calendar/scheduling-button-script.js";
-      script.async = true;
-      document.head.appendChild(script);
+      // Add JS script if not already present
+      if (!document.querySelector('script[src*="calendar.google.com/calendar/scheduling-button-script.js"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://calendar.google.com/calendar/scheduling-button-script.js';
+        script.async = true;
+        document.head.appendChild(script);
+      }
+    } catch (e) {
+      console.warn('Failed to load Google Calendar scripts', e);
     }
   }, []);
 
-  // Set up Home Screen icon (apple-touch-icon) and web app manifest
-  useEffect(() => {
-    // Apple Touch Icon for iOS Home Screen
-    if (
-      !document.querySelector('link[rel="apple-touch-icon"]')
-    ) {
-      const appleTouchIcon = document.createElement("link");
-      appleTouchIcon.rel = "apple-touch-icon";
-      appleTouchIcon.sizes = "180x180";
-      appleTouchIcon.href = BKT_ICON_URL;
-      document.head.appendChild(appleTouchIcon);
-    }
+  const handleGenerateQuote = (data: QuoteData) => {
+    setQuoteData(data);
+    setShowQuote(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    // Standard favicon / shortcut icon
-    if (
-      !document.querySelector(
-        'link[rel="icon"][type="image/png"]',
-      )
-    ) {
-      const favicon = document.createElement("link");
-      favicon.rel = "icon";
-      favicon.type = "image/png";
-      favicon.sizes = "192x192";
-      favicon.href = BKT_ICON_URL;
-      document.head.appendChild(favicon);
-    }
+  const handleNavigateToEstimator = () => {
+    // Already on the estimator page, maybe reset?
+    // For now, just scroll top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    // Apple mobile web app meta tags
-    if (
-      !document.querySelector(
-        'meta[name="apple-mobile-web-app-capable"]',
-      )
-    ) {
-      const capable = document.createElement("meta");
-      capable.name = "apple-mobile-web-app-capable";
-      capable.content = "yes";
-      document.head.appendChild(capable);
-    }
+  const handleBackToEstimator = () => {
+    setShowQuote(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    if (
-      !document.querySelector(
-        'meta[name="apple-mobile-web-app-status-bar-style"]',
-      )
-    ) {
-      const statusBar = document.createElement("meta");
-      statusBar.name = "apple-mobile-web-app-status-bar-style";
-      statusBar.content = "black-translucent";
-      document.head.appendChild(statusBar);
-    }
+  const handleBackToHome = () => {
+    window.location.href = "https://bktadvisory.com";
+  };
 
-    if (
-      !document.querySelector(
-        'meta[name="apple-mobile-web-app-title"]',
-      )
-    ) {
-      const title = document.createElement("meta");
-      title.name = "apple-mobile-web-app-title";
-      title.content = "BKT Advisory";
-      document.head.appendChild(title);
-    }
+  const handleInsertPrompt = (prompt: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      projectDescription: prev.projectDescription 
+        ? `${prev.projectDescription}\n\n${prompt}` 
+        : prompt 
+    }));
+  };
 
-    // Web App Manifest for Android Home Screen
-    if (!document.querySelector('link[rel="manifest"]')) {
-      const manifest = {
-        name: "BKT Advisory",
-        short_name: "BKT Advisory",
-        start_url: "/",
-        display: "standalone",
-        background_color: "#0F172B",
-        theme_color: "#1d4ed8",
-        icons: [
-          {
-            src: BKT_ICON_URL,
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: BKT_ICON_URL,
-            sizes: "512x512",
-            type: "image/png",
-          },
-        ],
-      };
-      const blob = new Blob([JSON.stringify(manifest)], {
-        type: "application/json",
-      });
-      const manifestUrl = URL.createObjectURL(blob);
-      const manifestLink = document.createElement("link");
-      manifestLink.rel = "manifest";
-      manifestLink.href = manifestUrl;
-      document.head.appendChild(manifestLink);
-    }
-  }, []);
+  const handleAutofillData = (partialData: Partial<FormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...partialData,
+      // Rule 3: Delivery Team defaults to Nearshore, Power-Ups unchecked
+      deliveryTeam: partialData.deliveryTeam || 'nearshore',
+      powerUps: partialData.powerUps || [],
+    }));
+  };
+
+  const handleTriggerAIAction = (type: 'generate' | 'autofill') => {
+    // If 'generate', we need to pass context (scope, stacks) to the Chatbot/AI logic.
+    // The current implementation uses `aiActionTrigger` state in App.tsx which is passed to AIChatbot.
+    // AIChatbot listens to this trigger. 
+    // We need to ensure the logic in AIChatbot consumes the scope fields.
+    setAiActionTrigger({ type, timestamp: Date.now() });
+    setAiUsageCount(prev => ({ ...prev, [type]: prev[type] + 1 }));
+  };
 
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <PWAHead />
+      <Navigation onNavigateToEstimator={handleNavigateToEstimator} />
+      <Toaster />
+      
+      <main className="flex-grow pb-20">
+        {!showQuote ? (
+          <>
+            <Estimator 
+              formData={formData}
+              setFormData={setFormData}
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              onGenerateQuote={handleGenerateQuote} 
+              onBackToHome={handleBackToHome}
+              onTriggerAIAction={handleTriggerAIAction}
+              aiUsageCount={aiUsageCount}
+            />
+            <AIChatbot 
+              currentPage="estimator" 
+              currentStep={currentStep}
+              formData={formData}
+              onInsertPrompt={handleInsertPrompt}
+              onAutofill={handleAutofillData}
+              aiActionTrigger={aiActionTrigger}
+            />
+          </>
+        ) : (
+          <>
+            <Quote data={quoteData!} onBack={handleBackToEstimator} />
+            <AIChatbot 
+              currentPage="quote" 
+              onInsertPrompt={handleInsertPrompt}
+            />
+          </>
+        )}
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 

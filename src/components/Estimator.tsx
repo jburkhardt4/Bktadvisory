@@ -691,8 +691,8 @@ export function Estimator({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-slate-900 text-white py-6 px-8">
+    <div className="min-h-screen flex-1 bg-[#eff6ff]">
+      <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-6 px-8">
         <div className="max-w-[1440px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6">
             <a href="https://bktadvisory.com" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
@@ -775,7 +775,7 @@ export function Estimator({
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl mb-2">Let's Get Started</h2>
+                <h2 className="text-xl mb-2 text-[#0f172b] font-bold">Let's Get Started</h2>
                 <p className="text-slate-600">Please provide your contact information to receive your personalized quote.</p>
               </div>
 

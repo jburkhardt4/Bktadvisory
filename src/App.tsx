@@ -171,7 +171,7 @@ function App() {
       <Navigation onNavigateToEstimator={handleNavigateToEstimator} />
       <Toaster />
       
-      <main className="flex-grow pb-20">
+      <main className="flex-grow flex flex-col">
         {!showQuote ? (
           <>
             <Estimator 

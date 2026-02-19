@@ -516,7 +516,7 @@ app.post("/make-server-07a007e1/submit-quote", async (c) => {
     };
 
     const GOOGLE_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbzayP4HfRQFvpId3DrRBUI2WrybQ0Hb84oD2RT4CXR6DJzTebVbvDyiUXLOKclUTKv1/exec";
+      "https://script.google.com/macros/s/AKfycbyUYuS-Bq_AjA_zw6aqHSyLdNzbQifN7McyV6_RF0dtLhvk7b1fntqOWjaqH1nrZI1_/exec";
 
     // Only send if we have a URL and the PDF data
     if (

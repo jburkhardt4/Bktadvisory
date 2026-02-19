@@ -1,6 +1,27 @@
 import { useRef } from 'react';
 import { QuoteData } from '../App';
-import { Download, ArrowLeft, Star, Printer } from 'lucide-react';
+
+// Icon components to avoid lucide-react import issue
+const ArrowLeftIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
+const StarIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const PrinterIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="6 9 6 2 18 2 18 9" />
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+    <rect x="6" y="14" width="12" height="8" />
+  </svg>
+);
 
 interface QuoteProps {
   data: QuoteData;
@@ -74,20 +95,20 @@ export function Quote({ data, onBack }: QuoteProps) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-slate-900 text-white py-6 px-8">
+      <header className="bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950 text-white py-6 px-8">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <button 
             onClick={onBack}
             className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeftIcon size={20} />
             Back to Estimator
           </button>
           <button
             onClick={handleDownloadQuote}
             className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
-            <Download size={18} />
+            <PrinterIcon size={18} />
             Download / Save Quote
           </button>
         </div>
@@ -114,7 +135,7 @@ export function Quote({ data, onBack }: QuoteProps) {
             <div className="flex items-center gap-2 bg-slate-50 px-4 py-3 rounded-lg inline-flex">
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                  <StarIcon key={i} size={16} className="fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
               <span className="text-sm text-slate-600">5.0 Rating • Top Rated on Upwork</span>
@@ -320,7 +341,7 @@ export function Quote({ data, onBack }: QuoteProps) {
           <div className="flex items-center gap-3 mb-6">
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} size={24} className="fill-yellow-400 text-yellow-400" />
+                <StarIcon key={i} size={24} className="fill-yellow-400 text-yellow-400" />
               ))}
             </div>
             <h3 className="text-xl">Client Reviews</h3>
@@ -331,7 +352,7 @@ export function Quote({ data, onBack }: QuoteProps) {
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
+                    <StarIcon key={i} size={14} className="fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
                 <span className="text-sm text-slate-600">Top Rated on Upwork</span>

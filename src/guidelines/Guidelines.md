@@ -50,11 +50,12 @@ Some base Shadcn UI components have default styling (gap, typography) baked in. 
 
 ## 3. Component Architecture
 
-### BookingModal (`/components/BookingModal.tsx`)
-- **Usage:** Shared component used by all CTA buttons ("Book Strategy Call," "Let's Talk," "Schedule a Call")
-- **Configuration:** Wraps the Calendly iframe
-- **Maintenance:** Update the Calendly URL here to reflect changes across the entire site instantly
-- **Important:** "Schedule a Call" prompts should equate to the same functionality as "Book a Strategy Call"
+### ScheduleCallButton (`/components/ScheduleCallButton.tsx`)
+- **Usage:** Shared component used by all CTA buttons ("Schedule Strategy Call," "Book Strategy Call")
+- **Configuration:** Integrates with Google Calendar Appointment Scheduler
+- **Variants:** `primary`, `nav`, `footer`, `secondary` for different visual contexts
+- **Maintenance:** Update URL in the component's `window.calendar.schedulingButton.load()` call to reflect changes across the entire site instantly
+- **Important:** All scheduling CTAs use this single component for consistency
 
 ### AI Chatbot (`/components/AIChatbot.tsx`)
 - **Behavior:** Persistent floating component accessible site-wide
@@ -212,10 +213,11 @@ Some base Shadcn UI components have default styling (gap, typography) baked in. 
 - Test autofill functionality
 - Update cost calculations
 
-### When Changing Calendly Integration
-- Update URL in `BookingModal.tsx` only
-- Changes automatically propagate to all CTA buttons
-- Test modal opens correctly from all trigger points
+### When Changing Google Calendar Integration
+- Update URL in `ScheduleCallButton.tsx` in the `window.calendar.schedulingButton.load()` configuration
+- Changes automatically propagate to all CTA buttons (Navigation, Hero, Footer, About, FinalCTA)
+- Test button renders correctly across all pages and variants
+- Verify Google Calendar appointment flow works end-to-end
 
 ---
 

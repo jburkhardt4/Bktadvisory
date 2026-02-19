@@ -1,10 +1,32 @@
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ScheduleCallButton } from "./ScheduleCallButton";
 
-export function Hero({
-  onOpenBooking,
-}: {
-  onOpenBooking: () => void;
-}) {
+const SparklesIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
+  </svg>
+);
+
+const RocketIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </svg>
+);
+
+const ArrowRightIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+export function Hero() {
   const techStack = [
     "Salesforce",
     "AI Agents",
@@ -17,7 +39,7 @@ export function Hero({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950">
+    <section className="relative overflow-hidden bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-24">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Column: Copy & Actions (7 columns) */}
@@ -53,18 +75,16 @@ export function Hero({
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button
-                onClick={onOpenBooking}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#EFF6FF] text-slate-900 rounded-lg hover:bg-[#DBEAFE] transition-all duration-300 shadow-lg hover:shadow-xl font-medium"
-              >
-                Book Strategy Call
-                <ArrowRight size={20} />
-              </button>
+              <ScheduleCallButton />
               <a
-                href="#work"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white/20 text-slate-50 rounded-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm font-medium"
+                href="https://estimator.bktadvisory.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/10 border-2 border-white/20 text-slate-50 rounded-lg hover:bg-white/15 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all duration-300 backdrop-blur-sm font-medium group"
               >
-                View Selected Work
+                <RocketIcon size={18} className="text-blue-300" />
+                Get an Instant Quote
+                <ArrowRightIcon size={16} className="group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
           </div>
@@ -77,7 +97,7 @@ export function Hero({
                 {/* Top Node - AI Agent Layer */}
                 <div className="flex items-center justify-center">
                   <div className="group px-6 py-3 bg-[#EFF6FF] text-slate-900 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 hover:shadow-[0_0_30px_rgba(239,246,255,0.6)] cursor-default">
-                    <Sparkles
+                    <SparklesIcon
                       size={20}
                       className="text-blue-700"
                     />
@@ -94,7 +114,7 @@ export function Hero({
 
                 {/* Middle Layer - CRM */}
                 <div className="flex items-center justify-center">
-                  <div className="group px-8 py-4 bg-white/10 border-2 border-blue-600/50 rounded-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/15 hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-default">
+                  <div className="group px-8 py-3 bg-white/10 border-2 border-blue-600/50 rounded-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/15 hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-default">
                     <span className="text-slate-50 font-semibold">
                       Salesforce CRM
                     </span>
@@ -110,18 +130,18 @@ export function Hero({
 
                 {/* Bottom Layer - Data Sources */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="group px-3 py-3 bg-white/5 border border-white/10 rounded-lg text-center text-sm text-slate-300 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium">
+                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
+                    <span className="font-medium text-xs sm:text-sm text-slate-300">
                       Pipeline
                     </span>
                   </div>
-                  <div className="group px-3 py-3 bg-white/5 border border-white/10 rounded-lg text-center text-sm text-slate-300 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium">
+                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
+                    <span className="font-medium text-xs sm:text-sm text-slate-300">
                       Operations
                     </span>
                   </div>
-                  <div className="group px-3 py-3 bg-white/5 border border-white/10 rounded-lg text-center text-sm text-slate-300 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium">
+                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
+                    <span className="font-medium text-xs sm:text-sm text-slate-300">
                       Analytics
                     </span>
                   </div>

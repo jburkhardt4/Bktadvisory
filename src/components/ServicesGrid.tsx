@@ -1,9 +1,40 @@
-import { Database, Bot, TrendingUp, ArrowRight } from 'lucide-react';
+// Icon components to avoid lucide-react import issue
+const DatabaseIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <ellipse cx="12" cy="5" rx="9" ry="3" />
+    <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+    <path d="M3 12a9 3 0 0 0 18 0" />
+  </svg>
+);
+
+const BotIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="3" y="11" width="18" height="10" rx="2" />
+    <circle cx="12" cy="5" r="2" />
+    <path d="M12 7v4" />
+    <line x1="8" y1="16" x2="8" y2="16" />
+    <line x1="16" y1="16" x2="16" y2="16" />
+  </svg>
+);
+
+const TrendingUpIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </svg>
+);
+
+const ArrowRightIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
 
 export function ServicesGrid() {
   const services = [
     {
-      icon: Database,
+      icon: DatabaseIcon,
       title: 'CRM Architecture',
       subtitle: 'Full lifecycle Salesforce implementations and data foundations.',
       description: 'End-to-end Salesforce implementations designed for scalability, data integrity, and seamless integration across your tech stack.',
@@ -14,7 +45,7 @@ export function ServicesGrid() {
       ]
     },
     {
-      icon: Bot,
+      icon: BotIcon,
       title: 'AI & Agentic Systems',
       subtitle: 'AI agents orchestrating CRM and operational data.',
       description: 'Design and deploy intelligent AI agent systems that connect seamlessly to your CRM and automate complex workflows.',
@@ -25,7 +56,7 @@ export function ServicesGrid() {
       ]
     },
     {
-      icon: TrendingUp,
+      icon: TrendingUpIcon,
       title: 'RevOps & Transformation',
       subtitle: 'Turning CRM + AI into predictable revenue.',
       description: 'Transform your revenue operations by combining CRM intelligence with AI automation to compress cycles and accelerate growth.',
@@ -46,7 +77,7 @@ export function ServicesGrid() {
       <div className="relative max-w-[1200px] mx-auto px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h2 className="text-4xl lg:text-5xl font-bold text-slate-950 tracking-tight">Services</h2>
+          <h2 className="text-4xl lg:text-5xl font-bold text-slate-950 tracking-tight text-[36px]">Services</h2>
           <p className="text-xl text-slate-700">
             Comprehensive Salesforce and AI solutions tailored for high-growth companies in FinTech, InsurTech, and beyond.
           </p>
@@ -94,7 +125,7 @@ export function ServicesGrid() {
                     {/* Link */}
                     <a href="#contact" className="inline-flex items-center gap-2 text-sm text-blue-700 hover:text-blue-800 transition-colors group/link mt-4 font-medium">
                       Learn more
-                      <ArrowRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
+                      <ArrowRightIcon size={16} className="group-hover/link:translate-x-1 transition-transform" />
                     </a>
                   </div>
                 </div>

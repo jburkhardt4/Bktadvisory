@@ -1,13 +1,56 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  MessageCircle,
-  X,
-  Send,
-  Copy,
-  Check,
-  Sparkles,
-  Loader2,
-} from "lucide-react";
+import { useLocation } from "react-router";
+
+// Icon components
+const MessageCircleIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const XIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const SendIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+
+const CopyIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
+const CheckIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const SparklesIcon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
+  </svg>
+);
+
+const Loader2Icon = ({ size, className }: { size?: number; className?: string }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 
 interface Message {
@@ -16,26 +59,28 @@ interface Message {
   sender: "user" | "bot";
   timestamp: Date;
   isJson?: boolean;
-  showActionButtons?: boolean; // New flag to control Copy/Use This Prompt buttons
+  showActionButtons?: boolean;
+  isCalendarBooking?: boolean;
+  calendarDuration?: '15min' | '30min' | '60min' | null;
 }
 
-interface AIChatbotProps {
-  currentPage: "home" | "estimator" | "quote";
-  currentStep?: number;
-  formData?: any;
-  onInsertPrompt?: (prompt: string) => void;
-  onAutofill?: (data: any) => void;
-  aiActionTrigger?: { type: 'generate' | 'autofill', timestamp: number } | null;
-}
+type PageContext = "home" | "work" | "services" | "process" | "about";
 
-export function AIChatbot({
-  currentPage,
-  currentStep = 1,
-  formData,
-  onInsertPrompt,
-  onAutofill,
-  aiActionTrigger,
-}: AIChatbotProps) {
+export function AIChatbot() {
+  const location = useLocation();
+
+  // Derive current page from route
+  const getCurrentPage = (): PageContext => {
+    const path = location.pathname;
+    if (path === '/work') return 'work';
+    if (path === '/services') return 'services';
+    if (path === '/process') return 'process';
+    if (path === '/about') return 'about';
+    return 'home';
+  };
+
+  const currentPage = getCurrentPage();
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -44,29 +89,56 @@ export function AIChatbot({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [hasGreeted, setHasGreeted] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingIframeUrl, setBookingIframeUrl] = useState<string | null>(null);
+
+  // Format messages: linkify "Project Estimator" references
+  const formatMessageText = (text: string, sender: "user" | "bot") => {
+    if (sender !== "bot") return text;
+
+    const regex = /(Tech Project Estimator|Project Estimator)/g;
+    const parts = text.split(regex);
+    return parts.map((part, index) => {
+      if (part === "Tech Project Estimator" || part === "Project Estimator") {
+        return (
+          <a
+            key={index}
+            href="https://estimator.bktadvisory.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-600 hover:text-blue-800"
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Initial greeting based on page
+  // Greeting based on current page
   useEffect(() => {
     if (!hasGreeted) {
-      const greeting =
-        currentPage === "estimator"
-          ? "Hi there! 👋 I'm here to help you with the Tech Project Estimator. I can help you draft a structured project description to get the most accurate estimate. Just tell me about your project goals!"
-          : "Hello! 👋 Welcome to BKT Advisory. I'm your AI assistant. I can help you scope your project, answer questions about our services, or guide you through the estimation process.";
+      const greetings: Record<PageContext, string> = {
+        home: "Hello! 👋 Welcome to BKT Advisory. I can help you learn about our services, discuss your project needs, or guide you to our Project Estimator for an instant quote.",
+        work: "Hi there! 👋 Browsing our case studies? I can tell you more about any of these projects, or help you scope a similar engagement.",
+        services: "Hi! 👋 Looking at our services? I can help you determine which Salesforce and AI solution is the best fit for your needs.",
+        process: "Hi! 👋 Want to learn more about how we work? I can walk you through our process or help you get started with a discovery call.",
+        about: "Hi! 👋 I can tell you more about John's background and expertise, or help you schedule a strategy call.",
+      };
 
       setMessages([
         {
           id: "1",
-          text: greeting,
+          text: greetings[currentPage],
           sender: "bot",
           timestamp: new Date(),
         },
@@ -80,45 +152,22 @@ export function AIChatbot({
     setHasGreeted(false);
   }, [currentPage]);
 
-  // Handle external AI triggers
-  useEffect(() => {
-    if (aiActionTrigger) {
-      setIsOpen(true);
-      if (aiActionTrigger.type === 'generate') {
-        handleGenerateFromSelections();
-      } else if (aiActionTrigger.type === 'autofill') {
-        handleAutofillFromDescription();
-      }
-    }
-  }, [aiActionTrigger]);
-
-  // Auto-resize textarea and adjust padding for scrollbar
+  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    // Reset height to auto to correctly calculate scrollHeight
     textarea.style.height = "auto";
-    
-    const maxHeight = 88; // Approx 4 lines
+    const maxHeight = 88;
     const newHeight = Math.min(textarea.scrollHeight, maxHeight);
-    
     textarea.style.height = `${newHeight}px`;
-    
-    // Check if scrollbar is needed (content exceeds max height)
-    // We compare scrollHeight against maxHeight. 
-    // Note: scrollHeight includes padding. 
+
     const isScrollable = textarea.scrollHeight > maxHeight;
-    
     textarea.style.overflowY = isScrollable ? "auto" : "hidden";
-    
-    // Reduce left padding (16px default) by scrollbar width (6px) -> 10px
-    // to keep visual balance when scrollbar appears
     textarea.style.paddingLeft = isScrollable ? "10px" : "16px";
-    
   }, [inputValue]);
 
-  const handleSendMessage = async (textOverride?: string, showActionButtons: boolean = false) => {
+  const handleSendMessage = async (textOverride?: string) => {
     const text = typeof textOverride === "string" ? textOverride : inputValue;
     if (!text.trim()) return;
 
@@ -134,7 +183,6 @@ export function AIChatbot({
     setIsLoading(true);
 
     try {
-      // Prepare payload for API
       const payload = {
         current_page: currentPage,
         current_date: new Date().toLocaleDateString(),
@@ -147,10 +195,10 @@ export function AIChatbot({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${publicAnonKey}`,
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -159,66 +207,20 @@ export function AIChatbot({
         try {
           errorData = JSON.parse(errorText);
         } catch (e) {
-          // If it's not JSON, it's likely a server runtime error (HTML/text)
           throw new Error(`Server Error (${response.status}): ${errorText.substring(0, 200)}`);
         }
-        
         throw new Error(errorData.details || errorData.error || `Server Error: ${response.status}`);
       }
 
       const data = await response.json();
 
       let botText = data.content || "";
-      let isJson = false;
-      let parsedJson = null;
+      let isCalendarBooking = false;
 
-      // Try to detect and parse JSON from the response text
-      try {
-        let jsonStr = botText.trim();
-        
-        // Handle markdown code blocks which o1 often uses
-        const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (codeBlockMatch) {
-          jsonStr = codeBlockMatch[1].trim();
-        }
-
-        // Simple check if it looks like JSON
-        if (jsonStr.startsWith('{') || jsonStr.startsWith('[')) {
-          parsedJson = JSON.parse(jsonStr);
-          isJson = true;
-          
-          // If it's a configuration object for autofill
-          if (parsedJson.selectedCRMs || parsedJson.selectedClouds || parsedJson.selectedIntegrations) {
-            botText = "I've analyzed your project description and found the following configuration. Would you like to apply these to your estimator?";
-            // Auto-apply if it's an autofill request? 
-            // The user said "Action: ... update the Step 2 & 3 checkboxes."
-            // So we'll apply it and also show a message.
-            if (onAutofill) {
-              onAutofill(parsedJson);
-              botText = "✅ **Estimator Updated!** I've automatically selected the CRMs, Clouds, and Tools based on your description.\n\n" + 
-                        "**Configuration Applied:**\n" +
-                        (parsedJson.selectedCRMs?.length ? `- **CRMs:** ${parsedJson.selectedCRMs.join(', ')}\n` : "") +
-                        (parsedJson.selectedClouds?.length ? `- **Clouds:** ${parsedJson.selectedClouds.join(', ')}\n` : "") +
-                        (parsedJson.selectedIntegrations?.length ? `- **Integrations:** ${parsedJson.selectedIntegrations.join(', ')}\n` : "") +
-                        (parsedJson.selectedAITools?.length ? `- **AI Tools:** ${parsedJson.selectedAITools.join(', ')}\n` : "") +
-                        (parsedJson.additionalModules?.length ? `- **Modules:** ${parsedJson.additionalModules.join(', ')}\n` : "");
-            }
-          } else {
-            // Convert other JSON to readable markdown for the chat
-            botText =
-              `**PROJECT SCOPE**\n\n` +
-              Object.entries(parsedJson)
-                .map(([key, value]) => {
-                  const formattedKey = key
-                    .replace(/_/g, " ")
-                    .toUpperCase();
-                  return `**${formattedKey}**\n${value}`;
-                })
-                .join("\n\n");
-          }
-        }
-      } catch (e) {
-        // Not JSON, continue with original text
+      // Check if the response contains the Google Calendar booking URL
+      const calendarUrlRegex = /https:\/\/calendar\.google\.com\/calendar\/appointments\/[^\s]+/;
+      if (calendarUrlRegex.test(botText)) {
+        isCalendarBooking = true;
       }
 
       const botMessage: Message = {
@@ -226,8 +228,7 @@ export function AIChatbot({
         text: botText,
         sender: "bot",
         timestamp: new Date(),
-        isJson: isJson,
-        showActionButtons: showActionButtons, // Use the parameter passed in
+        isCalendarBooking: isCalendarBooking,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -238,7 +239,6 @@ export function AIChatbot({
         text: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
         sender: "bot",
         timestamp: new Date(),
-        isJson: false,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -248,98 +248,75 @@ export function AIChatbot({
 
   const handleCopy = async (text: string, messageId: string) => {
     try {
-      // Try modern Clipboard API first
       await navigator.clipboard.writeText(text);
       setCopiedId(messageId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      // Fallback to older method if Clipboard API is blocked
       try {
-        const textArea = document.createElement('textarea');
+        const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         textArea.remove();
         setCopiedId(messageId);
         setTimeout(() => setCopiedId(null), 2000);
       } catch (fallbackErr) {
-        console.error('Failed to copy text:', fallbackErr);
-        // Still show the copied state to indicate the attempt
+        console.error("Failed to copy text:", fallbackErr);
         setCopiedId(messageId);
         setTimeout(() => setCopiedId(null), 1000);
       }
     }
   };
 
-  const handleUsePrompt = (text: string) => {
-    if (onInsertPrompt) {
-      onInsertPrompt(text);
-      setIsOpen(false);
-    }
+  const openBookingModal = (url: string) => {
+    setBookingIframeUrl(url);
+    setShowBookingModal(true);
   };
 
-  const handleGenerateFromSelections = () => {
-    if (!formData) return;
-    const prompt = `Write a comprehensive project description based on these configurations: 
-      - CRMs: ${formData.selectedCRMs.join(', ') || 'None selected'}
-      - Clouds: ${formData.selectedClouds.join(', ') || 'None selected'}
-      - Integrations: ${formData.selectedIntegrations.join(', ') || 'None selected'}
-      - AI Tools: ${formData.selectedAITools.join(', ') || 'None selected'}
-      - Modules: ${formData.additionalModules.join(', ') || 'None selected'}
-      
-      Format it as a professional project overview for BKT Advisory.`;
-    handleSendMessage(prompt, true); // Pass true to show action buttons
+  const closeBookingModal = () => {
+    setShowBookingModal(false);
+    setBookingIframeUrl(null);
   };
 
-  const handleAutofillFromDescription = () => {
-    if (!formData?.projectDescription?.trim()) {
-      setIsOpen(true); // Open chat when empty
-      handleSendMessage("I'd like to autofill the estimator, but the project description is empty. Can you please provide details using this format?\n\n- **Systems:** (e.g. Salesforce, Slack)\n- **Pain Points:** (e.g. manual data entry)\n- **Goals:** (e.g. automate lead routing)\n- **Users:** (e.g. 50 sales reps)");
-      return;
+  // Context-aware quick prompts per page
+  const getQuickPrompts = (): string[] => {
+    switch (currentPage) {
+      case 'work':
+        return [
+          "Tell me about these case studies.",
+          "Schedule a call with John.",
+          "Get a project estimate.",
+        ];
+      case 'services':
+        return [
+          "Which service is right for my needs?",
+          "Schedule a call with John.",
+          "Get a project estimate.",
+        ];
+      case 'process':
+        return [
+          "Walk me through the engagement process.",
+          "Schedule a call with John.",
+          "Get a project estimate.",
+        ];
+      case 'about':
+        return [
+          "Tell me about John's background.",
+          "Schedule a call with John.",
+          "Get a project estimate.",
+        ];
+      default:
+        return [
+          "Tell me about your Salesforce & AI services.",
+          "Schedule a call with John.",
+          "Get a project estimate.",
+        ];
     }
-
-    // Check for critical information in the project description
-    const description = formData.projectDescription.toLowerCase();
-    const hasSystems = /salesforce|dynamics|gohighlevel|hubspot|monday|zoho|crm|slack|asana|jira|github|google|microsoft|zoom|docusign|make|zapier|n8n|mulesoft|cloud|integration/i.test(description);
-    const hasPainPoints = /pain|challenge|issue|problem|difficulty|struggle|bottleneck|manual|inefficient/i.test(description);
-    const hasGoals = /goal|outcome|objective|want|need|require|automate|improve|increase|reduce|streamline/i.test(description);
-    const hasAutomations = /automate|automation|workflow|integrate|integration|connect|sync/i.test(description);
-    const hasDeliverables = /deliver|deliverable|requirement|feature|functionality|capability|module/i.test(description);
-    
-    const missingCriticalInfo = [];
-    if (!hasSystems) missingCriticalInfo.push('**Current systems/infrastructure**');
-    if (!hasPainPoints) missingCriticalInfo.push('**Pain points/challenges**');
-    if (!hasGoals) missingCriticalInfo.push('**Desired outcomes & goals**');
-    if (!hasAutomations) missingCriticalInfo.push('**Required automations/integrations**');
-    if (!hasDeliverables) missingCriticalInfo.push('**Key deliverables/requirements**');
-
-    // If critical info is missing, open the chat and ask for it
-    if (missingCriticalInfo.length > 0) {
-      setIsOpen(true); // Open chat to request missing info
-      const missingList = missingCriticalInfo.join('\n• ');
-      handleSendMessage(`I'd like to autofill your estimator, but I need more information. Please add details about:\n\n• ${missingList}\n\nOptionally, you can also include:\n• Timeline & budget constraints\n\nThis will help me provide a more accurate configuration!`);
-      return;
-    }
-
-    // If all critical info is present, autofill silently (don't open chat)
-    const prompt = `Parse the following project description and return ONLY a JSON object containing the matching configurations. 
-      Description: "${formData.projectDescription}"
-      
-      Use these keys: selectedCRMs, selectedClouds, selectedIntegrations, selectedAITools, additionalModules.
-      
-      Valid options for CRMs: Salesforce, Dynamics 365, GoHighLevel, HubSpot, Monday.com, Zoho.
-      Valid Clouds: Sales Cloud, Service Cloud, Marketing Cloud, Commerce Cloud, Financial Services Cloud, Experience Cloud, Agentforce.
-      Valid Integrations: Slack, Asana, Jira, GitHub, Google Workspace, Microsoft 365, Zoom, DocuSign, Make.com, Zapier, n8n, MuleSoft.
-      Valid AI Tools: OpenAI ChatGPT, Gemini, Copilot, Claude.
-      Valid Modules: Reporting and Dashboards, Workflow Automation, Custom Development, Lead Management, Data Migration, User Training.`;
-    
-    // Don't open chat - just send the message silently
-    handleSendMessage(prompt, true); // Pass true to show action buttons
   };
 
   return (
@@ -355,11 +332,11 @@ export function AIChatbot({
         aria-label="AI Assistant"
       >
         {isOpen ? (
-          <X size={24} className="text-white" />
+          <XIcon size={24} className="text-white" />
         ) : (
           <div className="relative">
-            <MessageCircle size={24} className="text-white" />
-            <Sparkles
+            <MessageCircleIcon size={24} className="text-white" />
+            <SparklesIcon
               size={12}
               className="absolute -top-1 -right-1 text-yellow-300 animate-pulse"
             />
@@ -374,10 +351,10 @@ export function AIChatbot({
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <Sparkles size={20} />
+                <SparklesIcon size={20} />
               </div>
               <div>
-                <h3 className="text-white">AI Assistant</h3>
+                <h3 className="text-white font-bold">AI Assistant</h3>
                 <p className="text-blue-100 text-sm">
                   Powered by OpenAI gpt-4.1
                 </p>
@@ -392,59 +369,125 @@ export function AIChatbot({
                 key={message.id}
                 className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                    message.sender === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white border border-slate-200 text-slate-800"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {message.text}
-                  </p>
+                {message.isCalendarBooking && message.sender === "bot" ? (
+                  /* Google Calendar Booking - Inline Service Cards */
+                  <div className="w-full max-w-full">
+                    <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 mb-4 max-w-[85%]">
+                      <p className="text-sm text-slate-800">
+                        Certainly! You can book a call with John directly here. Please select your preferred time (15, 30, or 60 mins) and enter your details directly on that page.
+                      </p>
+                    </div>
 
-                  {/* Copy and Use Prompt buttons for bot messages that look like scopes */}
-                  {message.sender === "bot" &&
-                    message.showActionButtons && (
+                    {/* Service Cards Grid */}
+                    <div className="flex flex-wrap gap-4 justify-center w-full">
+                      {/* Discovery Call */}
+                      <div
+                        onClick={() => openBookingModal('https://calendar.app.google/26nkEZE18gENpuGo8')}
+                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                      >
+                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                          Discovery Call
+                        </h3>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                              <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                            </svg>
+                            <span>15 mins</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                            <span>Google Meet</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Strategic Planning */}
+                      <div
+                        onClick={() => openBookingModal('https://calendar.app.google/ybjY5qL32semyiJ88')}
+                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                      >
+                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                          Strategic Planning
+                        </h3>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                              <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                            </svg>
+                            <span>30 min</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                            <span>Google Meet</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Workshop */}
+                      <div
+                        onClick={() => openBookingModal('https://calendar.app.google/SDquXNuRq74gJFq46')}
+                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                      >
+                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                          Workshop
+                        </h3>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                              <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                            </svg>
+                            <span>60 min</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                            <span>Google Meet</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                      message.sender === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white border border-slate-200 text-slate-800"
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {formatMessageText(message.text, message.sender)}
+                    </p>
+
+                    {/* Copy button for bot messages */}
+                    {message.sender === "bot" && message.text.length > 80 && (
                       <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200">
                         <button
-                          onClick={() =>
-                            handleCopy(message.text, message.id)
-                          }
+                          onClick={() => handleCopy(message.text, message.id)}
                           className="flex items-center gap-1 text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
                         >
                           {copiedId === message.id ? (
                             <>
-                              <Check size={14} />
+                              <CheckIcon size={14} />
                               Copied!
                             </>
                           ) : (
                             <>
-                              <Copy size={14} />
+                              <CopyIcon size={14} />
                               Copy
                             </>
                           )}
                         </button>
-                        {onInsertPrompt && (
-                          <button
-                            onClick={() =>
-                              handleUsePrompt(message.text)
-                            }
-                            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
-                          >
-                            <Sparkles size={14} />
-                            Use This Prompt
-                          </button>
-                        )}
                       </div>
                     )}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-slate-500">
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2Icon size={16} className="animate-spin" />
                   <span className="text-sm">Thinking...</span>
                 </div>
               </div>
@@ -456,48 +499,16 @@ export function AIChatbot({
           <div className="p-4 bg-white border-t border-slate-200">
             {/* Quick Prompts */}
             <div className="mb-3 flex flex-wrap gap-2">
-              {(currentPage === "estimator"
-                ? (currentStep >= 2 
-                    ? [
-                        "Write Project Description based on my configurations.",
-                        "Autofill the Project Estimator from my Project Description.",
-                      ]
-                    : []
-                  )
-                : [
-                    "Schedule a call with John Burkhardt.",
-                    "Guide me through the Project Estimator and get a Quote.",
-                    "Please write me a project description.",
-                  ]
-              ).map((prompt, i) => {
-                const isPrimaryAI = 
-                  prompt === "Write Project Description based on my configurations." || 
-                  prompt === "Autofill the Project Estimator from my Project Description.";
-                
-                return (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      if (prompt === "Write Project Description based on my configurations.") {
-                        handleGenerateFromSelections();
-                      } else if (prompt === "Autofill the Project Estimator from my Project Description.") {
-                        handleAutofillFromDescription();
-                      } else {
-                        handleSendMessage(prompt);
-                      }
-                    }}
-                    disabled={isLoading}
-                    className={`text-xs px-3 py-1.5 rounded-full transition-all text-left border flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isPrimaryAI
-                        ? "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm font-medium"
-                        : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    {isPrimaryAI && <Sparkles size={12} className="text-blue-500 animate-pulse" />}
-                    {prompt}
-                  </button>
-                );
-              })}
+              {getQuickPrompts().map((prompt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSendMessage(prompt)}
+                  disabled={isLoading}
+                  className="text-xs px-3 py-1.5 rounded-full transition-all text-left border flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200 hover:border-slate-300"
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
 
             <div className="flex gap-2">
@@ -508,7 +519,7 @@ export function AIChatbot({
                 onKeyPress={(e) =>
                   e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSendMessage())
                 }
-                placeholder="Describe your project..."
+                placeholder="Ask me anything..."
                 disabled={isLoading}
                 rows={1}
                 className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 resize-none overflow-hidden min-h-[40px] max-h-[88px] chat-scroll-area"
@@ -518,9 +529,122 @@ export function AIChatbot({
                 disabled={!inputValue.trim() || isLoading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send size={18} />
+                <SendIcon size={18} />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+          onClick={closeBookingModal}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-[800px] w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {!bookingIframeUrl ? (
+              <>
+                {/* Header */}
+                <div className="flex flex-col items-center p-6 text-center border-b border-slate-200">
+                  <img
+                    alt="John Burkhardt"
+                    src="https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo"
+                    className="rounded-full w-16 h-16 object-cover mb-2"
+                  />
+                  <h2 className="text-2xl font-normal text-slate-900 mb-1">John Burkhardt</h2>
+                  <p className="text-sm text-slate-600">Appointments</p>
+                </div>
+
+                {/* Service Cards */}
+                <div className="p-6 flex flex-wrap gap-4 justify-center">
+                  <div
+                    onClick={() => openBookingModal('https://calendar.app.google/26nkEZE18gENpuGo8')}
+                    className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                  >
+                    <h3 className="text-lg font-normal text-slate-900 mb-2">Discovery Call</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        <span>15 min</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                        <span>Google Meet</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => openBookingModal('https://calendar.app.google/ybjY5qL32semyiJ88')}
+                    className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                  >
+                    <h3 className="text-lg font-normal text-slate-900 mb-2">Strategic Planning</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        <span>30 min</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                        <span>Google Meet</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => openBookingModal('https://calendar.app.google/SDquXNuRq74gJFq46')}
+                    className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                  >
+                    <h3 className="text-lg font-normal text-slate-900 mb-2">Workshop</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        <span>60 min</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                        <span>Google Meet</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-slate-200 flex justify-end">
+                  <button
+                    onClick={closeBookingModal}
+                    className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="relative h-[800px] flex items-center justify-center p-6">
+                <button
+                  onClick={() => setBookingIframeUrl(null)}
+                  className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-slate-100 transition-colors text-slate-600"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={closeBookingModal}
+                  className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-slate-100 transition-colors text-slate-600 text-2xl font-bold"
+                >
+                  &times;
+                </button>
+                <iframe
+                  src={bookingIframeUrl}
+                  className="w-full h-full border-0 rounded-2xl"
+                  title="Google Calendar Booking"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

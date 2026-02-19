@@ -1,6 +1,57 @@
 import { useState, useEffect, useRef } from 'react';
 import { FormData, QuoteData } from '../App';
-import { ArrowRight, Calculator, Home, Sparkles, Wand2 } from 'lucide-react';
+
+// Icon components to avoid lucide-react import issue
+const ArrowRightIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+const CalculatorIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <line x1="8" y1="6" x2="16" y2="6" />
+    <line x1="16" y1="14" x2="16" y2="14" />
+    <line x1="8" y1="14" x2="8" y2="14" />
+    <line x1="12" y1="14" x2="12" y2="14" />
+    <line x1="16" y1="18" x2="16" y2="18" />
+    <line x1="8" y1="18" x2="8" y2="18" />
+    <line x1="12" y1="18" x2="12" y2="18" />
+  </svg>
+);
+
+const HomeIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
+const SparklesIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
+  </svg>
+);
+
+const Wand2Icon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M15 4V2" />
+    <path d="M15 16v-2" />
+    <path d="M8 9h2" />
+    <path d="M20 9h2" />
+    <path d="M17.8 11.8 19 13" />
+    <path d="M15 9h0" />
+    <path d="M17.8 6.2 19 5" />
+    <path d="m3 21 9-9" />
+    <path d="M12.2 6.2 11 5" />
+  </svg>
+);
 
 interface EstimatorProps {
   formData: FormData;
@@ -270,29 +321,35 @@ export function Estimator({
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-slate-900 text-white py-6 px-8">
+      <header className="bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950 text-white py-6 px-8">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <button
-              onClick={onBackToHome}
+            <a
+              href="https://bktadvisory.com"
               className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
             >
-              <Home size={20} />
-              Back to Home
-            </button>
+              <HomeIcon size={20} />
+              <span className="hidden md:inline">Back to Home</span>
+            </a>
             <div className="h-6 w-px bg-slate-600"></div>
             <div>
-              <h1 className="text-2xl mb-1">BKT Advisory</h1>
-              <p className="text-slate-300 text-sm">Tech Project Estimator</p>
+              <a href="https://estimator.bktadvisory.com" className="block hover:text-blue-300 transition-colors">
+                <h1 className="text-2xl mb-1 hidden md:block">BKT Advisory</h1>
+              </a>
+              <p className="text-slate-300 text-sm">
+                <span className="md:hidden">BKT Project Estimator</span>
+                <span className="hidden md:inline">Tech Project Estimator</span>
+              </p>
             </div>
           </div>
           <a 
-            href="https://www.upwork.com/freelancers/~01dd56d750898225c0" 
+            href="https://www.upwork.com/freelancers/~01dd56d750898225c0"
             target="_blank" 
             rel="noopener noreferrer"
             className="text-blue-400 hover:text-blue-300 transition-colors"
           >
-            View Upwork Profile →
+            <span className="md:hidden">Upwork →</span>
+            <span className="hidden md:inline">View Upwork Profile →</span>
           </a>
         </div>
       </header>
@@ -355,7 +412,7 @@ export function Estimator({
                   className="ml-auto flex items-center gap-2 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
                 >
-                  Next <ArrowRight size={14} />
+                  Next <ArrowRightIcon size={14} />
                 </button>
               ) : (
                 <button
@@ -363,7 +420,7 @@ export function Estimator({
                   className="ml-auto flex items-center gap-2 px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
                 >
-                  <Calculator size={16} />
+                  <CalculatorIcon size={16} />
                   Get Instant Quote
                 </button>
               )}
@@ -472,7 +529,7 @@ export function Estimator({
               {/* Project Description */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
                 <div className="flex items-start gap-3 mb-3">
-                  <Sparkles size={20} className="text-blue-600 mt-1 flex-shrink-0" />
+                  <SparklesIcon size={20} className="text-blue-600 mt-1 flex-shrink-0" />
                   <div>
                     <h3 className="text-blue-900 mb-1">Project Description (Optional but Recommended)</h3>
                     <p className="text-sm text-slate-700">
@@ -498,7 +555,7 @@ export function Estimator({
                         title={`Generate project description from selected configurations (${3 - aiUsageCount.generate} uses left)`}
                         disabled={aiUsageCount.generate >= 3}
                       >
-                        <Wand2 size={14} />
+                        <Wand2Icon size={14} />
                         Generate from Selections {aiUsageCount.generate >= 3 && '(Max reached)'}
                       </button>
                     )}
@@ -509,7 +566,7 @@ export function Estimator({
                         title={`Autofill tech stack from current project description (${3 - aiUsageCount.autofill} uses left)`}
                         disabled={aiUsageCount.autofill >= 3}
                       >
-                        <Sparkles size={14} className="group-hover:text-blue-500" />
+                        <SparklesIcon size={14} className="group-hover:text-blue-500" />
                         Autofill Configuration {aiUsageCount.autofill >= 3 && '(Max reached)'}
                       </button>
                     )}
@@ -689,14 +746,14 @@ export function Estimator({
                 onClick={handleNextStep}
                 className="ml-auto flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Next <ArrowRight size={18} />
+                Next <ArrowRightIcon size={18} />
               </button>
             ) : (
               <button
                 onClick={calculateQuote}
                 className="ml-auto flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <Calculator size={20} />
+                <CalculatorIcon size={20} />
                 Get Instant Quote
               </button>
             )}

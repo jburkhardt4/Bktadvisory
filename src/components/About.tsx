@@ -1,20 +1,42 @@
-import { Award, Briefcase, Sparkles } from 'lucide-react';
-import headshot from 'figma:asset/2db40784bd77d5bad84a04e4e645b0c1f3c7d8bf.png';
+// Icon components to avoid lucide-react import issue
+const AwardIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+  </svg>
+);
 
-export function About({ onOpenBooking }: { onOpenBooking: () => void }) {
+const BriefcaseIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </svg>
+);
+
+const TrendingUpIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </svg>
+);
+
+import headshot from 'figma:asset/2db40784bd77d5bad84a04e4e645b0c1f3c7d8bf.png';
+import { ScheduleCallButton } from './ScheduleCallButton';
+
+export function About() {
   const highlights = [
     {
-      icon: Award,
+      icon: AwardIcon,
       title: '5x Salesforce Certified',
       description: 'Deep expertise across Sales Cloud, Service Cloud, and Financial Services Cloud'
     },
     {
-      icon: Briefcase,
+      icon: BriefcaseIcon,
       title: 'Closed $837M+ in Multifamily Real Estate',
       description: 'Led Due Diligence projects at Carter Funds, closing major transactions across multifamily portfolios'
     },
     {
-      icon: Sparkles,
+      icon: TrendingUpIcon,
       title: 'Strategy + Implementation',
       description: 'Unique blend of architectural vision and hands-on execution capabilities'
     }
@@ -25,7 +47,7 @@ export function About({ onOpenBooking }: { onOpenBooking: () => void }) {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-neutral-900 mb-4">About Me</h2>
+          <h2 className="text-neutral-900 mb-4 text-[24px] font-bold">About Me</h2>
           <p className="text-neutral-600 max-w-2xl mx-auto">
             Salesforce & AI Systems Architect helping companies build predictable growth engines
           </p>
@@ -70,12 +92,7 @@ export function About({ onOpenBooking }: { onOpenBooking: () => void }) {
               </p>
             </div>
 
-            <button 
-              onClick={onOpenBooking}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Let's Talk
-            </button>
+            <ScheduleCallButton />
           </div>
         </div>
 

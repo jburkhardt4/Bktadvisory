@@ -1,27 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Navigation } from './components/Navigation';
-import { Hero } from './components/Hero';
-import { StatsBar } from './components/StatsBar';
-import { ServicesGrid } from './components/ServicesGrid';
-import { SelectedWork } from './components/SelectedWork';
-import { Process } from './components/Process';
-import { About } from './components/About';
-import { FinalCTA } from './components/FinalCTA';
-import { Footer } from './components/Footer';
-import { Estimator } from './components/Estimator';
-import { Quote } from './components/Quote';
-import { BookingModal } from './components/BookingModal';
-import { AIChatbot } from './components/AIChatbot';
+import { useEffect } from 'react';
+import { RouterProvider } from 'react-router';
+import { router } from './routes';
 
+// BKT icon from Supabase Storage (Logos bucket)
+const BKT_ICON_URL = 'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo.png';
+
+// Shared type exports (used by Estimator PWA components if present)
 export interface FormData {
-  // Contact Info
   firstName: string;
   lastName: string;
   website: string;
   workEmail: string;
   mobilePhone: string;
-  
-  // Project Details
   projectType: string;
   projectDescription: string;
   selectedCRMs: string[];
@@ -47,182 +37,99 @@ export interface QuoteData {
   estimatedWeeks: number;
 }
 
-const initialFormData: FormData = {
-  firstName: '',
-  lastName: '',
-  website: '',
-  workEmail: '',
-  mobilePhone: '',
-  projectType: 'custom',
-  projectDescription: '',
-  selectedCRMs: [],
-  selectedClouds: [],
-  selectedIntegrations: [],
-  selectedAITools: [],
-  additionalModules: [],
-  deliveryTeam: 'nearshore',
-  powerUps: [],
-};
-
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'estimator' | 'quote'>('home');
-  const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [aiActionTrigger, setAiActionTrigger] = useState<{ type: 'generate' | 'autofill', timestamp: number } | null>(null);
-  const [aiUsageCount, setAiUsageCount] = useState({ generate: 0, autofill: 0 }); // Track AI button usage
-
-  // Initialize page based on hash on first load
+  // Load Google Calendar Appointment Scheduler scripts globally
   useEffect(() => {
-    const hash = window.location.hash.slice(1); // Remove the '#'
-    if (hash === 'estimator') {
-      setCurrentPage('estimator');
-      setCurrentStep(1);
-    } else if (hash === 'quote' && quoteData) {
-      setCurrentPage('quote');
-    } else if (hash === 'home' || hash === '') {
-      setCurrentPage('home');
+    if (!document.querySelector('link[href*="calendar.google.com/calendar/scheduling-button-script.css"]')) {
+      const link = document.createElement('link');
+      link.href = 'https://calendar.google.com/calendar/scheduling-button-script.css';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+
+    if (!document.querySelector('script[src*="calendar.google.com/calendar/scheduling-button-script.js"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://calendar.google.com/calendar/scheduling-button-script.js';
+      script.async = true;
+      document.head.appendChild(script);
     }
   }, []);
 
-  // Listen for hash changes (browser back/forward)
+  // Set up Home Screen icon (apple-touch-icon) and web app manifest
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash === 'estimator') {
-        setCurrentPage('estimator');
-      } else if (hash === 'quote' && quoteData) {
-        setCurrentPage('quote');
-      } else if (hash === 'home' || hash === '') {
-        setCurrentPage('home');
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [quoteData]);
-
-  const handleGenerateQuote = (data: QuoteData) => {
-    setQuoteData(data);
-    setCurrentPage('quote');
-    window.location.hash = 'quote';
-  };
-
-  const handleNavigateToEstimator = () => {
-    setCurrentPage('estimator');
-    window.location.hash = 'estimator';
-    // Ensure we start at step 1 if it's the first time or reset
-    if (currentPage !== 'estimator') {
-      setCurrentStep(1);
+    // Apple Touch Icon for iOS Home Screen
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      const appleTouchIcon = document.createElement('link');
+      appleTouchIcon.rel = 'apple-touch-icon';
+      appleTouchIcon.sizes = '180x180';
+      appleTouchIcon.href = BKT_ICON_URL;
+      document.head.appendChild(appleTouchIcon);
     }
-  };
 
-  const handleNavigateToHome = () => {
-    setCurrentPage('home');
-    window.location.hash = 'home';
-  };
-
-  const handleBackToEstimator = () => {
-    setCurrentPage('estimator');
-    window.location.hash = 'estimator';
-  };
-
-  const handleOpenBooking = () => {
-    setIsBookingModalOpen(true);
-  };
-
-  const handleInsertPrompt = (prompt: string) => {
-    setFormData(prev => ({ ...prev, projectDescription: prompt }));
-    if (currentPage !== 'estimator') {
-      setCurrentPage('estimator');
-      setCurrentStep(2); // If they come from home with a prompt, take them to the details step
+    // Standard favicon / shortcut icon
+    if (!document.querySelector('link[rel="icon"][type="image/png"]')) {
+      const favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      favicon.type = 'image/png';
+      favicon.sizes = '192x192';
+      favicon.href = BKT_ICON_URL;
+      document.head.appendChild(favicon);
     }
-  };
 
-  const handleAutofillData = (partialData: Partial<FormData>) => {
-    setFormData(prev => ({
-      ...prev,
-      ...partialData,
-      // Rule 3: Delivery Team defaults to Nearshore, Power-Ups unchecked
-      deliveryTeam: partialData.deliveryTeam || 'nearshore',
-      powerUps: partialData.powerUps || [],
-    }));
-  };
+    // Apple mobile web app meta tags
+    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+      const capable = document.createElement('meta');
+      capable.name = 'apple-mobile-web-app-capable';
+      capable.content = 'yes';
+      document.head.appendChild(capable);
+    }
 
-  const handleTriggerAIAction = (type: 'generate' | 'autofill') => {
-    setAiActionTrigger({ type, timestamp: Date.now() });
-    // Open chatbot if closed? 
-    // Actually, let's just let the chatbot handle it.
-    setAiUsageCount(prev => ({ ...prev, [type]: prev[type] + 1 }));
-  };
+    if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
+      const statusBar = document.createElement('meta');
+      statusBar.name = 'apple-mobile-web-app-status-bar-style';
+      statusBar.content = 'black-translucent';
+      document.head.appendChild(statusBar);
+    }
 
-  if (currentPage === 'estimator') {
-    return (
-      <>
-        <Estimator 
-          formData={formData}
-          setFormData={setFormData}
-          currentStep={currentStep}
-          setCurrentStep={setCurrentStep}
-          onGenerateQuote={handleGenerateQuote} 
-          onBackToHome={handleNavigateToHome}
-          onTriggerAIAction={handleTriggerAIAction}
-          aiUsageCount={aiUsageCount}
-        />
-        <AIChatbot 
-          currentPage="estimator" 
-          currentStep={currentStep}
-          formData={formData}
-          onInsertPrompt={handleInsertPrompt}
-          onAutofill={handleAutofillData}
-          aiActionTrigger={aiActionTrigger}
-        />
-      </>
-    );
-  }
+    if (!document.querySelector('meta[name="apple-mobile-web-app-title"]')) {
+      const title = document.createElement('meta');
+      title.name = 'apple-mobile-web-app-title';
+      title.content = 'BKT Advisory';
+      document.head.appendChild(title);
+    }
 
-  if (currentPage === 'quote') {
-    return (
-      <>
-        <Quote data={quoteData!} onBack={handleBackToEstimator} />
-        <AIChatbot 
-          currentPage="quote" 
-          onInsertPrompt={handleInsertPrompt}
-        />
-      </>
-    );
-  }
+    // Web App Manifest for Android Home Screen
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifest = {
+        name: 'BKT Advisory',
+        short_name: 'BKT Advisory',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#0F172B',
+        theme_color: '#1d4ed8',
+        icons: [
+          { src: BKT_ICON_URL, sizes: '192x192', type: 'image/png' },
+          { src: BKT_ICON_URL, sizes: '512x512', type: 'image/png' },
+        ],
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const manifestUrl = URL.createObjectURL(blob);
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = manifestUrl;
+      document.head.appendChild(manifestLink);
+    }
 
-  // Home page - full marketing site
-  return (
-    <div className="min-h-screen bg-white">
-      <Navigation onNavigateToEstimator={handleNavigateToEstimator} onOpenBooking={handleOpenBooking} />
-      <Hero onOpenBooking={handleOpenBooking} />
-      <StatsBar />
-      <div id="services">
-        <ServicesGrid />
-      </div>
-      <div id="work">
-        <SelectedWork />
-      </div>
-      <div id="process">
-        <Process />
-      </div>
-      <div id="about">
-        <About onOpenBooking={handleOpenBooking} />
-      </div>
-      <div id="contact">
-        <FinalCTA onOpenBooking={handleOpenBooking} />
-      </div>
-      <Footer onOpenBooking={handleOpenBooking} />
-      <BookingModal isOpen={isBookingModalOpen} onOpenChange={setIsBookingModalOpen} />
-      <AIChatbot 
-        currentPage="home" 
-        onInsertPrompt={handleInsertPrompt}
-      />
-    </div>
-  );
+    // Theme color meta tag
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const themeColor = document.createElement('meta');
+      themeColor.name = 'theme-color';
+      themeColor.content = '#1d4ed8';
+      document.head.appendChild(themeColor);
+    }
+  }, []);
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;

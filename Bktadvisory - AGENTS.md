@@ -1,5 +1,3 @@
-Bktadvisory - AGENTS.md
-
 # AGENTS.md — BKT Advisory Main Site
 
 You are working in the BKT Advisory Marketing Platform repository.

@@ -1,5 +1,3 @@
-Bktadvisoryprojectestimator - GUIDELINES.md
-
 # BKT Advisory Project Estimator - Development Guidelines (v1.2)
 
 This document is the **source of truth** for maintaining the complex state logic, AI workflows, and document generation architecture of the Project Estimator tool.

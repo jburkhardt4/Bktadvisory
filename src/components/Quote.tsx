@@ -1,8 +1,15 @@
-import { useRef, useState } from 'react';
+import {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  WidthType, AlignmentType, BorderStyle, ShadingType,
+  convertInchesToTwip
+} from 'docx';
+import { useRef, useState, useEffect } from 'react';
 import { QuoteData } from '../App';
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
+import Docxtemplater from 'docxtemplater';
+import PizZip from 'pizzip';
 import profileImage from "figma:asset/9cffe000c5dffcabac269f49ac3d9d3bd3026163.png";
 import logoImage from "figma:asset/0e0a121653cc931918711be760206409b22eeac2.png";
 import signatureImage from "figma:asset/c9b7fbd7a0a9b7fe816298e590cdf7f50d449a06.png";
@@ -51,6 +58,19 @@ export function Quote({ data, onBack }: QuoteProps) {
   const quoteRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'scope'>('summary');
+
+  // ── Mobile detection (matches md: breakpoint at 768px) ──
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   const hasFiles = data.formData.uploadedFiles && data.formData.uploadedFiles.length > 0;
   
@@ -103,9 +123,712 @@ export function Quote({ data, onBack }: QuoteProps) {
     return `BKT_Quote - ${sanitizedEntityName} - ${dateStr}.pdf`;
   };
 
+  const getQuoteBasename = () => {
+    const { formData } = data;
+    let entityName = "Client";
+    if (formData.companyName && formData.companyName.trim()) {
+      entityName = formData.companyName.trim();
+    } else if (formData.firstName || formData.lastName) {
+      entityName = `${formData.firstName || ""} ${formData.lastName || ""}`.trim();
+    }
+    const sanitizedEntityName = entityName.replace(/[\/\\?%*:|"<>]/g, "-").trim();
+    const date = new Date();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const dateStr = `${mm}.${dd}.${yyyy}`;
+    return `BKT_Quote - ${sanitizedEntityName} - ${dateStr}`;
+  };
+
+  // --- Google Doc (.docx) Generation — faithfully replicates HTML/CSS layout ---
+  const generateQuoteDocx = async () => {
+    const fd = data.formData;
+
+    // ── Tailwind color map (exact hex values) ──
+    const blue700 = "1D4ED8";
+    const blue600 = "2563EB";
+    const blue100 = "DBEAFE";
+    const blue50  = "EFF6FF";
+    const slate900 = "0F172A";
+    const slate700 = "334155";
+    const slate600 = "475569";
+    const slate500 = "64748B";
+    const slate400 = "94A3B8";
+    const slate200 = "E2E8F0";
+    const slate100 = "F1F5F9";
+    const slate50  = "F8FAFC";
+    const green600 = "16A34A";
+    const green100 = "DCFCE7";
+    const red600   = "DC2626";
+    const red100   = "FEE2E2";
+    const yellow400 = "FACC15";
+    const white    = "FFFFFF";
+
+    // ── Size helpers (half-points: text-3xl=30px→60, text-2xl=24px→48, etc.) ──
+    const sz = { '3xl': 60, '2xl': 48, xl: 40, lg: 36, base: 32, sm: 28, xs: 24, tiny: 20 };
+
+    const today = new Date().toLocaleDateString();
+
+    // ── Reusable border presets ──
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: white };
+    const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+    const thinBottomSlate = { ...noBorders, bottom: { style: BorderStyle.SINGLE, size: 1, color: slate100 } };
+
+    const parseBullets = (text: string) =>
+      text.split(/[\n•]/).filter(item => item.trim().length > 0).map(item => item.trim());
+    const spacer = (pts = 120) => new Paragraph({ spacing: { after: pts }, children: [] });
+
+    // ═══════════════════════════════════════════════════════════
+    // PAGE 1: ESTIMATE SUMMARY
+    // ═══════════════════════════════════════════════════════════
+    const page1: any[] = [];
+
+    // ── Document Header (flex row + border-b-4 border-blue-700) ──
+    page1.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: { ...noBorders, bottom: { style: BorderStyle.SINGLE, size: 8, color: blue700 } },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                borders: noBorders,
+                width: { size: 60, type: WidthType.PERCENTAGE },
+                children: [
+                  new Paragraph({ spacing: { after: 40 }, children: [
+                    new TextRun({ text: "BKT Advisory", size: sz['3xl'], bold: true, color: blue700, font: "Calibri" }),
+                  ]}),
+                  new Paragraph({ spacing: { after: 30 }, children: [
+                    new TextRun({ text: "Salesforce & AI Systems Consulting", size: sz.base, color: slate600, font: "Calibri" }),
+                  ]}),
+                  new Paragraph({ spacing: { after: 120 }, children: [
+                    new TextRun({ text: "★★★★★", size: sz.xs, color: yellow400, font: "Calibri" }),
+                    new TextRun({ text: "  Top Rated on Upwork", size: sz.xs, color: slate500, font: "Calibri" }),
+                  ]}),
+                ],
+              }),
+              new TableCell({
+                borders: noBorders,
+                width: { size: 40, type: WidthType.PERCENTAGE },
+                children: [
+                  new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 20 }, children: [
+                    new TextRun({ text: "John Burkhardt", size: sz.sm, bold: true, color: slate900, font: "Calibri" }),
+                  ]}),
+                  new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 120 }, children: [
+                    new TextRun({ text: "Principal Consultant", size: sz.xs, color: slate600, font: "Calibri" }),
+                  ]}),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // ── Title ──
+    page1.push(
+      new Paragraph({
+        spacing: { before: 200, after: 240 },
+        children: [new TextRun({ text: "Professional Services Quote", size: sz['2xl'], bold: true, color: slate900, font: "Calibri" })],
+      })
+    );
+
+    // ── Value Statement (border-l-4 blue-700, bg blue-50) ──
+    page1.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          new TableCell({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            shading: { type: ShadingType.SOLID, fill: blue50 },
+            borders: {
+              top: { style: BorderStyle.SINGLE, size: 1, color: blue50 },
+              bottom: { style: BorderStyle.SINGLE, size: 1, color: blue50 },
+              right: { style: BorderStyle.SINGLE, size: 1, color: blue50 },
+              left: { style: BorderStyle.SINGLE, size: 8, color: blue700 },
+            },
+            margins: { top: convertInchesToTwip(0.12), bottom: convertInchesToTwip(0.12), left: convertInchesToTwip(0.18), right: convertInchesToTwip(0.18) },
+            children: [
+              new Paragraph({ spacing: { after: 60 }, children: [
+                new TextRun({ text: "Project Value Statement", size: sz.sm, bold: true, color: blue700, font: "Calibri" }),
+              ]}),
+              new Paragraph({ children: [
+                new TextRun({
+                  text: fd.valueStatement || "This customized solution will streamline your operations, increase efficiency, and provide a predictable growth engine for your organization through strategic CRM architecture and AI-powered automation.",
+                  size: sz.sm, color: slate700, font: "Calibri", italics: true,
+                }),
+              ]}),
+            ],
+          }),
+        ]})],
+      }),
+      spacer(200)
+    );
+
+    // ── Build Project Overview content (left cell) ──
+    const overviewParas: Paragraph[] = [];
+    overviewParas.push(new Paragraph({ spacing: { after: 100 }, children: [
+      new TextRun({ text: "Project Overview", size: sz.sm + 2, bold: true, color: slate900, font: "Calibri" }),
+    ]}));
+
+    const addField = (label: string, value: string) => {
+      overviewParas.push(new Paragraph({ spacing: { after: 50 }, children: [
+        new TextRun({ text: `${label}: `, size: sz.sm, color: slate600, font: "Calibri" }),
+        new TextRun({ text: value, size: sz.sm, font: "Calibri" }),
+      ]}));
+    };
+
+    if (fd.companyName) { addField("Prepared for", fd.companyName); addField("Client", `${fd.firstName} ${fd.lastName}`); }
+    else { addField("Prepared for", `${fd.firstName} ${fd.lastName}`); }
+    if (fd.website) addField("Website", fd.website);
+    if (fd.selectedCRMs.length > 0) addField("CRM Platforms", fd.selectedCRMs.join(", "));
+    if (fd.selectedClouds.length > 0) addField("Salesforce Clouds", fd.selectedClouds.join(", "));
+    if (fd.selectedIntegrations.length > 0) addField("Integrations", fd.selectedIntegrations.join(", "));
+    if (fd.selectedAITools.length > 0) addField("AI Tools", fd.selectedAITools.join(", "));
+    if (fd.additionalModules.length > 0) {
+      if (fd.additionalModules.length <= 2) {
+        addField("Services", fd.additionalModules.join(", "));
+      } else {
+        overviewParas.push(new Paragraph({ spacing: { after: 30 }, children: [
+          new TextRun({ text: "Services:", size: sz.sm, color: slate600, font: "Calibri" }),
+        ]}));
+        fd.additionalModules.forEach(mod => {
+          overviewParas.push(new Paragraph({
+            spacing: { after: 20 }, indent: { left: convertInchesToTwip(0.25) }, bullet: { level: 0 },
+            children: [new TextRun({ text: mod, size: sz.sm, color: slate900, font: "Calibri" })],
+          }));
+        });
+      }
+    }
+    addField("Delivery Team", `${fd.deliveryTeam.charAt(0).toUpperCase() + fd.deliveryTeam.slice(1)} (USA/SA/Europe)`);
+    if (fd.powerUps.length > 0) addField("Selected Power-Ups", fd.powerUps.join(", "));
+
+    overviewParas.push(new Paragraph({
+      spacing: { before: 120, after: 40 },
+      border: { top: { style: BorderStyle.SINGLE, size: 1, color: slate200 } },
+      children: [
+        new TextRun({ text: "Estimated Timeline: ", size: sz.sm, bold: true, color: slate700, font: "Calibri" }),
+        new TextRun({ text: `${data.estimatedWeeks} weeks`, size: sz.sm, font: "Calibri" }),
+        new TextRun({ text: " (assuming 25 hours per week)", size: sz.sm, color: slate600, font: "Calibri" }),
+      ],
+    }));
+
+    // ── Build Cost Breakdown content (right cell) ──
+    const costParas: any[] = [];
+    costParas.push(new Paragraph({ spacing: { after: 120 }, children: [
+      new TextRun({ text: "Detailed Cost Breakdown", size: sz.sm + 2, bold: true, color: slate900, font: "Calibri" }),
+    ]}));
+
+    const costLineRows: TableRow[] = [];
+    const addCostLine = (label: string, value: string, opts: { bold?: boolean; color?: string } = {}) => {
+      costLineRows.push(new TableRow({ children: [
+        new TableCell({
+          borders: thinBottomSlate, width: { size: 60, type: WidthType.PERCENTAGE },
+          margins: { top: 40, bottom: 40, left: 0, right: 0 },
+          children: [new Paragraph({ children: [new TextRun({ text: label, size: sz.sm, color: opts.color || slate600, font: "Calibri" })] })],
+        }),
+        new TableCell({
+          borders: thinBottomSlate, width: { size: 40, type: WidthType.PERCENTAGE },
+          margins: { top: 40, bottom: 40, left: 0, right: 0 },
+          children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: value, size: sz.sm, font: "Calibri", bold: opts.bold, color: opts.bold ? slate900 : undefined })] })],
+        }),
+      ]}));
+    };
+
+    if (hoursMatch) { addCostLine("Total Hours", `${data.baseHours} hrs`, { bold: true }); }
+    else { addCostLine("Base Project Hours", `${data.baseHours} hrs`); addCostLine("Adjusted Hours", `${data.adjustedHours} hrs`, { bold: true }); }
+    addCostLine("Admin Rate (40%)", `$${data.adminRate}/hr`);
+    addCostLine("Developer Rate (60%)", `$${data.developerRate}/hr`);
+    if (data.powerUpRate > 0) addCostLine("+ Power-Ups", `+$${data.powerUpRate}/hr`, { color: blue700 });
+    addCostLine("Final Hourly Rate", `$${data.finalHourlyRate}/hr`);
+
+    costParas.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: costLineRows }));
+    costParas.push(
+      new Paragraph({ spacing: { before: 160 }, alignment: AlignmentType.RIGHT, children: [
+        new TextRun({ text: "TOTAL PROJECT COST", size: sz.xs, color: slate500, font: "Calibri" }),
+      ]}),
+      new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 60 }, children: [
+        new TextRun({ text: `$${data.totalCost.toLocaleString()}`, size: sz['2xl'], bold: true, color: blue700, font: "Calibri" }),
+        ...(hasFiles ? [new TextRun({ text: " *", size: sz.lg, bold: true, color: blue700, font: "Calibri" })] : []),
+      ]})
+    );
+
+    // ── Compose 60/40 two-column layout table ──
+    page1.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          new TableCell({
+            borders: noBorders, width: { size: 58, type: WidthType.PERCENTAGE },
+            shading: { type: ShadingType.SOLID, fill: slate50 },
+            margins: { top: convertInchesToTwip(0.15), bottom: convertInchesToTwip(0.15), left: convertInchesToTwip(0.18), right: convertInchesToTwip(0.18) },
+            children: overviewParas,
+          }),
+          new TableCell({ borders: noBorders, width: { size: 2, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children: [] })] }),
+          new TableCell({
+            width: { size: 40, type: WidthType.PERCENTAGE },
+            borders: {
+              top: { style: BorderStyle.SINGLE, size: 4, color: blue700 },
+              bottom: { style: BorderStyle.SINGLE, size: 4, color: blue700 },
+              left: { style: BorderStyle.SINGLE, size: 4, color: blue700 },
+              right: { style: BorderStyle.SINGLE, size: 4, color: blue700 },
+            },
+            margins: { top: convertInchesToTwip(0.15), bottom: convertInchesToTwip(0.15), left: convertInchesToTwip(0.18), right: convertInchesToTwip(0.18) },
+            children: costParas,
+          }),
+        ]})],
+      }),
+      spacer(160)
+    );
+
+    // ── Files Received (conditional, bg-slate-50 with border) ──
+    if (hasFiles) {
+      page1.push(
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [new TableRow({ children: [
+            new TableCell({
+              shading: { type: ShadingType.SOLID, fill: slate50 },
+              borders: {
+                top: { style: BorderStyle.SINGLE, size: 1, color: slate200 },
+                bottom: { style: BorderStyle.SINGLE, size: 1, color: slate200 },
+                left: { style: BorderStyle.SINGLE, size: 1, color: slate200 },
+                right: { style: BorderStyle.SINGLE, size: 1, color: slate200 },
+              },
+              margins: { top: convertInchesToTwip(0.1), bottom: convertInchesToTwip(0.1), left: convertInchesToTwip(0.15), right: convertInchesToTwip(0.15) },
+              children: [
+                new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "FILES RECEIVED", size: sz.xs, bold: true, color: slate500, font: "Calibri" })] }),
+                ...fd.uploadedFiles.map(file =>
+                  new Paragraph({ spacing: { after: 30 }, children: [
+                    new TextRun({ text: "  ✓  ", size: sz.xs, color: green600, font: "Calibri" }),
+                    new TextRun({ text: file.name, size: sz.xs, color: slate700, font: "Calibri" }),
+                  ]})
+                ),
+              ],
+            }),
+          ]})],
+        }),
+        spacer(160)
+      );
+    }
+
+    // ── Billing Terms (side-by-side cards with gutter) ──
+    page1.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          new TableCell({
+            shading: { type: ShadingType.SOLID, fill: slate50 },
+            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, bottom: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, left: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, right: { style: BorderStyle.SINGLE, size: 1, color: slate100 } },
+            width: { size: 48, type: WidthType.PERCENTAGE },
+            margins: { top: convertInchesToTwip(0.1), bottom: convertInchesToTwip(0.1), left: convertInchesToTwip(0.1), right: convertInchesToTwip(0.1) },
+            children: [
+              new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 30 }, children: [new TextRun({ text: "Upfront (50%)", size: sz.xs, color: slate500, font: "Calibri" })] }),
+              new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 30 }, children: [new TextRun({ text: `$${upfrontPayment.toLocaleString()}`, size: sz.lg, bold: true, color: blue700, font: "Calibri" })] }),
+              new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Due at start", size: sz.tiny, color: slate400, font: "Calibri" })] }),
+            ],
+          }),
+          new TableCell({ borders: noBorders, width: { size: 4, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children: [] })] }),
+          new TableCell({
+            shading: { type: ShadingType.SOLID, fill: slate50 },
+            borders: { top: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, bottom: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, left: { style: BorderStyle.SINGLE, size: 1, color: slate100 }, right: { style: BorderStyle.SINGLE, size: 1, color: slate100 } },
+            width: { size: 48, type: WidthType.PERCENTAGE },
+            margins: { top: convertInchesToTwip(0.1), bottom: convertInchesToTwip(0.1), left: convertInchesToTwip(0.1), right: convertInchesToTwip(0.1) },
+            children: [
+              new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 30 }, children: [new TextRun({ text: "Midpoint (50%)", size: sz.xs, color: slate500, font: "Calibri" })] }),
+              new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 30 }, children: [new TextRun({ text: `$${midpointPayment.toLocaleString()}`, size: sz.lg, bold: true, color: blue700, font: "Calibri" })] }),
+              new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Due at milestone", size: sz.tiny, color: slate400, font: "Calibri" })] }),
+            ],
+          }),
+        ]})],
+      }),
+      new Paragraph({
+        spacing: { before: 60, after: 120 },
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: "*Payment terms subject to final agreement.", size: sz.tiny, color: slate500, font: "Calibri", italics: true })],
+      })
+    );
+
+    // ═══════════════════════════════════════════════════════════
+    // PAGE 2: DETAILED SCOPE (conditional)
+    // ═══════════════════════════════════════════════════════════
+    const scopeContent: any[] | null = hasScope ? [] : null;
+
+    if (scopeContent) {
+      scopeContent.push(
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: { ...noBorders, bottom: { style: BorderStyle.SINGLE, size: 8, color: blue700 } },
+          rows: [new TableRow({ children: [
+            new TableCell({ borders: noBorders, children: [
+              new Paragraph({ spacing: { after: 120 }, children: [
+                new TextRun({ text: "BKT Advisory", size: sz['2xl'], bold: true, color: blue700, font: "Calibri" }),
+              ]}),
+            ]}),
+          ]})],
+        }),
+        new Paragraph({ spacing: { before: 200, after: 200 }, children: [
+          new TextRun({ text: "Detailed Scope of Work", size: sz['2xl'], bold: true, color: slate900, font: "Calibri" }),
+        ]}),
+        new Paragraph({ spacing: { after: 200 }, children: [
+          new TextRun({
+            text: "The following sections outline the specific problems, requirements, and goals for this engagement based on our initial discovery.",
+            size: sz.sm, color: slate700, font: "Calibri", italics: true,
+          }),
+        ]})
+      );
+
+      const addScope = (num: string, title: string, content: string, badgeColor: string, badgeBg: string) => {
+        scopeContent!.push(
+          new Paragraph({
+            spacing: { before: 240, after: 80 },
+            border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: slate200 } },
+            children: [
+              new TextRun({ text: ` ${num} `, size: sz.sm, bold: true, color: badgeColor, font: "Calibri",
+                shading: { type: ShadingType.SOLID, fill: badgeBg, color: badgeColor } }),
+              new TextRun({ text: `   ${title}`, size: sz.lg, bold: true, color: slate900, font: "Calibri" }),
+            ],
+          })
+        );
+        parseBullets(content).forEach(item => {
+          scopeContent!.push(new Paragraph({
+            spacing: { after: 50 }, indent: { left: convertInchesToTwip(0.5) }, bullet: { level: 0 },
+            children: [new TextRun({ text: item, size: sz.sm, color: slate600, font: "Calibri" })],
+          }));
+        });
+      };
+
+      if (fd.scopeGoals) addScope("1", "Goals & Objectives", fd.scopeGoals, green600, green100);
+      if (fd.scopeProblems) addScope("2", "Current Problems & Pain Points", fd.scopeProblems, red600, red100);
+      if (fd.scopeRequirements) addScope("3", "Functional Requirements", fd.scopeRequirements, blue600, blue100);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SIGNATURES & FOOTER
+    // ═══════════════════════════════════════════════════════════
+    const sigContent: any[] = [spacer(300)];
+
+    sigContent.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [new TableRow({ children: [
+          new TableCell({ borders: noBorders, width: { size: 48, type: WidthType.PERCENTAGE }, children: [
+            new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Client Signature:", size: sz.sm, bold: true, color: slate900, font: "Calibri" })] }),
+            spacer(400),
+            new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: slate400 } }, children: [] }),
+            spacer(200),
+            new Paragraph({ children: [
+              new TextRun({ text: "Date: ", size: sz.sm, color: slate500, font: "Calibri" }),
+              new TextRun({ text: "_______________", size: sz.sm, color: slate400, font: "Calibri" }),
+            ]}),
+          ]}),
+          new TableCell({ borders: noBorders, width: { size: 4, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children: [] })] }),
+          new TableCell({ borders: noBorders, width: { size: 48, type: WidthType.PERCENTAGE }, children: [
+            new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "John Burkhardt, BKT Advisory", size: sz.sm, bold: true, color: slate900, font: "Calibri" })] }),
+            new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: "[Signed]", size: sz.sm, color: slate500, font: "Calibri", italics: true })] }),
+            spacer(200),
+            new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: slate400 } }, children: [] }),
+            spacer(200),
+            new Paragraph({ children: [
+              new TextRun({ text: "Date: ", size: sz.sm, color: slate500, font: "Calibri" }),
+              new TextRun({ text: today, size: sz.sm, color: slate700, font: "Calibri" }),
+            ]}),
+          ]}),
+        ]})],
+      })
+    );
+
+    sigContent.push(
+      new Paragraph({
+        spacing: { before: 400 }, border: { top: { style: BorderStyle.SINGLE, size: 1, color: slate200 } },
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: "This quote is valid for 30 days from the date of generation.", size: sz.xs, color: slate400, font: "Calibri" })],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER, spacing: { after: 40 },
+        children: [new TextRun({ text: "Important: All Upwork Terms of Service and fees apply to this engagement.", size: sz.xs, color: slate400, font: "Calibri" })],
+      })
+    );
+    if (hasFiles) {
+      sigContent.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: "*Final pricing subject to review of uploaded documentation.", size: sz.xs, color: blue600, font: "Calibri", bold: true })],
+      }));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ASSEMBLE DOCUMENT
+    // ═══════════════════════════════════════════════════════════
+    const pageMargins = {
+      page: { margin: { top: convertInchesToTwip(0.6), bottom: convertInchesToTwip(0.5), left: convertInchesToTwip(0.7), right: convertInchesToTwip(0.7) } },
+    };
+    const sections: any[] = [];
+
+    if (scopeContent) {
+      sections.push({ properties: pageMargins, children: page1 });
+      sections.push({ properties: pageMargins, children: [...scopeContent, ...sigContent] });
+    } else {
+      sections.push({ properties: pageMargins, children: [...page1, ...sigContent] });
+    }
+
+    const doc = new Document({
+      creator: "BKT Advisory",
+      title: `Professional Services Quote - ${fd.firstName} ${fd.lastName}`,
+      description: "Generated by BKT Advisory Tech Project Estimator",
+      sections,
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const docxFilename = `${getQuoteBasename()}.docx`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = docxFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log(`Google Doc (.docx) generated: ${docxFilename}`);
+  };
+
+  // --- Mobile-Specific: Template-Based .docx Generation (docxtemplater + pizzip) ---
+  // Fetches /BKT_Quote - TEMPLATE.docx, fills placeholders, downloads with dynamic name.
+  // Bypasses html-to-image PDF entirely on mobile viewports.
+  const generateMobileQuoteDocx = async () => {
+    const fd = data.formData;
+    const today = new Date();
+    const dateStr = today.toLocaleDateString().replace(/\//g, '-');
+
+    // Dynamic filename: BKT_Quote - {CompanyName || Client} - {date}.docx
+    let entityName = 'Client';
+    if (fd.companyName && fd.companyName.trim()) {
+      entityName = fd.companyName.trim();
+    } else if (fd.firstName || fd.lastName) {
+      entityName = `${fd.firstName || ''} ${fd.lastName || ''}`.trim() || 'Client';
+    }
+    const sanitized = entityName.replace(/[\/\\?%*:|"<>]/g, '-').trim();
+    const mobileFilename = `BKT_Quote - ${sanitized} - ${dateStr}.docx`;
+
+    console.log(`[Mobile DOCX] Starting template-based generation: ${mobileFilename}`);
+
+    // ── Step 1: Fetch the Word template from public directory ──
+    let templateBuffer: ArrayBuffer;
+    try {
+      const templateUrl = '/BKT_Quote - TEMPLATE.docx';
+      console.log(`[Mobile DOCX] Fetching template from: ${templateUrl}`);
+      const resp = await fetch(templateUrl);
+
+      if (!resp.ok) {
+        throw new Error(`Template fetch failed: ${resp.status} ${resp.statusText}`);
+      }
+
+      // Validate Content-Type — SPA fallback routing may return 200 OK with HTML
+      const contentType = resp.headers.get('Content-Type') || '';
+      const isValidDocx =
+        contentType.includes('application/vnd.openxmlformats') ||
+        contentType.includes('application/octet-stream') ||
+        contentType.includes('application/zip');
+
+      if (!isValidDocx) {
+        throw new Error(`Invalid Content-Type "${contentType}" — expected .docx but likely received SPA fallback HTML`);
+      }
+
+      templateBuffer = await resp.arrayBuffer();
+
+      // Double-check ZIP signature (PK header: 0x50 0x4B 0x03 0x04)
+      const header = new Uint8Array(templateBuffer.slice(0, 4));
+      if (header[0] !== 0x50 || header[1] !== 0x4B) {
+        throw new Error('Response is not a valid ZIP/.docx file (missing PK signature)');
+      }
+
+      console.log(`[Mobile DOCX] Template loaded: ${(templateBuffer.byteLength / 1024).toFixed(1)} KB`);
+    } catch (fetchErr) {
+      // Graceful fallback: use the programmatic docx builder if template not found
+      console.warn('[Mobile DOCX] Template not available, falling back to programmatic DOCX builder:', fetchErr);
+      await generateQuoteDocx();
+      return;
+    }
+
+    // ── Step 2: Load template into PizZip + Docxtemplater ──
+    let zip: InstanceType<typeof PizZip>;
+    let templateDoc: InstanceType<typeof Docxtemplater>;
+    try {
+      zip = new PizZip(templateBuffer);
+      templateDoc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        // Silently replace missing tags with empty string
+        nullGetter: () => '',
+      });
+    } catch (zipErr) {
+      console.error('[Mobile DOCX] Error parsing template:', zipErr);
+      // Fallback to programmatic builder
+      await generateQuoteDocx();
+      return;
+    }
+
+    // ── Step 3: Map formData + quote calculations to template variables ──
+    // Arrays are joined into clean comma-separated strings
+    const parseBulletText = (text: string): string => {
+      if (!text) return '';
+      return text
+        .split(/[\n•]/)
+        .filter(item => item.trim().length > 0)
+        .map(item => `• ${item.trim()}`)
+        .join('\n');
+    };
+
+    const templateData = {
+      // Contact / Client Info
+      firstName: fd.firstName || '',
+      lastName: fd.lastName || '',
+      fullName: `${fd.firstName || ''} ${fd.lastName || ''}`.trim(),
+      companyName: fd.companyName || '',
+      preparedFor: fd.companyName || `${fd.firstName || ''} ${fd.lastName || ''}`.trim(),
+      website: fd.website || '',
+      workEmail: fd.workEmail || '',
+      mobilePhone: fd.mobilePhone || '',
+
+      // Multi-Select Arrays → comma-separated strings
+      crmPlatforms: fd.selectedCRMs.join(', '),
+      salesforceClouds: fd.selectedClouds.join(', '),
+      integrations: fd.selectedIntegrations.join(', '),
+      aiTools: fd.selectedAITools.join(', '),
+      services: fd.additionalModules.join(', '),
+      powerUps: fd.powerUps.join(', '),
+
+      // Boolean flags for conditional sections
+      hasCRMs: fd.selectedCRMs.length > 0,
+      hasClouds: fd.selectedClouds.length > 0,
+      hasIntegrations: fd.selectedIntegrations.length > 0,
+      hasAITools: fd.selectedAITools.length > 0,
+      hasServices: fd.additionalModules.length > 0,
+      hasPowerUps: fd.powerUps.length > 0,
+      hasCompanyName: !!fd.companyName,
+      hasWebsite: !!fd.website,
+      hasFiles: hasFiles,
+      hasScope: hasScope,
+
+      // Project Configuration
+      deliveryTeam: `${fd.deliveryTeam.charAt(0).toUpperCase() + fd.deliveryTeam.slice(1)} (USA/SA/Europe)`,
+      projectDescription: fd.projectDescription || '',
+
+      // Value Statement
+      valueStatement: fd.valueStatement || 'This customized solution will streamline your operations, increase efficiency, and provide a predictable growth engine for your organization through strategic CRM architecture and AI-powered automation.',
+
+      // Cost Breakdown
+      baseHours: `${data.baseHours}`,
+      adjustedHours: `${data.adjustedHours}`,
+      hoursMatch: data.baseHours === data.adjustedHours,
+      adminRate: `$${data.adminRate}`,
+      developerRate: `$${data.developerRate}`,
+      powerUpRate: data.powerUpRate > 0 ? `+$${data.powerUpRate}/hr` : '',
+      hasPowerUpRate: data.powerUpRate > 0,
+      finalHourlyRate: `$${data.finalHourlyRate}`,
+      totalCost: `$${data.totalCost.toLocaleString()}`,
+      estimatedWeeks: `${data.estimatedWeeks}`,
+
+      // Payment Terms
+      upfrontPayment: `$${upfrontPayment.toLocaleString()}`,
+      midpointPayment: `$${midpointPayment.toLocaleString()}`,
+
+      // Scope Sections (bullet-formatted text)
+      scopeGoals: parseBulletText(fd.scopeGoals),
+      scopeProblems: parseBulletText(fd.scopeProblems),
+      scopeRequirements: parseBulletText(fd.scopeRequirements),
+      hasScopeGoals: !!fd.scopeGoals,
+      hasScopeProblems: !!fd.scopeProblems,
+      hasScopeRequirements: !!fd.scopeRequirements,
+
+      // Uploaded Files
+      uploadedFiles: hasFiles
+        ? fd.uploadedFiles.map(f => ({ name: f.name }))
+        : [],
+
+      // Metadata
+      date: today.toLocaleDateString(),
+      quoteDate: dateStr,
+    };
+
+    // ── Step 4: Render the template with data ──
+    try {
+      templateDoc.render(templateData);
+    } catch (renderErr: any) {
+      console.error('[Mobile DOCX] Template render error:', renderErr);
+      if (renderErr.properties && renderErr.properties.errors) {
+        console.error('[Mobile DOCX] Detailed errors:', JSON.stringify(renderErr.properties.errors, null, 2));
+      }
+      // Fallback to programmatic builder
+      await generateQuoteDocx();
+      return;
+    }
+
+    // ── Step 5: Generate blob and trigger download via URL.createObjectURL ──
+    const outputBlob = templateDoc.getZip().generate({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+
+    const downloadUrl = URL.createObjectURL(outputBlob);
+    const anchor = document.createElement('a');
+    anchor.href = downloadUrl;
+    anchor.download = mobileFilename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(downloadUrl);
+
+    console.log(`[Mobile DOCX] Template-based quote downloaded: ${mobileFilename}`);
+  };
+
   const handleDownloadQuote = async () => {
     if (!quoteRef.current || isGenerating) return;
 
+    // ── MOBILE PATH: Programmatic .docx only (bypass html-to-image PDF entirely) ──
+    if (isMobile) {
+      setIsGenerating(true);
+      try {
+        await generateQuoteDocx();
+
+        // Still notify the API (without PDF attachment for mobile)
+        try {
+          const response = await fetch(
+            `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/submit-quote`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${publicAnonKey}`,
+              },
+              body: JSON.stringify({
+                ...data,
+                pdfBase64: null, // No PDF on mobile — DOCX only
+                mobileGenerated: true,
+              }),
+            }
+          );
+          if (response.ok) {
+            const result = await response.json();
+            console.log('[Mobile DOCX] Submission result:', result);
+            alert('Quote saved! A copy has been emailed to you and our team.');
+          } else {
+            console.warn('[Mobile DOCX] API notification failed:', response.status);
+            alert('Your quote was downloaded successfully.');
+          }
+        } catch (notifyErr) {
+          console.error('[Mobile DOCX] Notification error:', notifyErr);
+          alert('Your quote was downloaded, but we could not email a copy at this time.');
+        }
+      } catch (mobileErr) {
+        console.error('[Mobile DOCX] Generation error:', mobileErr);
+        alert('There was an error generating your quote. Please try again.');
+      } finally {
+        setIsGenerating(false);
+      }
+      return; // Exit early — skip entire desktop PDF flow
+    }
+
+    // ── DESKTOP PATH: html-to-image PDF + programmatic DOCX ──
     // Capture current tab to restore later
     const originalTab = activeTab;
     setIsGenerating(true);
@@ -208,8 +931,16 @@ export function Quote({ data, onBack }: QuoteProps) {
       // Send to API
       await handleNotify(pdfBase64);
 
-      // Download
+      // Download PDF
       pdf.save(filename);
+
+      // Also generate and download Google Doc (.docx)
+      try {
+        await generateQuoteDocx();
+      } catch (docxError) {
+        console.error('Error generating DOCX:', docxError);
+        // Non-blocking: PDF was already saved, so just log the error
+      }
 
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -267,34 +998,46 @@ export function Quote({ data, onBack }: QuoteProps) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-slate-900 text-white py-6 px-8">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
-          >
-            <ArrowLeftIcon size={20} />
-            Back to Estimator
-          </button>
-          <button
-            onClick={handleDownloadQuote}
-            disabled={isGenerating}
-            className={`flex items-center gap-2 px-6 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors ${
-              isGenerating ? 'opacity-70 cursor-wait' : ''
-            }`}
-          >
-            <PrinterIcon size={18} />
-            {isGenerating ? 'Generating PDF...' : 'Download / Save Quote'}
-          </button>
-        </div>
-      </header>
+      {/* Sticky wrapper for header (matching Estimator pattern) */}
+      <div className="sticky top-[116px] z-40 shadow-md">
+        <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-4 px-4 md:py-6 md:px-8">
+          <div className="max-w-[1440px] mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-4 md:gap-6">
+              <button 
+                onClick={onBack}
+                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+              >
+                <ArrowLeftIcon size={20} />
+                <span className="hidden md:inline">Back to Estimator</span>
+              </button>
+              <div className="h-6 w-px bg-slate-600"></div>
+              <div>
+                <h1 className="text-2xl mb-1 hidden md:block">BKT Advisory</h1>
+                <p className="text-slate-300 text-sm m-0">
+                  <span className="md:hidden">BKT Project Quote</span>
+                  <span className="hidden md:inline">Project Quote</span>
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDownloadQuote}
+              disabled={isGenerating}
+              className={`flex items-center gap-2 px-4 md:px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors ${
+                isGenerating ? 'opacity-70 cursor-wait' : ''
+              }`}
+            >
+              {isMobile ? <FileIcon size={18} /> : <PrinterIcon size={18} />}
+              <span>{isGenerating ? 'Generating...' : (isMobile ? 'Download' : 'Download Quote')}</span>
+            </button>
+          </div>
+        </header>
+      </div>
 
       {/* Quote Content */}
-      <div className="max-w-[210mm] mx-auto py-8">
+      <div className="max-w-[210mm] w-[95%] mx-auto px-0 py-3 md:w-full md:px-4 md:py-8">
         {/* Tabs Interface */}
         {hasScope && (
-          <div className="flex gap-1 mb-0 mx-8 border-b border-slate-200">
+          <div className="flex gap-1 mb-0 mx-0 border-b border-slate-200 rounded-t-lg">
             <button
               onClick={() => setActiveTab('summary')}
               className={`px-6 py-2 rounded-t-lg text-sm font-medium transition-colors border-t border-x ${
@@ -318,20 +1061,20 @@ export function Quote({ data, onBack }: QuoteProps) {
           </div>
         )}
 
-        <div ref={quoteRef} className={`bg-white shadow-sm border border-slate-200 p-8 min-h-[297mm] ${hasScope ? 'rounded-b-lg rounded-tr-lg' : 'rounded-lg'}`}>
+        <div ref={quoteRef} className={"bg-white shadow-sm border border-slate-200 p-4 md:p-8 min-h-[297mm] w-full " + (hasScope ? "rounded-b-lg rounded-tr-lg" : "rounded-lg")}>
           
           {/* Document Header */}
-          <div id="quote-header" className="flex justify-between items-start border-b-4 border-blue-700 pb-6 mb-5">
-            <div className="flex items-center gap-6">
+          <div id="quote-header" className="flex flex-col items-center text-center md:flex-row md:justify-between md:items-start md:text-left border-b-4 border-blue-700 pb-6 mb-5">
+            <div className="flex flex-col items-center md:flex-row md:items-center gap-4 md:gap-6">
               <img 
                 src={logoImage} 
                 alt="BKT Advisory" 
                 className="w-16 h-16 rounded-full object-contain bg-white shadow-sm border border-slate-200 p-1"
               />
               <div>
-                <h1 className="text-3xl text-blue-700 mb-1">BKT Advisory</h1>
+                <h1 className="text-3xl text-[#0F172B] mb-1">BKT Advisory</h1>
                 <p className="text-slate-600">Salesforce & AI Systems Consulting</p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, i) => (
                       <StarIcon key={i} size={14} className="fill-yellow-400 text-yellow-400" />
@@ -343,11 +1086,11 @@ export function Quote({ data, onBack }: QuoteProps) {
             </div>
 
             {/* Consultant Info - Moved to Header */}
-            <div className="flex flex-col items-end gap-1 text-right">
+            <div className="flex flex-col items-center md:items-end gap-1 mt-4 md:mt-0 md:text-right">
               <div className="flex items-center gap-4">
                 <div>
                   <h3 className="text-slate-900 font-bold">John Burkhardt</h3>
-                  <p className="text-sm text-slate-600">Principal Architect</p>
+                  <p className="text-sm text-slate-600">Principal Consultant</p>
                 </div>
                 <img 
                   src={profileImage} 
@@ -376,11 +1119,11 @@ export function Quote({ data, onBack }: QuoteProps) {
             </div>
           </div>
 
-          {/* Section 2: Middle (2-Column Grid) */}
-          <div className="grid grid-cols-5 gap-6 mb-4">
+          {/* Section 2: Middle (2-Column Grid on desktop, 1-col on mobile) */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-4">
             
-            {/* Left Column (60%) */}
-            <div className="col-span-3 flex flex-col gap-6">
+            {/* Left Column (60% on desktop, full on mobile) */}
+            <div className="col-span-1 md:col-span-3 flex flex-col gap-6">
               <div className="bg-slate-50 p-5 rounded-lg h-full">
                 <h3 className="mb-3 font-bold text-slate-900 h-6">Project Overview</h3>
                 <div className="space-y-2 text-sm">
@@ -469,12 +1212,15 @@ export function Quote({ data, onBack }: QuoteProps) {
               {/* Scope moved to dedicated tab */}
             </div>
 
-            {/* Right Column (40%) */}
-            <div className="col-span-2 space-y-4">
+            {/* Right Column (40% on desktop, full on mobile) */}
+            <div className="col-span-1 md:col-span-2 space-y-4">
               
               {/* Cost Breakdown */}
               <div className="border-2 border-blue-700 rounded-lg p-5 bg-white">
-                <h3 className="mb-4 font-bold text-slate-900 h-6">Detailed Cost Breakdown</h3>
+                <h3 className="mb-4 font-bold text-slate-900 h-6">
+                  <span className="md:hidden">Cost Breakdown</span>
+                  <span className="hidden md:inline">Detailed Cost Breakdown</span>
+                </h3>
                 
                 <div className="space-y-2 text-sm">
                   {hoursMatch ? (
@@ -622,7 +1368,7 @@ export function Quote({ data, onBack }: QuoteProps) {
           <div id="quote-footer" className="space-y-6">
             
             {/* Signatures */}
-            <div className="pt-2 grid grid-cols-2 gap-12">
+            <div className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
               <div className="flex flex-col gap-1">
                 <span className="font-bold text-slate-900">Client Signature:</span>
                 <div className="mt-8 border-b border-slate-400"></div>

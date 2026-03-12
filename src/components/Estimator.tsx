@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { FormData, QuoteData } from '../App';
 import { EstimatorStepper } from './EstimatorStepper';
+import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner@2.0.3';
@@ -23,6 +24,13 @@ const ArrowRightIcon = ({ className, size }: { className?: string; size?: number
   <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <line x1="5" y1="12" x2="19" y2="12" />
     <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+const ArrowLeftIcon = ({ className, size }: { className?: string; size?: number }) => (
+  <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
@@ -113,7 +121,7 @@ interface EstimatorProps {
 }
 
 export function Estimator({ 
-  formData, 
+  formData,
   setFormData, 
   currentStep, 
   setCurrentStep, 
@@ -133,6 +141,7 @@ export function Estimator({
   const scopeProblemsRef = useRef<HTMLTextAreaElement>(null);
   const scopeRequirementsRef = useRef<HTMLTextAreaElement>(null);
   const scopeGoalsRef = useRef<HTMLTextAreaElement>(null);
+  const analyzedFileNamesRef = useRef<Set<string>>(new Set());
 
   // Helper to auto-resize textareas
   const adjustTextareaHeight = (element: HTMLTextAreaElement | null) => {
@@ -176,6 +185,8 @@ export function Estimator({
     'Commerce Cloud': 40,
     'Financial Services Cloud': 45,
     'Experience Cloud': 35,
+    'CPQ': 35,
+    'Insurance Cloud': 45,
     'Agentforce': 50,
   };
 
@@ -195,7 +206,7 @@ export function Estimator({
   };
 
   const aiToolHours: Record<string, number> = {
-    'OpenAI ChatGPT': 20,
+    'OpenAI': 20,
     'Gemini': 20,
     'Copilot': 15,
     'Claude': 20,
@@ -214,6 +225,7 @@ export function Estimator({
     'Project Manager': 5,
     'Customer Success Manager': 4,
     'Solutions Architect': 8,
+    'Developer': 5,
   };
 
   // Helper to extract text from files
@@ -395,17 +407,21 @@ export function Estimator({
       f.file
     );
 
-    if (analyzableFiles.length === 0) {
-        setCurrentStep(3); // Skip analysis if no suitable files
-        return;
+    // Deduplicate: only analyze files that haven't been analyzed yet
+    const newFiles = analyzableFiles.filter(f => !analyzedFileNamesRef.current.has(f.name + '|' + f.size));
+
+    if (newFiles.length === 0) {
+      // All files already analyzed — skip straight to next step
+      setCurrentStep(3);
+      return;
     }
 
     setIsAnalyzing(true);
     let aggregatedText = "";
 
     try {
-      // Extract text from all files
-      for (const fileData of analyzableFiles) {
+      // Extract text only from NEW files
+      for (const fileData of newFiles) {
         // @ts-ignore: We are storing the File object in the state now
         const text = await extractText(fileData.file);
         aggregatedText += `\n--- Document: ${fileData.name} ---\n${text}\n`;
@@ -472,6 +488,9 @@ export function Estimator({
           });
           
           toast.success('Project details analyzed and auto-filled!');
+
+          // Mark these files as analyzed so navigating back won't re-trigger
+          newFiles.forEach(f => analyzedFileNamesRef.current.add(f.name + '|' + f.size));
       }
 
     } catch (error) {
@@ -637,16 +656,16 @@ export function Estimator({
     };
 
     const hasScopeContent = 
+      hasContent(formData.scopeGoals) ||
       hasContent(formData.scopeProblems) || 
-      hasContent(formData.scopeRequirements) || 
-      hasContent(formData.scopeGoals);
+      hasContent(formData.scopeRequirements);
       
     if (!hasScopeContent) return;
 
     const isAutoFillable = 
       !formData.projectDescription || 
       (typeof formData.projectDescription === 'string' && 
-       (!formData.projectDescription.trim() || formData.projectDescription.startsWith("Project Summary:")));
+       (!formData.projectDescription.trim() || formData.projectDescription.startsWith("Primary Goals:")));
 
     // Helper to safely get string content
     const getString = (val: any) => {
@@ -655,12 +674,12 @@ export function Estimator({
     };
 
     if (isAutoFillable) {
-      const draft = `Project Summary: ${getString(formData.scopeProblems)}\n\nKey Requirements: ${getString(formData.scopeRequirements)}\n\nPrimary Goals: ${getString(formData.scopeGoals)}`;
+      const draft = `Primary Goals:\n${getString(formData.scopeGoals)}\n\nProblems:\n${getString(formData.scopeProblems)}\n\nKey Requirements:\n${getString(formData.scopeRequirements)}`;
       if (draft !== formData.projectDescription) {
         setFormData(prev => ({ ...prev, projectDescription: draft }));
       }
     }
-  }, [formData.scopeProblems, formData.scopeRequirements, formData.scopeGoals]);
+  }, [formData.scopeGoals, formData.scopeProblems, formData.scopeRequirements]);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -692,78 +711,83 @@ export function Estimator({
 
   return (
     <div className="min-h-screen flex-1 bg-[#eff6ff]">
-      <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-6 px-8">
-        <div className="max-w-[1440px] mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <a href="https://bktadvisory.com" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
-              <HomeIcon size={20} />
-              <span className="hidden md:inline">Back to Home</span>
-            </a>
-            <div className="h-6 w-px bg-slate-600"></div>
-            <div>
-              <a href="https://bktadvisory.com/project" className="block hover:text-blue-300 transition-colors">
-                <h1 className="text-2xl mb-1 hidden md:block">BKT Advisory</h1>
+      {/* Sticky wrapper for header + stepper (all viewports) */}
+      <div className="estimator-sticky-header sticky top-[116px] z-40 shadow-md">
+        <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-4 px-4 md:py-6 md:px-8">
+          <div className="max-w-[1440px] mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-4 md:gap-6">
+              <a href="https://bktadvisory.com" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
+                <HomeIcon size={20} />
+                <span className="hidden md:inline">Back to Home</span>
               </a>
-              <p className="text-slate-300 text-sm">
-                <span className="md:hidden">BKT Project Estimator</span>
-                <span className="hidden md:inline">Tech Project Estimator</span>
-              </p>
+              <div className="h-6 w-px bg-slate-600"></div>
+              <div>
+                <a href="https://bktadvisory.com/project" className="block hover:text-blue-300 transition-colors">
+                  <h1 className="text-2xl mb-1 hidden md:block">BKT Advisory</h1>
+                </a>
+                <p className="text-slate-300 text-sm">
+                  <span className="md:hidden">BKT Project Estimator</span>
+                  <span className="hidden md:inline">Tech Project Estimator</span>
+                </p>
+              </div>
             </div>
+            <a href="https://www.upwork.com/freelancers/~01dd56d750898225c0" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
+              <span className="md:hidden">Upwork →</span>
+              <span className="hidden md:inline">View Upwork Profile →</span>
+            </a>
           </div>
-          <a href="https://www.upwork.com/freelancers/~01dd56d750898225c0" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
-            <span className="md:hidden">Upwork →</span>
-            <span className="hidden md:inline">View Upwork Profile →</span>
-          </a>
-        </div>
-      </header>
+        </header>
 
-      <EstimatorStepper currentStep={currentStep} totalSteps={6} steps={steps} />
+        <EstimatorStepper currentStep={currentStep} totalSteps={6} steps={steps} />
+      </div>
 
-      <div className="max-w-4xl mx-auto px-8 py-12">
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 md:px-8 md:py-12">
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 md:p-8">
           
           {currentStep > 1 && (
             <div 
-              className="flex justify-between mb-6 pb-4 border-b border-slate-200 transition-opacity duration-300"
+              className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200 transition-opacity duration-300"
               style={{ opacity: scrollOpacity }}
             >
+              {/* Previous: text at all viewports */}
               <button
                 onClick={handlePrevStep}
-                className="px-4 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                style={{ transform: 'scale(0.75)', transformOrigin: 'left center' }}
+                className="px-3 py-1.5 md:px-4 md:py-1.5 text-[13px] md:text-[14px] border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors min-h-[36px] w-[100px] md:w-[110px] flex items-center justify-center gap-1.5"
               >
-                ← Previous
+                <ArrowLeftIcon size={18} className="text-slate-500" />
+                <span className="text-slate-600">Previous</span>
               </button>
               
               {currentStep < 6 ? (
                 <button
                   onClick={handleNextStep}
                   disabled={isAnalyzing}
-                  className={`ml-auto flex items-center gap-2 px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
-                  style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
+                  className={`ml-auto px-3.5 py-1.5 md:px-5 md:py-1.5 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[36px] w-[101px] md:w-[111px] flex items-center justify-center gap-1.5 ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
                 >
                   {isAnalyzing ? (
-                    <>Analyzing... <Loader2Icon size={14} /></>
+                    <Loader2Icon size={18} className="text-white" />
                   ) : (
-                    <>Next <ArrowRightIcon size={14} /></>
+                    <>
+                      <span>Next</span>
+                      <ArrowRightIcon size={18} className="text-white" />
+                    </>
                   )}
                 </button>
               ) : (
                 <button
                   onClick={calculateQuote}
                   disabled={isFinalizing}
-                  className={`ml-auto flex items-center gap-2 px-6 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isFinalizing ? 'opacity-70 cursor-wait' : ''}`}
-                  style={{ transform: 'scale(0.75)', transformOrigin: 'right center' }}
+                  className={`ml-auto flex items-center gap-1.5 px-3.5 py-2 md:px-6 md:py-2 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[36px] w-[120px] md:w-[111px] justify-center whitespace-nowrap ${isFinalizing ? 'opacity-70 cursor-wait' : ''}`}
                 >
                   {isFinalizing ? (
                     <>
                       <Loader2Icon size={16} />
-                      Finalizing your custom strategy...
+                      <span className="sr-only">Loading...</span>
                     </>
                   ) : (
                     <>
                       <CalculatorIcon size={16} />
-                      Get Instant Quote
+                      <span>Get Quote</span>
                     </>
                   )}
                 </button>
@@ -775,29 +799,29 @@ export function Estimator({
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl mb-2 text-[#0f172b] font-bold">Let's Get Started</h2>
-                <p className="text-slate-600">Please provide your contact information to receive your personalized quote.</p>
+                <h2 className="mb-2 text-[#0f172b] font-bold text-[18px] md:text-[20px]">Let's Get Started</h2>
+                <p className="text-slate-600 text-[14px] md:text-[16px]">Please provide your contact information to receive your personalized quote.</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2">First Name <span className="text-red-500">*</span></label>
+                  <label className="block mb-2 text-[14px] md:text-[16px]">First Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.firstName ? 'border-red-500' : 'border-slate-300'}`}
+                    className={`w-full px-4 py-[10px] md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.firstName ? 'border-red-500' : 'border-slate-300'}`}
                     placeholder="John"
                   />
                   {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm mb-2">Last Name <span className="text-red-500">*</span></label>
+                  <label className="block mb-2 text-[14px] md:text-[16px]">Last Name <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.lastName ? 'border-red-500' : 'border-slate-300'}`}
+                    className={`w-full px-4 py-[10px] md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.lastName ? 'border-red-500' : 'border-slate-300'}`}
                     placeholder="Burkhardt"
                   />
                   {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
@@ -805,47 +829,47 @@ export function Estimator({
               </div>
 
               <div>
-                <label className="block text-sm mb-2">Company Name</label>
+                <label className="block mb-2 text-[14px] md:text-[16px]">Company</label>
                 <input
                   type="text"
                   value={formData.companyName}
                   onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-[10px] md:py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   placeholder="Acme Corp"
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2">Website</label>
+                <label className="block mb-2 text-[14px] md:text-[16px]">Website</label>
                 <input
                   type="text"
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-[10px] md:py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
                   placeholder="https://yourcompany.com"
                 />
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-slate-700 mb-3"><span className="text-red-500">*</span> Please provide at least one contact method:</p>
+                <p className="text-[14px] md:text-[16px] text-slate-700 mb-3"><span className="text-red-500">*</span> Please provide at least one contact method:</p>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm mb-2">Work Email</label>
+                    <label className="block mb-2 text-[14px] md:text-[16px]">Work Email</label>
                     <input
                       type="email"
                       value={formData.workEmail}
                       onChange={(e) => handleInputChange('workEmail', e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contact && !formData.workEmail && !formData.mobilePhone ? 'border-red-500' : 'border-slate-300'}`}
+                      className={`w-full px-4 py-[10px] md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.contact && !formData.workEmail && !formData.mobilePhone ? 'border-red-500' : 'border-slate-300'}`}
                       placeholder="john@company.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm mb-2">Mobile Phone</label>
+                    <label className="block mb-2 text-[14px] md:text-[16px]">Mobile Phone</label>
                     <input
                       type="tel"
                       value={formData.mobilePhone}
                       onChange={(e) => handleInputChange('mobilePhone', e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.contact && !formData.workEmail && !formData.mobilePhone ? 'border-red-500' : 'border-slate-300'}`}
+                      className={`w-full px-4 py-[10px] md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base ${errors.contact && !formData.workEmail && !formData.mobilePhone ? 'border-red-500' : 'border-slate-300'}`}
                       placeholder="+1 (555) 123-4567"
                     />
                   </div>
@@ -859,8 +883,8 @@ export function Estimator({
           {currentStep === 2 && (
              <div className="space-y-6">
                <div>
-                 <h2 className="text-xl mb-2">Upload Documentation</h2>
-                 <p className="text-slate-600">Drag and drop specifications, RFPs, or architecture diagrams to auto-fill your project details.</p>
+                 <h2 className="text-[18px] md:text-[20px] mb-2">Upload Documentation</h2>
+                 <p className="text-slate-600 text-[14px] md:text-[16px]">Drag and drop specifications, RFPs, or architecture diagrams to auto-fill your project details.</p>
                </div>
 
                <div 
@@ -880,7 +904,7 @@ export function Estimator({
                    <div className="flex flex-col items-center">
                      <Loader2Icon size={48} className="text-blue-500 mb-4" />
                      <p className="text-lg font-medium text-slate-700">Analyzing document...</p>
-                     <p className="text-sm text-slate-500 mt-2">Extracting structured data to autofill your scope.</p>
+                     <p className="text-[14px] md:text-[16px] text-slate-500 mt-2">Extracting structured data to autofill your scope.</p>
                    </div>
                  ) : (
                    <>
@@ -926,13 +950,13 @@ export function Estimator({
           {currentStep === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl mb-2">Project Scope</h2>
-                <p className="text-slate-600">Define the core drivers and objectives for this engagement.</p>
+                <h2 className="text-[18px] md:text-[20px] mb-2">Project Scope</h2>
+                <p className="text-slate-600 text-[14px] md:text-[16px]">Define the core drivers and objectives for this engagement.</p>
               </div>
 
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm">Goals</label>
+                  <label className="block text-[14px] md:text-[16px]">Goals</label>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 500 chars</span>
                     {formData.scopeGoals.length > 5 && (
@@ -950,14 +974,14 @@ export function Estimator({
                   ref={scopeGoalsRef}
                   value={formData.scopeGoals}
                   onChange={(e) => handleInputChange('scopeGoals', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
                   placeholder="Define success metrics..."
                 />
               </div>
 
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm">Problems</label>
+                  <label className="block text-[14px] md:text-[16px]">Problems</label>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 750 chars</span>
                     {formData.scopeProblems.length > 5 && (
@@ -975,14 +999,14 @@ export function Estimator({
                   ref={scopeProblemsRef}
                   value={formData.scopeProblems}
                   onChange={(e) => handleInputChange('scopeProblems', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
                   placeholder="Describe current pain points..."
                 />
               </div>
 
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm">Requirements</label>
+                  <label className="block text-[14px] md:text-[16px]">Requirements</label>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 1,000 chars</span>
                     {formData.scopeRequirements.length > 5 && (
@@ -1000,7 +1024,7 @@ export function Estimator({
                   ref={scopeRequirementsRef}
                   value={formData.scopeRequirements}
                   onChange={(e) => handleInputChange('scopeRequirements', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
                   placeholder="List key technical requirements..."
                 />
               </div>
@@ -1011,17 +1035,17 @@ export function Estimator({
           {currentStep === 4 && (
             <div className="space-y-8">
               <div>
-                <h2 className="text-xl mb-2">IT Infrastructure</h2>
-                <p className="text-slate-600">Choose the CRMs, clouds, integrations, and AI tools you need.</p>
+                <h2 className="text-[18px] md:text-[20px] mb-2">IT Infrastructure</h2>
+                <p className="text-slate-600 text-[14px] md:text-[16px]">Choose the CRMs, clouds, integrations, and AI tools you need.</p>
               </div>
 
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
                 <div className="flex items-start gap-3 mb-3">
                   <SparklesIcon size={20} className="text-blue-600 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-blue-900 mb-1">Project Description (Optional but Recommended)</h3>
-                    <p className="text-sm text-slate-700">
-                      Provide details about your project for a more accurate estimate. Our AI assistant can help you craft a comprehensive description!
+                    <h3 className="text-blue-900 mb-1">Project Description</h3>
+                    <p className="text-[14px] md:text-[16px] text-slate-700">
+                      Provide project details for a more accurate estimate. Our AI assistant can help you craft this description!
                     </p>
                   </div>
                 </div>
@@ -1030,7 +1054,7 @@ export function Estimator({
                     ref={textareaRef}
                     value={formData.projectDescription}
                     onChange={(e) => handleInputChange('projectDescription', e.target.value)}
-                    className="w-full px-4 py-3 pb-12 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px] bg-white"
+                    className="w-full px-4 py-3 pb-12 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px] bg-white text-base"
                     placeholder="Describe your project objectives, infrastructure, pain points..."
                   />
                   <div className="absolute bottom-3 left-3 flex gap-2">
@@ -1062,7 +1086,8 @@ export function Estimator({
 
               <div>
                 <h3 className="mb-3">CRM Platforms</h3>
-                <div className="grid grid-cols-2 gap-3">
+                {/* Desktop: exposed checkbox grid */}
+                <div className="hidden md:grid grid-cols-2 gap-3">
                   {Object.keys(crmHours).map(crm => (
                     <label key={crm} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
                       <input type="checkbox" checked={formData.selectedCRMs.includes(crm)} onChange={() => handleMultiSelect('selectedCRMs', crm)} className="w-4 h-4 text-blue-600" />
@@ -1070,23 +1095,47 @@ export function Estimator({
                     </label>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <h3 className="mb-3">Salesforce Clouds</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.keys(cloudHours).map(cloud => (
-                    <label key={cloud} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                      <input type="checkbox" checked={formData.selectedClouds.includes(cloud)} onChange={() => handleMultiSelect('selectedClouds', cloud)} className="w-4 h-4 text-blue-600" />
-                      <span>{cloud}</span>
-                    </label>
-                  ))}
+                {/* Mobile: multi-select dropdown */}
+                <div className="block md:hidden">
+                  <MultiSelectDropdown
+                    options={Object.keys(crmHours)}
+                    selected={formData.selectedCRMs}
+                    onToggle={(crm) => handleMultiSelect('selectedCRMs', crm)}
+                    onClear={() => handleInputChange('selectedCRMs', [])}
+                    placeholder="Select CRMs..."
+                  />
                 </div>
               </div>
 
+              {formData.selectedCRMs.includes('Salesforce') && (
+                <div>
+                  <h3 className="mb-3">Salesforce Clouds</h3>
+                  {/* Desktop: exposed checkbox grid */}
+                  <div className="hidden md:grid grid-cols-2 gap-3">
+                    {Object.keys(cloudHours).map(cloud => (
+                      <label key={cloud} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" checked={formData.selectedClouds.includes(cloud)} onChange={() => handleMultiSelect('selectedClouds', cloud)} className="w-4 h-4 text-blue-600" />
+                        <span>{cloud}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Mobile: multi-select dropdown */}
+                  <div className="block md:hidden">
+                    <MultiSelectDropdown
+                      options={Object.keys(cloudHours)}
+                      selected={formData.selectedClouds}
+                      onToggle={(cloud) => handleMultiSelect('selectedClouds', cloud)}
+                      onClear={() => handleInputChange('selectedClouds', [])}
+                      placeholder="Select Salesforce Clouds..."
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h3 className="mb-3">Integrations</h3>
-                <div className="grid grid-cols-2 gap-3">
+                {/* Desktop: exposed checkbox grid */}
+                <div className="hidden md:grid grid-cols-2 gap-3">
                   {Object.keys(integrationHours).map(integration => (
                     <label key={integration} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
                       <input type="checkbox" checked={formData.selectedIntegrations.includes(integration)} onChange={() => handleMultiSelect('selectedIntegrations', integration)} className="w-4 h-4 text-blue-600" />
@@ -1094,11 +1143,22 @@ export function Estimator({
                     </label>
                   ))}
                 </div>
+                {/* Mobile: multi-select dropdown */}
+                <div className="block md:hidden">
+                  <MultiSelectDropdown
+                    options={Object.keys(integrationHours)}
+                    selected={formData.selectedIntegrations}
+                    onToggle={(integration) => handleMultiSelect('selectedIntegrations', integration)}
+                    onClear={() => handleInputChange('selectedIntegrations', [])}
+                    placeholder="Select Integrations..."
+                  />
+                </div>
               </div>
 
               <div>
                 <h3 className="mb-3">AI Tools</h3>
-                <div className="grid grid-cols-2 gap-3">
+                {/* Desktop: exposed checkbox grid */}
+                <div className="hidden md:grid grid-cols-2 gap-3">
                   {Object.keys(aiToolHours).map(tool => (
                     <label key={tool} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
                       <input type="checkbox" checked={formData.selectedAITools.includes(tool)} onChange={() => handleMultiSelect('selectedAITools', tool)} className="w-4 h-4 text-blue-600" />
@@ -1106,6 +1166,31 @@ export function Estimator({
                     </label>
                   ))}
                 </div>
+                {/* Mobile: multi-select dropdown */}
+                <div className="block md:hidden">
+                  <MultiSelectDropdown
+                    options={Object.keys(aiToolHours)}
+                    selected={formData.selectedAITools}
+                    onToggle={(tool) => handleMultiSelect('selectedAITools', tool)}
+                    onClear={() => handleInputChange('selectedAITools', [])}
+                    placeholder="Select AI Tools..."
+                  />
+                </div>
+              </div>
+
+              {/* Mobile-only Assist Me button */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => onTriggerAIAction('autofill')}
+                  disabled={aiUsageCount.autofill >= 3 || !formData.projectDescription.trim()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <SparklesIcon size={18} />
+                  <span className="font-medium text-[14px]">Assist Me</span>
+                </button>
+                {!formData.projectDescription.trim() && (
+                  <p className="text-[10px] text-slate-400 text-center mt-1.5">Add a project description above to enable AI assistance</p>
+                )}
               </div>
             </div>
           )}
@@ -1114,16 +1199,16 @@ export function Estimator({
           {currentStep === 5 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl mb-2">Additional Services</h2>
-                <p className="text-slate-600">Select any additional modules or services you need.</p>
+                <h2 className="text-[18px] md:text-[20px] mb-2">Additional Services</h2>
+                <p className="text-slate-600 text-[13px] md:text-[16px]">Select any additional modules or services you need.</p>
               </div>
               <div>
-                <h3 className="mb-3">Service Modules</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <h3 className="mb-3 text-[14px] md:text-base">Service Modules</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {Object.keys(moduleHours).map(module => (
-                    <label key={module} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                    <label key={module} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
                       <input type="checkbox" checked={formData.additionalModules.includes(module)} onChange={() => handleMultiSelect('additionalModules', module)} className="w-4 h-4 text-blue-600" />
-                      <span>{module}</span>
+                      <span className="text-[13px] md:text-[16px]">{module}</span>
                     </label>
                   ))}
                 </div>
@@ -1135,8 +1220,8 @@ export function Estimator({
           {currentStep === 6 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl mb-2">Team Configuration</h2>
-                <p className="text-slate-600">Choose your delivery team and optional power-ups.</p>
+                <h2 className="text-[18px] md:text-[20px] mb-2">Team Configuration</h2>
+                <p className="text-slate-600 text-[14px] md:text-[16px]">Choose your delivery team and optional power-ups.</p>
               </div>
 
               <div>
@@ -1168,7 +1253,7 @@ export function Estimator({
                 <h3 className="mb-3">Power-Ups (Optional)</h3>
                 <div className="space-y-2">
                   {Object.keys(powerUpRates).map(powerUp => (
-                    <label key={powerUp} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                    <label key={powerUp} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
                       <input
                         type="checkbox"
                         checked={formData.powerUps.includes(powerUp)}
@@ -1176,7 +1261,7 @@ export function Estimator({
                         className="w-4 h-4 text-blue-600"
                       />
                       <div className="flex-1 flex justify-between items-center">
-                        <span>{powerUp}</span>
+                        <span className="text-[15px] text-[14px]">{powerUp}</span>
                         <span className="text-sm text-slate-500">+${powerUpRates[powerUp]}/hr</span>
                       </div>
                     </label>
@@ -1193,9 +1278,9 @@ export function Estimator({
               <button
                 onClick={handlePrevStep}
                 disabled={isAnalyzing}
-                className="px-6 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="px-5 py-3 md:px-6 md:py-2 min-h-[44px] min-w-[140px] md:min-w-[150px] flex items-center justify-center gap-2 text-[16px] md:text-[16px] border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
-                ← Previous
+                <ArrowLeftIcon size={18} /> Previous
               </button>
             )}
             
@@ -1203,7 +1288,7 @@ export function Estimator({
               <button
                 onClick={handleNextStep}
                 disabled={isAnalyzing}
-                className={`ml-auto flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
+                className={`ml-auto flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-2 min-h-[44px] min-w-[140px] md:min-w-[150px] text-[16px] md:text-[16px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
               >
                 {isAnalyzing ? (
                    <>Analyzing... <Loader2Icon size={18} /></>
@@ -1214,17 +1299,27 @@ export function Estimator({
             ) : (
               <button
                 onClick={calculateQuote}
-                className="ml-auto flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isFinalizing}
+                className={`ml-auto flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-3 min-h-[44px] min-w-[140px] md:min-w-[150px] text-[16px] md:text-[16px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isFinalizing ? 'opacity-70 cursor-wait' : ''}`}
               >
-                <CalculatorIcon size={20} />
-                Get Instant Quote
+                {isFinalizing ? (
+                  <>
+                    <Loader2Icon size={20} />
+                    <span>Finalizing...</span>
+                  </>
+                ) : (
+                  <>
+                    <CalculatorIcon size={20} />
+                    Get Quote
+                  </>
+                )}
               </button>
             )}
             </div>
             {/* Disclaimer for Step 2 */}
             {currentStep === 2 && (
-              <p className="text-xs text-slate-500 text-right mt-2">
-                Clicking 'Next' will trigger our AI Estimator to analyze the uploaded docs & autofill the project estimator.
+              <p className="text-slate-500 text-center p-[0px] mx-[0px] mt-[16px] mb-[0px] text-[10px] md:text-[12px]">
+                Clicking 'Next' triggers our AI Estimator to analyze uploaded docs & autofill fields.
               </p>
             )}
           </div>

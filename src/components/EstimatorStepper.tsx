@@ -19,10 +19,10 @@ export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorSt
   const mobileTranslateX = `${(1 - (currentStep - 1)) * 33.333}%`;
 
   return (
-    <div className="w-full border-b border-slate-800 bg-[#ffffff]">
+    <div className="w-full border-b border-slate-800 bg-[#fffffff2]">
       
       {/* DESKTOP LAYOUT (md+) */}
-      <div className="hidden md:flex max-w-[1440px] mx-auto items-center justify-between p-[36px] mx-[250px] my-[0px]">
+      <div className="hidden md:flex max-w-[1440px] mx-auto items-center justify-between px-[36px] py-[26px] mx-[250px]">
         {steps.map((step, index) => {
           const isActive = currentStep === step.num;
           const isCompleted = currentStep > step.num;
@@ -30,7 +30,7 @@ export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorSt
 
           // Styling logic
           let circleClasses = "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 border-2 ";
-          let labelClasses = "absolute top-14 whitespace-nowrap text-xs font-semibold tracking-wide transition-colors duration-300 ";
+          let labelClasses = "mt-2 whitespace-nowrap text-xs font-semibold tracking-wide transition-colors duration-300 ";
           
           if (isActive || isCompleted) {
             // Active or Completed: Royal Blue styling
@@ -45,8 +45,8 @@ export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorSt
           }
 
           return [
-            /* Step Indicator */
-            <div key={`indicator-${step.num}`} className="flex flex-col items-center relative z-10 flex-none">
+            /* Step Indicator — circle + label in normal flow (like mobile) */
+            <div key={`indicator-${step.num}`} className="flex flex-col items-center justify-center z-10 flex-none">
               <div className={circleClasses}>
                 {isCompleted ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -61,9 +61,9 @@ export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorSt
               </span>
             </div>,
 
-            /* Connector Line */
+            /* Connector Line — translate up to align with circle center */
             !isLast && (
-              <div key={`line-${step.num}`} className="flex-1 mx-4 h-[2px] bg-slate-800 rounded-full overflow-hidden">
+              <div key={`line-${step.num}`} className="flex-1 mx-4 h-[2px] -translate-y-[12px] bg-slate-800 rounded-full overflow-hidden">
                 <motion.div 
                   className="h-full bg-blue-600"
                   initial={{ width: "0%" }}
@@ -76,8 +76,8 @@ export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorSt
         })}
       </div>
 
-      {/* MOBILE LAYOUT (< md) */}
-      <div className="md:hidden h-28 relative overflow-hidden flex items-center bg-white">
+      {/* MOBILE LAYOUT (< md) — height reduced 30% from h-28 (112px) to ~78px */}
+      <div className="md:hidden h-[78px] relative overflow-hidden flex items-center bg-white/95 bg-[#ffffffeb]">
         {/* Gradient Masks - Updated to fade to white */}
         <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white to-transparent z-20 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white to-transparent z-20 pointer-events-none" />

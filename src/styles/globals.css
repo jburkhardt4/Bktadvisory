@@ -256,6 +256,13 @@
   }
 }
 
+/* Mobile input text size — slightly larger for readability */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 0.8125rem !important; /* 13px — bumped ~2pt for readability */
+  }
+}
+
 html {
   font-size: var(--font-size);
 }
@@ -429,6 +436,12 @@ html {
 @media print {
   /* Hide navigation and non-essential elements */
   header {
+    display: none !important;
+  }
+  
+  /* Neutralize sticky/fixed positioning for clean PDF output */
+  .estimator-sticky-header {
+    position: static !important;
     display: none !important;
   }
   

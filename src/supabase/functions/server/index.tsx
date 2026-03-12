@@ -1,4 +1,4 @@
-    import { Hono } from "npm:hono";
+import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import OpenAI from "npm:openai@4.86.0";
@@ -243,7 +243,7 @@ PROJECT SCOPE & OBJECTIVES
 CURRENT TECH STACK
  • CRM: Salesforce
  • Integrations: Slack, Google Workspace
- • AI: OpenAI ChatGPT, Gemini
+ • AI: OpenAI, Gemini
 
 PROBLEMS
  • Operational workflow hindered by manual data entry processes.

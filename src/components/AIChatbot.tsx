@@ -379,24 +379,24 @@ export function AIChatbot() {
                     </div>
 
                     {/* Service Cards Grid */}
-                    <div className="flex flex-wrap gap-4 justify-center w-full">
+                    <div className="flex flex-wrap gap-2 justify-center w-full">
                       {/* Discovery Call */}
                       <div
                         onClick={() => openBookingModal('https://calendar.app.google/26nkEZE18gENpuGo8')}
-                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                        className="relative flex flex-col justify-between w-[215px] h-[95px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                       >
-                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                        <h3 className="text-[15px] font-normal text-[#1f1f1f] mb-1.5 leading-5 -mt-[1px]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                           Discovery Call
                         </h3>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                        <div className="space-y-0.5 -mt-[2px]">
+                          <div className="flex items-center gap-1 text-xs text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 -960 960 960" fill="#444746">
                               <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
                             </svg>
                             <span>15 mins</span>
                           </div>
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                          <div className="flex items-center gap-1 text-xs text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-3.5 h-3.5 object-contain" alt="Google Meet" />
                             <span>Google Meet</span>
                           </div>
                         </div>
@@ -405,20 +405,20 @@ export function AIChatbot() {
                       {/* Strategic Planning */}
                       <div
                         onClick={() => openBookingModal('https://calendar.app.google/ybjY5qL32semyiJ88')}
-                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                        className="relative flex flex-col justify-between w-[215px] h-[95px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                       >
-                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                        <h3 className="text-[15px] font-normal text-[#1f1f1f] mb-1.5 leading-5 -mt-[1px]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                           Strategic Planning
                         </h3>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                        <div className="space-y-0.5 -mt-[2px]">
+                          <div className="flex items-center gap-1 text-xs text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 -960 960 960" fill="#444746">
                               <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
                             </svg>
                             <span>30 min</span>
                           </div>
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                          <div className="flex items-center gap-1 text-xs text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-3.5 h-3.5 object-contain" alt="Google Meet" />
                             <span>Google Meet</span>
                           </div>
                         </div>
@@ -427,20 +427,20 @@ export function AIChatbot() {
                       {/* Workshop */}
                       <div
                         onClick={() => openBookingModal('https://calendar.app.google/SDquXNuRq74gJFq46')}
-                        className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
+                        className="relative flex flex-col justify-between w-[215px] h-[95px] bg-white border border-[#c4c7c5] rounded-lg p-4 cursor-pointer transition-all duration-[280ms] hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                       >
-                        <h3 className="text-[1.15rem] font-normal text-[#1f1f1f] mb-2.5 leading-5" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                        <h3 className="text-[15px] font-normal text-[#1f1f1f] mb-1.5 leading-5 -mt-[1px]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                           Workshop
                         </h3>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 -960 960 960" fill="#444746">
+                        <div className="space-y-0.5 -mt-[2px]">
+                          <div className="flex items-center gap-1 text-xs text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 -960 960 960" fill="#444746">
                               <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
                             </svg>
                             <span>60 min</span>
                           </div>
-                          <div className="flex items-center gap-1 text-sm text-[#444746]" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-4 h-4 object-contain" alt="Google Meet" />
+                          <div className="flex items-center gap-1 text-xs text-[#444746] m-[0px] p-[0px]" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                            <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-3.5 h-3.5 object-contain" alt="Google Meet" />
                             <span>Google Meet</span>
                           </div>
                         </div>
@@ -565,14 +565,14 @@ export function AIChatbot() {
                     onClick={() => openBookingModal('https://calendar.app.google/26nkEZE18gENpuGo8')}
                     className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                   >
-                    <h3 className="text-lg font-normal text-slate-900 mb-2">Discovery Call</h3>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <h3 className="text-lg font-normal text-slate-900 mb-1.5 -mt-[1px]">Discovery Call</h3>
+                    <div className="space-y-0.5 -mt-[2px]">
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                         <span>15 min</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-[17px] h-[17px]" alt="Google Meet" />
                         <span>Google Meet</span>
                       </div>
                     </div>
@@ -582,14 +582,14 @@ export function AIChatbot() {
                     onClick={() => openBookingModal('https://calendar.app.google/ybjY5qL32semyiJ88')}
                     className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                   >
-                    <h3 className="text-lg font-normal text-slate-900 mb-2">Strategic Planning</h3>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <h3 className="text-lg font-normal text-slate-900 mb-1.5 -mt-[1px]">Strategic Planning</h3>
+                    <div className="space-y-0.5 -mt-[2px]">
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                         <span>30 min</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-[17px] h-[17px]" alt="Google Meet" />
                         <span>Google Meet</span>
                       </div>
                     </div>
@@ -599,14 +599,14 @@ export function AIChatbot() {
                     onClick={() => openBookingModal('https://calendar.app.google/SDquXNuRq74gJFq46')}
                     className="relative flex flex-col justify-between w-[215px] h-[115px] bg-white border border-slate-300 rounded-lg p-4 cursor-pointer transition-all duration-300 hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] hover:border-transparent"
                   >
-                    <h3 className="text-lg font-normal text-slate-900 mb-2">Workshop</h3>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <h3 className="text-lg font-normal text-slate-900 mb-1.5 -mt-[1px]">Workshop</h3>
+                    <div className="space-y-0.5 -mt-[2px]">
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                         <span>60 min</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-5 h-5" alt="Google Meet" />
+                      <div className="flex items-center gap-1 text-[13px] text-slate-600">
+                        <img src="https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg" className="w-[17px] h-[17px]" alt="Google Meet" />
                         <span>Google Meet</span>
                       </div>
                     </div>

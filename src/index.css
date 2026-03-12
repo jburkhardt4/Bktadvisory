@@ -656,6 +656,14 @@
     margin-block: 24px;
   }
 
+  .-mt-\[1px\] {
+    margin-top: -1px;
+  }
+
+  .-mt-\[2px\] {
+    margin-top: -2px;
+  }
+
   .mt-0\.5 {
     margin-top: calc(var(--spacing) * .5);
   }
@@ -696,12 +704,12 @@
     margin-bottom: calc(var(--spacing) * 1);
   }
 
-  .mb-2 {
-    margin-bottom: calc(var(--spacing) * 2);
+  .mb-1\.5 {
+    margin-bottom: calc(var(--spacing) * 1.5);
   }
 
-  .mb-2\.5 {
-    margin-bottom: calc(var(--spacing) * 2.5);
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
   }
 
   .mb-3 {
@@ -783,6 +791,10 @@
     height: calc(var(--spacing) * 1.5);
   }
 
+  .h-3\.5 {
+    height: calc(var(--spacing) * 3.5);
+  }
+
   .h-4 {
     height: calc(var(--spacing) * 4);
   }
@@ -839,8 +851,16 @@
     height: 2px;
   }
 
+  .h-\[17px\] {
+    height: 17px;
+  }
+
   .h-\[68px\] {
     height: 68px;
+  }
+
+  .h-\[95px\] {
+    height: 95px;
   }
 
   .h-\[115px\] {
@@ -903,6 +923,10 @@
     width: calc(var(--spacing) * 1.5);
   }
 
+  .w-3\.5 {
+    width: calc(var(--spacing) * 3.5);
+  }
+
   .w-4 {
     width: calc(var(--spacing) * 4);
   }
@@ -953,6 +977,10 @@
 
   .w-\[2px\] {
     width: 2px;
+  }
+
+  .w-\[17px\] {
+    width: 17px;
   }
 
   .w-\[215px\] {
@@ -1171,6 +1199,12 @@
     --tw-space-y-reverse: 0;
     margin-block-start: calc(calc(var(--spacing) * 0) * var(--tw-space-y-reverse));
     margin-block-end: calc(calc(var(--spacing) * 0) * calc(1 - var(--tw-space-y-reverse)));
+  }
+
+  :where(.space-y-0\.5 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * .5) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * .5) * calc(1 - var(--tw-space-y-reverse)));
   }
 
   :where(.space-y-1 > :not(:last-child)) {
@@ -1765,6 +1799,10 @@
     padding: calc(var(--spacing) * 8);
   }
 
+  .p-\[0px\] {
+    padding: 0;
+  }
+
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
   }
@@ -1912,8 +1950,12 @@
     line-height: var(--tw-leading, var(--text-xs--line-height));
   }
 
-  .text-\[1\.15rem\] {
-    font-size: 1.15rem;
+  .text-\[13px\] {
+    font-size: 13px;
+  }
+
+  .text-\[15px\] {
+    font-size: 15px;
   }
 
   .text-\[16px\] {

@@ -1,5 +1,3 @@
-Bktadvisory - GUIDELINES.md
-
 # BKT Advisory Main Site - Development Guidelines (v2.0)
 
 This document serves as the **source of truth** for maintaining the site's modern aesthetic, portfolio content, marketing UI, and standard routing. 

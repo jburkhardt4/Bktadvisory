@@ -49,6 +49,28 @@ const CheckIcon = ({ className, size }: { className?: string; size?: number }) =
   </svg>
 );
 
+// Filter to skip cross-origin stylesheets that html-to-image cannot read
+// IMPORTANT: Allow Google Fonts through (they support CORS), only block others (e.g. Google Calendar)
+const toPngFilter = (node: any) => {
+  if (node?.tagName === 'LINK' && node?.getAttribute?.('rel') === 'stylesheet') {
+    const href = node.getAttribute('href') || '';
+    if (
+      href.startsWith('http') &&
+      !href.includes(window.location.hostname) &&
+      !href.includes('fonts.googleapis.com') &&
+      !href.includes('fonts.gstatic.com')
+    ) return false;
+  }
+  // Block <style> elements that reference external URLs (e.g., Figma S3)
+  if (node?.tagName === 'STYLE') {
+    const content = node.textContent || '';
+    if (content.includes('s3-figma-foundry') || content.includes('figma.com')) {
+      return false;
+    }
+  }
+  return true;
+};
+
 interface QuoteProps {
   data: QuoteData;
   onBack: () => void;
@@ -56,6 +78,7 @@ interface QuoteProps {
 
 export function Quote({ data, onBack }: QuoteProps) {
   const quoteRef = useRef<HTMLDivElement>(null);
+  const pdfCaptureRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'scope'>('summary');
 
@@ -82,16 +105,16 @@ export function Quote({ data, onBack }: QuoteProps) {
   );
 
   const renderList = (text: string) => {
-    // Split by newline or bullet point and filter empty items
+    // Split by newline or bullet point, strip leading bullets, and filter empty items
     const items = text.split(/[\n•]/).filter(item => item.trim().length > 0);
     
     if (items.length === 0) return null;
 
     return (
-      <ul className="list-disc pl-5 space-y-1">
+      <ul className="list-disc list-outside ml-4 space-y-2 marker:text-xs marker:text-slate-700">
         {items.map((item, index) => (
-          <li key={index} className="text-slate-600 text-sm leading-snug">
-            {item.trim()}
+          <li key={index} className="text-sm text-slate-700 leading-snug">
+            {item.replace(/^•\s*/, '').trim()}
           </li>
         ))}
       </ul>
@@ -782,74 +805,33 @@ export function Quote({ data, onBack }: QuoteProps) {
   };
 
   const handleDownloadQuote = async () => {
-    if (!quoteRef.current || isGenerating) return;
+    if (isGenerating) return;
 
-    // ── MOBILE PATH: Programmatic .docx only (bypass html-to-image PDF entirely) ──
-    if (isMobile) {
-      setIsGenerating(true);
-      try {
-        await generateQuoteDocx();
-
-        // Still notify the API (without PDF attachment for mobile)
-        try {
-          const response = await fetch(
-            `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/submit-quote`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${publicAnonKey}`,
-              },
-              body: JSON.stringify({
-                ...data,
-                pdfBase64: null, // No PDF on mobile — DOCX only
-                mobileGenerated: true,
-              }),
-            }
-          );
-          if (response.ok) {
-            const result = await response.json();
-            console.log('[Mobile DOCX] Submission result:', result);
-            alert('Quote saved! A copy has been emailed to you and our team.');
-          } else {
-            console.warn('[Mobile DOCX] API notification failed:', response.status);
-            alert('Your quote was downloaded successfully.');
-          }
-        } catch (notifyErr) {
-          console.error('[Mobile DOCX] Notification error:', notifyErr);
-          alert('Your quote was downloaded, but we could not email a copy at this time.');
-        }
-      } catch (mobileErr) {
-        console.error('[Mobile DOCX] Generation error:', mobileErr);
-        alert('There was an error generating your quote. Please try again.');
-      } finally {
-        setIsGenerating(false);
-      }
-      return; // Exit early — skip entire desktop PDF flow
-    }
-
-    // ── DESKTOP PATH: html-to-image PDF + programmatic DOCX ──
-    // Capture current tab to restore later
-    const originalTab = activeTab;
+    // ── UNIFIED PATH: html-to-image PDF from hidden A4 container (all devices) ──
+    if (!pdfCaptureRef.current) return;
     setIsGenerating(true);
     
     // Store and temporarily remove problematic external stylesheets (like Google Calendar) 
     // that cause CORS errors in html-to-image
     const hiddenStyles: { node: Element, parent: Node, nextSibling: Node | null }[] = [];
     
-    // Get header and footer elements for visibility toggling
-    const quoteHeader = document.getElementById('quote-header');
-    const quoteFooter = document.getElementById('quote-footer');
-    
     try {
-      document.querySelectorAll('link[href*="calendar.google.com"]').forEach(style => {
-        if (style.parentNode) {
-          hiddenStyles.push({
-            node: style,
-            parent: style.parentNode,
-            nextSibling: style.nextSibling
-          });
-          style.parentNode.removeChild(style);
+      // Remove all problematic external stylesheets (Google Calendar, Figma S3, etc.)
+      document.querySelectorAll('link[rel="stylesheet"][href*="://"]').forEach(style => {
+        const href = style.getAttribute('href') || '';
+        if (
+          href.includes('calendar.google.com') ||
+          href.includes('s3-figma-foundry') ||
+          (href.includes('figma.com') && !href.includes(window.location.hostname))
+        ) {
+          if (style.parentNode) {
+            hiddenStyles.push({
+              node: style,
+              parent: style.parentNode,
+              nextSibling: style.nextSibling
+            });
+            style.parentNode.removeChild(style);
+          }
         }
       });
 
@@ -862,53 +844,125 @@ export function Quote({ data, onBack }: QuoteProps) {
       });
 
       const imgWidth = 210; // A4 width in mm
-      const element = quoteRef.current;
 
-      // --- PAGE 1: ESTIMATE SUMMARY ---
-      // Force switch to summary tab
-      setActiveTab('summary');
-      
-      // Page 1 Configuration: Show Header, Hide Footer
-      if (quoteHeader) quoteHeader.style.display = ''; // Default display (flex)
-      if (quoteFooter) quoteFooter.style.display = 'none';
-      
-      // Wait for React to render the summary view and DOM updates
-      await new Promise(resolve => setTimeout(resolve, 250));
+      // Ensure Plus Jakarta Sans is loaded before capture
+      try {
+        await document.fonts.ready;
+        // Also explicitly wait for the specific font family
+        await document.fonts.load("400 16px 'Plus Jakarta Sans'");
+        await document.fonts.load("500 16px 'Plus Jakarta Sans'");
+        await document.fonts.load("600 16px 'Plus Jakarta Sans'");
+        await document.fonts.load("700 16px 'Plus Jakarta Sans'");
+      } catch (fontErr) {
+        console.warn('Font preload warning (non-fatal):', fontErr);
+      }
 
-      const imgData1 = await toPng(element, { 
-        quality: 0.8, 
-        pixelRatio: 1.5, 
-      });
+      // Brief delay for any pending paint in the hidden container
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const elementWidth1 = element.offsetWidth;
-      const elementHeight1 = element.offsetHeight;
-      const imgHeight1 = (elementHeight1 * imgWidth) / elementWidth1;
-      
-      pdf.addImage(imgData1, 'PNG', 0, 0, imgWidth, imgHeight1);
+      const pageHeight = 297; // A4 height in mm
+      const safePageHeight = 295; // Safety margin to prevent sub-pixel overflow
 
-      // --- PAGE 2: DETAILED SCOPE (If Available) ---
-      if (hasScope) {
-        // Force switch to scope tab
-        setActiveTab('scope');
-        
-        // Page 2 Configuration: Hide Header, Show Footer
-        if (quoteHeader) quoteHeader.style.display = 'none';
-        if (quoteFooter) quoteFooter.style.display = ''; // Default display (block)
+      // Helper: render a captured image across one or more PDF pages
+      const addImageToPages = (imgData: string, elWidth: number, elHeight: number, isFirstSection: boolean) => {
+        const imgHeight = (elHeight * imgWidth) / elWidth;
+        // Clamp: if image fits within a single page (with tolerance), render as one page
+        const clampedHeight = imgHeight <= pageHeight ? Math.min(imgHeight, safePageHeight) : imgHeight;
 
-        // Wait for React to render the scope view and DOM updates
-        await new Promise(resolve => setTimeout(resolve, 250));
+        if (!isFirstSection) pdf.addPage();
 
-        const imgData2 = await toPng(element, { 
-          quality: 0.8, 
-          pixelRatio: 1.5, 
+        if (clampedHeight <= safePageHeight) {
+          // Single page — place image at top, clamped to safe height
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, clampedHeight);
+        } else {
+          // Multi-page — slice across pages
+          let remaining = clampedHeight;
+          let yOffset = 0;
+          while (remaining > 0) {
+            if (yOffset > 0) pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, -yOffset, imgWidth, clampedHeight);
+            yOffset += pageHeight;
+            remaining -= pageHeight;
+          }
+        }
+      };
+
+      // --- PAGE 1 (and beyond): ESTIMATE SUMMARY ---
+      const summaryEl = document.getElementById('capture-summary');
+      if (summaryEl) {
+        const summaryImg = await toPng(summaryEl, {
+          quality: 1.0,
+          pixelRatio: 2,
+          skipFonts: false,
+          skipDefaultFonts: true,
+          preferredFontFormat: 'woff2',
+          filter: toPngFilter,
+          backgroundColor: '#ffffff',
+          width: summaryEl.scrollWidth,
+          height: summaryEl.scrollHeight,
+          style: { boxSizing: 'border-box' },
+          onclone: (clonedDoc: Document) => {
+            // Remove all external stylesheets from the cloned document to prevent CORS errors
+            clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+              const href = link.getAttribute('href') || '';
+              if (
+                href.startsWith('http') &&
+                !href.includes(window.location.hostname) &&
+                !href.includes('fonts.googleapis.com') &&
+                !href.includes('fonts.gstatic.com')
+              ) {
+                link.remove();
+              }
+            });
+            // Also remove inline styles that reference external URLs
+            clonedDoc.querySelectorAll('style').forEach(style => {
+              const content = style.textContent || '';
+              if (content.includes('s3-figma-foundry') || content.includes('figma.com')) {
+                style.remove();
+              }
+            });
+          },
         });
+        addImageToPages(summaryImg, summaryEl.scrollWidth, summaryEl.scrollHeight, true);
+      }
 
-        const elementWidth2 = element.offsetWidth;
-        const elementHeight2 = element.offsetHeight;
-        const imgHeight2 = (elementHeight2 * imgWidth) / elementWidth2;
-
-        pdf.addPage();
-        pdf.addImage(imgData2, 'PNG', 0, 0, imgWidth, imgHeight2);
+      // --- SCOPE: Force a new page, then capture ---
+      const scopeEl = document.getElementById('capture-scope');
+      if (hasScope && scopeEl) {
+        const scopeImg = await toPng(scopeEl, {
+          quality: 1.0,
+          pixelRatio: 2,
+          skipFonts: false,
+          skipDefaultFonts: true,
+          preferredFontFormat: 'woff2',
+          filter: toPngFilter,
+          backgroundColor: '#ffffff',
+          width: scopeEl.scrollWidth,
+          height: scopeEl.scrollHeight,
+          style: { boxSizing: 'border-box' },
+          onclone: (clonedDoc: Document) => {
+            // Remove all external stylesheets from the cloned document to prevent CORS errors
+            clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+              const href = link.getAttribute('href') || '';
+              if (
+                href.startsWith('http') &&
+                !href.includes(window.location.hostname) &&
+                !href.includes('fonts.googleapis.com') &&
+                !href.includes('fonts.gstatic.com')
+              ) {
+                link.remove();
+              }
+            });
+            // Also remove inline styles that reference external URLs
+            clonedDoc.querySelectorAll('style').forEach(style => {
+              const content = style.textContent || '';
+              if (content.includes('s3-figma-foundry') || content.includes('figma.com')) {
+                style.remove();
+              }
+            });
+          },
+        });
+        addImageToPages(scopeImg, scopeEl.scrollWidth, scopeEl.scrollHeight, false);
       }
 
       // Convert to Base64
@@ -934,28 +988,15 @@ export function Quote({ data, onBack }: QuoteProps) {
       // Download PDF
       pdf.save(filename);
 
-      // Also generate and download Google Doc (.docx)
-      try {
-        await generateQuoteDocx();
-      } catch (docxError) {
-        console.error('Error generating DOCX:', docxError);
-        // Non-blocking: PDF was already saved, so just log the error
-      }
-
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating your PDF. Please try again.');
     } finally {
-      // Restore hidden styles and original tab
+      // Restore hidden styles
       hiddenStyles.forEach(({ node, parent, nextSibling }) => {
         parent.insertBefore(node, nextSibling);
       });
       
-      // Restore Header/Footer visibility
-      if (quoteHeader) quoteHeader.style.display = '';
-      if (quoteFooter) quoteFooter.style.display = '';
-      
-      setActiveTab(originalTab);
       setIsGenerating(false);
     }
   };
@@ -1122,7 +1163,7 @@ export function Quote({ data, onBack }: QuoteProps) {
           {/* Section 2: Middle (2-Column Grid on desktop, 1-col on mobile) */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-4">
             
-            {/* Left Column (60% on desktop, full on mobile) */}
+            {/* Left Column (60% on desktop, full on mobile) - SCREEN VIEW */}
             <div className="col-span-1 md:col-span-3 flex flex-col gap-6">
               <div className="bg-slate-50 p-5 rounded-lg h-full">
                 <h3 className="mb-3 font-bold text-slate-900 h-6">Project Overview</h3>
@@ -1181,9 +1222,9 @@ export function Quote({ data, onBack }: QuoteProps) {
                       {data.formData.additionalModules.length <= 2 ? (
                         <span>{data.formData.additionalModules.join(', ')}</span>
                       ) : (
-                        <ul className="list-disc mt-0.5 space-y-0 text-slate-900 leading-tight pl-[26px] pr-[0px] py-[0px]">
+                        <ul className="list-disc list-outside mt-0.5 space-y-0 leading-tight pl-[26px] pr-[0px] py-[0px] marker:text-xs marker:text-slate-700">
                           {data.formData.additionalModules.map((module, i) => (
-                            <li key={i}>{module}</li>
+                            <li key={i} className="text-sm text-slate-700">{module.replace(/^•\s*/, '')}</li>
                           ))}
                         </ul>
                       )}
@@ -1409,6 +1450,394 @@ export function Quote({ data, onBack }: QuoteProps) {
           </div>
         </div>
       </div>
+
+      {/* ═══ HIDDEN A4 CONTAINER — Always renders desktop layout for PDF capture ═══ */}
+      <div className="absolute left-[-9999px] top-0 overflow-hidden" aria-hidden="true">
+        <div ref={pdfCaptureRef} className="bg-transparent">
+          
+          {/* ═══ CAPTURE-SUMMARY: Header + Value Statement + Grid ═══ */}
+          <div id="capture-summary" className="p-10 bg-white w-[210mm] h-auto overflow-hidden" style={{ boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}>
+
+          {/* Document Header — desktop layout forced (no md: prefixes) */}
+          <div className="flex flex-row justify-between items-start text-left border-b-4 border-blue-700 pb-6 mb-5">
+            <div className="flex flex-row items-center gap-6">
+              <img 
+                src={logoImage} 
+                alt="BKT Advisory" 
+                className="w-16 h-16 rounded-full object-contain bg-white shadow-sm border border-slate-200 p-1"
+              />
+              <div>
+                <h1 className="text-3xl text-[#0F172B] mb-1">BKT Advisory</h1>
+                <p className="text-slate-600">Salesforce & AI Systems Consulting</p>
+                <div className="flex items-center justify-start gap-2 mt-1">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon key={i} size={14} className="fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="text-xs text-slate-500">Top Rated on Upwork</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 text-right">
+              <div className="flex items-center gap-4">
+                <div>
+                  <h3 className="text-slate-900 font-bold">John Burkhardt</h3>
+                  <p className="text-sm text-slate-600">Principal Consultant</p>
+                </div>
+                <img 
+                  src={profileImage} 
+                  alt="John Burkhardt" 
+                  className="w-12 h-12 rounded-full object-cover shadow-sm border border-slate-200"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ PAGE 1: ESTIMATE SUMMARY ═══ */}
+          <h2 className="text-2xl text-slate-900 mx-[0px] mt-[6px] mb-[20px] px-[0px] py-[6px]">
+            Professional Services Quote
+          </h2>
+
+          {/* Value Statement */}
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-blue-50 to-slate-50 p-5 rounded-lg border-l-4 border-blue-700">
+              <h3 className="text-blue-700 mb-2 font-semibold">Project Value Statement</h3>
+              <p className="text-slate-700 text-sm italic">
+                {data.formData.valueStatement || "This customized solution will streamline your operations, increase efficiency, and provide a predictable growth engine for your organization through strategic CRM architecture and AI-powered automation."}
+              </p>
+            </div>
+          </div>
+
+          {/* 2-Column Grid — forced desktop 3/5 + 2/5 layout */}
+          <div className="grid grid-cols-5 gap-6 mb-4">
+            {/* Left Column (60%) - PDF CAPTURE */}
+            <div className="col-span-3 flex flex-col gap-6">
+              <div className="bg-slate-50 p-5 rounded-lg h-full">
+                <h3 className="mb-3 font-bold text-slate-900 h-6">Project Overview</h3>
+                <div className="space-y-2 text-sm">
+                  {data.formData.companyName ? (
+                    <>
+                      <p>
+                        <span className="text-slate-600">Prepared for:</span>{' '}
+                        <span className="font-medium">{data.formData.companyName}</span>
+                      </p>
+                      <p>
+                        <span className="text-slate-600">Client:</span>{' '}
+                        <span className="font-medium">{data.formData.firstName} {data.formData.lastName}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <p>
+                      <span className="text-slate-600">Prepared for:</span>{' '}
+                      <span className="font-medium">{data.formData.firstName} {data.formData.lastName}</span>
+                    </p>
+                  )}
+                  {data.formData.website && (
+                    <p>
+                      <span className="text-slate-600">Website:</span>{' '}
+                      <span>{data.formData.website}</span>
+                    </p>
+                  )}
+                  {data.formData.selectedCRMs.length > 0 && (
+                    <p>
+                      <span className="text-slate-600">CRM Platforms:</span>{' '}
+                      <span>{data.formData.selectedCRMs.join(', ')}</span>
+                    </p>
+                  )}
+                  {data.formData.selectedClouds.length > 0 && (
+                    <p>
+                      <span className="text-slate-600">Salesforce Clouds:</span>{' '}
+                      <span>{data.formData.selectedClouds.join(', ')}</span>
+                    </p>
+                  )}
+                  {data.formData.selectedIntegrations.length > 0 && (
+                    <p>
+                      <span className="text-slate-600">Integrations:</span>{' '}
+                      <span>{data.formData.selectedIntegrations.join(', ')}</span>
+                    </p>
+                  )}
+                  {data.formData.selectedAITools.length > 0 && (
+                    <p>
+                      <span className="text-slate-600">AI Tools:</span>{' '}
+                      <span>{data.formData.selectedAITools.join(', ')}</span>
+                    </p>
+                  )}
+                  {data.formData.additionalModules.length > 0 && (
+                    <div>
+                      <span className="text-slate-600">Services:</span>{' '}
+                      {data.formData.additionalModules.length <= 2 ? (
+                        <span>{data.formData.additionalModules.join(', ')}</span>
+                      ) : (
+                        <ul className="list-disc list-outside mt-0.5 space-y-0 leading-tight pl-[26px] pr-[0px] py-[0px] marker:text-xs marker:text-slate-700">
+                          {data.formData.additionalModules.map((module, i) => (
+                            <li key={i} className="text-sm text-slate-700">{module.replace(/^•\s*/, '')}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                  <p>
+                    <span className="text-slate-600">Delivery Team:</span>{' '}
+                    <span className="capitalize">{data.formData.deliveryTeam} (USA/SA/Europe)</span>
+                  </p>
+                  {data.formData.powerUps.length > 0 && (
+                    <p>
+                      <span className="text-slate-600">Selected Power-Ups:</span>{' '}
+                      <span>{data.formData.powerUps.join(', ')}</span>
+                    </p>
+                  )}
+                  <div className="pt-4 mt-2 border-t border-slate-200">
+                    <p className="text-sm">
+                      <span className="font-bold text-slate-700">Estimated Timeline:</span>{' '}
+                      <span>{data.estimatedWeeks} weeks</span> (assuming 25 hours per week)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column (40%) */}
+            <div className="col-span-2 space-y-4">
+              {/* Cost Breakdown */}
+              <div className="border-2 border-blue-700 rounded-lg p-5 bg-white">
+                <h3 className="mb-4 font-bold text-slate-900 h-6">Detailed Cost Breakdown</h3>
+                <div className="space-y-2 text-sm">
+                  {hoursMatch ? (
+                    <div className="flex justify-between py-1 border-b border-slate-100">
+                      <span className="text-slate-600">Total Hours:</span>
+                      <span className="font-medium">{data.baseHours} hrs</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between py-1 border-b border-slate-100">
+                        <span className="text-slate-600">Base Project Hours:</span>
+                        <span>{data.baseHours} hrs</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-100">
+                        <span className="text-slate-600">Adjusted Hours:</span>
+                        <span className="font-medium">{data.adjustedHours} hrs</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">Admin Rate (40%):</span>
+                    <span>${data.adminRate}/hr</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">Developer Rate (60%):</span>
+                    <span>${data.developerRate}/hr</span>
+                  </div>
+                  {data.powerUpRate > 0 && (
+                    <div className="flex justify-between py-1 border-b border-slate-100 text-blue-700">
+                      <span>+ Power-Ups:</span>
+                      <span>+${data.powerUpRate}/hr</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">Final Hourly Rate:</span>
+                    <span>${data.finalHourlyRate}/hr</span>
+                  </div>
+                  <div className="flex flex-col items-end pt-4 mt-2">
+                    <span className="text-xs text-slate-500 uppercase tracking-wide">Total Project Cost</span>
+                    <div className="flex items-start gap-1">
+                      <span className="text-2xl font-bold text-blue-700">${data.totalCost.toLocaleString()}</span>
+                      {hasFiles && <span className="text-blue-700 text-lg font-bold">*</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Files Received */}
+              {hasFiles && (
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Files Received</h4>
+                  <div className="space-y-1">
+                    {data.formData.uploadedFiles.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
+                        <CheckIcon size={12} className="text-green-500" />
+                        <span className="truncate max-w-[180px]">{file.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Billing Terms */}
+              <div>
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  <div className="bg-slate-50 p-3 rounded-lg text-center border border-slate-100">
+                    <p className="text-xs text-slate-500 mb-1">Upfront (50%)</p>
+                    <div className="text-lg font-bold text-blue-700 mb-1">
+                      ${upfrontPayment.toLocaleString()}
+                    </div>
+                    <p className="text-[10px] text-slate-400">Due at start</p>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-lg text-center border border-slate-100">
+                    <p className="text-xs text-slate-500 mb-1">Midpoint (50%)</p>
+                    <div className="text-lg font-bold text-blue-700 mb-1">
+                      ${midpointPayment.toLocaleString()}
+                    </div>
+                    <p className="text-[10px] text-slate-400">Due at milestone</p>
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-500 text-center italic px-2">
+                  *Payment terms subject to final agreement.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* When no scope exists, signatures & footer must live inside capture-summary */}
+          {!hasScope && (
+            <div className="space-y-6">
+              <div className="pt-2 grid grid-cols-2 gap-12">
+                <div className="flex flex-col gap-1">
+                  <span className="font-bold text-slate-900">Client Signature:</span>
+                  <div className="mt-8 border-b border-slate-400"></div>
+                  <div className="mt-8 flex items-end gap-2">
+                    <span className="text-sm text-slate-500">Date:</span>
+                    <div className="flex-1 border-b border-slate-400 h-6"></div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-bold text-slate-900">John Burkhardt, BKT Advisory</span>
+                  <div className="mt-8 border-b border-slate-400 relative">
+                    <img 
+                      src={signatureImage} 
+                      alt="Signature" 
+                      className="absolute bottom-0 left-0 h-24 w-auto max-w-[200px] object-contain mix-blend-multiply pointer-events-none mx-[0px] mt-[0px] mb-[-45px]" 
+                    />
+                  </div>
+                  <div className="mt-8 flex items-end gap-2">
+                    <span className="text-sm text-slate-500">Date:</span>
+                    <div className="flex-1 border-b border-slate-400 h-6 flex items-end px-2 text-sm text-slate-700">
+                      {new Date().toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-200 text-center text-[10px] text-slate-400 space-y-1">
+                <p className="text-[12px]">This quote is valid for 30 days from the date of generation.</p>
+                <p className="text-[12px]">Important: All Upwork Terms of Service and fees apply to this engagement.</p>
+                {hasFiles && (
+                  <p className="text-[12px] text-blue-600 font-medium pt-1">
+                    *Final pricing subject to review of uploaded documentation.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          </div>
+          {/* ═══ END CAPTURE-SUMMARY ═══ */}
+
+          {/* ═══ CAPTURE-SCOPE: Scope + Signatures + Footer ═══ */}
+          <div id="capture-scope" className="p-10 bg-white w-[210mm] h-auto overflow-hidden" style={{ boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" }}>
+
+          {/* ═══ PAGE 2: DETAILED SCOPE (rendered inline, no tab gating) ═══ */}
+          {hasScope && (
+            <>
+              {/* Scope header */}
+              <div className="pt-8 border-t-4 border-blue-700">
+                <h2 className="text-2xl text-slate-900 mx-[0px] mt-[6px] mb-[20px] px-[0px] py-[6px]">
+                  Detailed Scope of Work
+                </h2>
+              </div>
+
+              <div className="mb-6 space-y-6">
+                <div className="p-6 bg-slate-50 rounded-lg border border-slate-200 text-sm">
+                  <p className="text-slate-700 mb-6 italic">
+                    The following sections outline the specific problems, requirements, and goals for this engagement based on our initial discovery.
+                  </p>
+                  <div className="space-y-4">
+                    {data.formData.scopeGoals && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 pb-2 border-b border-slate-200">
+                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-sm">1</div>
+                          <h3 className="text-lg font-bold text-slate-900">Goals & Objectives</h3>
+                        </div>
+                        <div className="pl-10">
+                          {renderList(data.formData.scopeGoals)}
+                        </div>
+                      </div>
+                    )}
+                    {data.formData.scopeProblems && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 pb-2 border-b border-slate-200">
+                          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-sm">2</div>
+                          <h3 className="text-lg font-bold text-slate-900">Current Problems & Pain Points</h3>
+                        </div>
+                        <div className="pl-10">
+                          {renderList(data.formData.scopeProblems)}
+                        </div>
+                      </div>
+                    )}
+                    {data.formData.scopeRequirements && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 pb-2 border-b border-slate-200">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">3</div>
+                          <h3 className="text-lg font-bold text-slate-900">Functional Requirements</h3>
+                        </div>
+                        <div className="pl-10">
+                          {renderList(data.formData.scopeRequirements)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Signatures — forced desktop 2-col layout */}
+          <div className="space-y-6">
+            <div className="pt-2 grid grid-cols-2 gap-12">
+              <div className="flex flex-col gap-1">
+                <span className="font-bold text-slate-900">Client Signature:</span>
+                <div className="mt-8 border-b border-slate-400"></div>
+                <div className="mt-8 flex items-end gap-2">
+                  <span className="text-sm text-slate-500">Date:</span>
+                  <div className="flex-1 border-b border-slate-400 h-6"></div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-bold text-slate-900">John Burkhardt, BKT Advisory</span>
+                <div className="mt-8 border-b border-slate-400 relative">
+                  <img 
+                    src={signatureImage} 
+                    alt="Signature" 
+                    className="absolute bottom-0 left-0 h-24 w-auto max-w-[200px] object-contain mix-blend-multiply pointer-events-none mx-[0px] mt-[0px] mb-[-45px]" 
+                  />
+                </div>
+                <div className="mt-8 flex items-end gap-2">
+                  <span className="text-sm text-slate-500">Date:</span>
+                  <div className="flex-1 border-b border-slate-400 h-6 flex items-end px-2 text-sm text-slate-700">
+                    {new Date().toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="pt-6 border-t border-slate-200 text-center text-[10px] text-slate-400 space-y-1">
+              <p className="text-[12px]">This quote is valid for 30 days from the date of generation.</p>
+              <p className="text-[12px]">Important: All Upwork Terms of Service and fees apply to this engagement.</p>
+              {hasFiles && (
+                <p className="text-[12px] text-blue-600 font-medium pt-1">
+                  *Final pricing subject to review of uploaded documentation.
+                </p>
+              )}
+            </div>
+          </div>
+
+          </div>
+          {/* ═══ END CAPTURE-SCOPE ═══ */}
+
+        </div>
+      </div>
+      {/* ═══ END HIDDEN A4 CONTAINER ═══ */}
+
     </div>
   );
 }

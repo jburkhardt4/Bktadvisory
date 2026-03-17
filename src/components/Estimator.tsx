@@ -3,17 +3,10 @@ import { FormData, QuoteData } from '../App';
 import { EstimatorStepper } from './EstimatorStepper';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner@2.0.3';
 // @ts-ignore
 import mammoth from 'mammoth/mammoth.browser';
 import * as pdfjsLib from 'pdfjs-dist';
-
-// Initialize Supabase client
-const supabase = createClient(
-  `https://${projectId}.supabase.co`,
-  publicAnonKey
-);
 
 // Set up PDF.js worker
 const pdfjsVersion = pdfjsLib.version || '4.0.379';
@@ -222,10 +215,12 @@ export function Estimator({
   };
 
   const powerUpRates: Record<string, number> = {
+    'Business Analyst': 4,
     'Project Manager': 5,
     'Customer Success Manager': 4,
-    'Solutions Architect': 8,
     'Developer': 5,
+    'Solutions Architect': 8,
+    'AI/ML Engineers': 6,
   };
 
   // Helper to extract text from files
@@ -388,6 +383,8 @@ export function Estimator({
     handleInputChange(field, newValues);
   };
 
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
@@ -397,6 +394,58 @@ export function Estimator({
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep3 = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.scopeGoals.trim()) newErrors.scopeGoals = 'Goals are required before proceeding';
+    if (!formData.scopeProblems.trim()) newErrors.scopeProblems = 'Problems are required before proceeding';
+    if (!formData.scopeRequirements.trim()) newErrors.scopeRequirements = 'Requirements are required before proceeding';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Generate project summary from scope fields (when no document was uploaded)
+  const generateSummaryFromScope = async () => {
+    // Skip if project description was already populated (e.g. by document analyzer)
+    if (formData.projectDescription.trim().length > 0) return;
+
+    setIsGeneratingSummary(true);
+    try {
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/generate-summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${publicAnonKey}`,
+        },
+        body: JSON.stringify({
+          goals: formData.scopeGoals,
+          problems: formData.scopeProblems,
+          requirements: formData.scopeRequirements,
+        }),
+      });
+
+      if (response.status === 429) {
+        toast.error("AI Limit Reached. You can manually enter a project description.");
+        return;
+      }
+
+      if (!response.ok) throw new Error('Summary generation failed');
+
+      const data = await response.json();
+      if (data.projectDescription) {
+        setFormData(prev => ({
+          ...prev,
+          projectDescription: data.projectDescription,
+        }));
+        toast.success('Project summary generated from your scope!');
+      }
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      // Non-blocking — user can still proceed and write description manually
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   const analyzeDocuments = async () => {
@@ -473,6 +522,7 @@ export function Estimator({
             const mergedIntegrations = [...new Set([...prev.selectedIntegrations, ...(data.suggestedInfrastructure || [])])].filter(i => Object.keys(integrationHours).includes(i));
             
             const mergedModules = [...new Set([...prev.additionalModules, ...(data.suggestedServices || [])])].filter(i => Object.keys(moduleHours).includes(i));
+            const mergedPowerUps = [...new Set([...prev.powerUps, ...(data.suggestedPowerUps || [])])].filter(i => Object.keys(powerUpRates).includes(i));
 
             return {
               ...prev,
@@ -483,7 +533,8 @@ export function Estimator({
               selectedCRMs: mergedCRMs,
               selectedClouds: mergedClouds,
               selectedIntegrations: mergedIntegrations,
-              additionalModules: mergedModules
+              additionalModules: mergedModules,
+              powerUps: mergedPowerUps,
             };
           });
           
@@ -502,7 +553,7 @@ export function Estimator({
     }
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1) {
       if (validateStep1()) setCurrentStep(2);
     } else if (currentStep === 2) {
@@ -511,13 +562,21 @@ export function Estimator({
         } else {
             setCurrentStep(3);
         }
+    } else if (currentStep === 3) {
+      if (!validateStep3()) return;
+      // If no document was uploaded, generate a project summary from scope fields
+      const hasUploadedDocs = formData.uploadedFiles && formData.uploadedFiles.length > 0;
+      if (!hasUploadedDocs && !formData.projectDescription.trim()) {
+        await generateSummaryFromScope();
+      }
+      setCurrentStep(4);
     } else {
       setCurrentStep(prev => Math.min(6, prev + 1));
     }
   };
 
   const handlePrevStep = () => {
-    if (isAnalyzing) return;
+    if (isAnalyzing || isGeneratingSummary) return;
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
@@ -537,12 +596,17 @@ export function Estimator({
     ...Object.keys(aiToolHours)
   ];
 
-  const showAutofillConfiguration = 
-    aiUsageCount.autofill < 3 &&
-    formData.projectDescription.trim().length > 0 &&
-    allTechKeywords.some(keyword => 
-      formData.projectDescription.toLowerCase().includes(keyword.toLowerCase())
-    );
+  const showAutofillConfiguration = (() => {
+    if (aiUsageCount.autofill >= 3) return false;
+    const combinedText = [
+      formData.projectDescription,
+      formData.scopeGoals,
+      formData.scopeProblems,
+      formData.scopeRequirements,
+    ].join(' ').toLowerCase();
+    if (!combinedText.trim()) return false;
+    return allTechKeywords.some(keyword => combinedText.includes(keyword.toLowerCase()));
+  })();
 
   const calculateQuote = async () => {
     setIsFinalizing(true);
@@ -646,40 +710,8 @@ export function Estimator({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Helper to check length safely
-    const hasContent = (val: any) => {
-        if (!val) return false;
-        if (typeof val === 'string') return val.trim().length > 0;
-        if (Array.isArray(val)) return val.length > 0;
-        return false;
-    };
-
-    const hasScopeContent = 
-      hasContent(formData.scopeGoals) ||
-      hasContent(formData.scopeProblems) || 
-      hasContent(formData.scopeRequirements);
-      
-    if (!hasScopeContent) return;
-
-    const isAutoFillable = 
-      !formData.projectDescription || 
-      (typeof formData.projectDescription === 'string' && 
-       (!formData.projectDescription.trim() || formData.projectDescription.startsWith("Primary Goals:")));
-
-    // Helper to safely get string content
-    const getString = (val: any) => {
-        if (Array.isArray(val)) return val.join('\n');
-        return typeof val === 'string' ? val : '';
-    };
-
-    if (isAutoFillable) {
-      const draft = `Primary Goals:\n${getString(formData.scopeGoals)}\n\nProblems:\n${getString(formData.scopeProblems)}\n\nKey Requirements:\n${getString(formData.scopeRequirements)}`;
-      if (draft !== formData.projectDescription) {
-        setFormData(prev => ({ ...prev, projectDescription: draft }));
-      }
-    }
-  }, [formData.scopeGoals, formData.scopeProblems, formData.scopeRequirements]);
+  // NOTE: Verbatim scope-to-projectDescription autofill removed.
+  // The /generate-summary AI endpoint handles this on Step 3 → 4 transition.
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -751,7 +783,7 @@ export function Estimator({
             >
               {/* Previous: text at all viewports */}
               <button
-                onClick={handlePrevStep}
+                onClick={() => { handlePrevStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                 className="px-3 py-1.5 md:px-4 md:py-1.5 text-[13px] md:text-[14px] border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors min-h-[36px] w-[100px] md:w-[110px] flex items-center justify-center gap-1.5"
               >
                 <ArrowLeftIcon size={18} className="text-slate-500" />
@@ -760,11 +792,13 @@ export function Estimator({
               
               {currentStep < 6 ? (
                 <button
-                  onClick={handleNextStep}
-                  disabled={isAnalyzing}
-                  className={`ml-auto px-3.5 py-1.5 md:px-5 md:py-1.5 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[36px] w-[101px] md:w-[111px] flex items-center justify-center gap-1.5 ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
+                  onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
+                  disabled={isAnalyzing || isGeneratingSummary}
+                  className={`ml-auto px-3.5 py-1.5 md:px-5 md:py-1.5 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[36px] w-[101px] md:w-[111px] flex items-center justify-center gap-1.5 ${(isAnalyzing || isGeneratingSummary) ? 'opacity-70 cursor-wait' : ''}`}
                 >
                   {isAnalyzing ? (
+                    <Loader2Icon size={18} className="text-white" />
+                  ) : isGeneratingSummary ? (
                     <Loader2Icon size={18} className="text-white" />
                   ) : (
                     <>
@@ -775,7 +809,7 @@ export function Estimator({
                 </button>
               ) : (
                 <button
-                  onClick={calculateQuote}
+                  onClick={() => { calculateQuote(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                   disabled={isFinalizing}
                   className={`ml-auto flex items-center gap-1.5 px-3.5 py-2 md:px-6 md:py-2 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[36px] w-[120px] md:w-[111px] justify-center whitespace-nowrap ${isFinalizing ? 'opacity-70 cursor-wait' : ''}`}
                 >
@@ -799,8 +833,27 @@ export function Estimator({
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="mb-2 text-[#0f172b] font-bold text-[18px] md:text-[20px]">Let's Get Started</h2>
-                <p className="text-slate-600 text-[14px] md:text-[16px]">Please provide your contact information to receive your personalized quote.</p>
+                <div className="flex flex-row items-start justify-between">
+                  <h2 className="mb-0 text-[#0f172b] font-bold text-[18px] md:text-[20px]">Let's Get Started</h2>
+                  <button
+                    onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
+                    disabled={isAnalyzing || isGeneratingSummary}
+                    className={`px-3.5 py-1.5 md:px-5 md:py-1.5 text-[13px] md:text-[14px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-opacity duration-300 min-h-[36px] w-[101px] md:w-[111px] flex items-center justify-center gap-1.5 shrink-0 ${(isAnalyzing || isGeneratingSummary) ? 'opacity-70 cursor-wait' : ''}`}
+                    style={{ opacity: (isAnalyzing || isGeneratingSummary) ? 0.7 : scrollOpacity }}
+                  >
+                    {isAnalyzing ? (
+                      <Loader2Icon size={18} className="text-white" />
+                    ) : isGeneratingSummary ? (
+                      <Loader2Icon size={18} className="text-white" />
+                    ) : (
+                      <>
+                        <span>Next</span>
+                        <ArrowRightIcon size={18} className="text-white" />
+                      </>
+                    )}
+                  </button>
+                  </div>
+                  <p className="text-slate-600 text-[14px] md:text-[16px]">Please provide your contact information to receive your personalized quote.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -974,9 +1027,10 @@ export function Estimator({
                   ref={scopeGoalsRef}
                   value={formData.scopeGoals}
                   onChange={(e) => handleInputChange('scopeGoals', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeGoals ? 'border-red-500' : 'border-slate-300'}`}
                   placeholder="Define success metrics..."
                 />
+                {errors.scopeGoals && <p className="text-red-500 text-xs mt-1">{errors.scopeGoals}</p>}
               </div>
 
               <div className="relative group">
@@ -999,9 +1053,10 @@ export function Estimator({
                   ref={scopeProblemsRef}
                   value={formData.scopeProblems}
                   onChange={(e) => handleInputChange('scopeProblems', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeProblems ? 'border-red-500' : 'border-slate-300'}`}
                   placeholder="Describe current pain points..."
                 />
+                {errors.scopeProblems && <p className="text-red-500 text-xs mt-1">{errors.scopeProblems}</p>}
               </div>
 
               <div className="relative group">
@@ -1024,9 +1079,10 @@ export function Estimator({
                   ref={scopeRequirementsRef}
                   value={formData.scopeRequirements}
                   onChange={(e) => handleInputChange('scopeRequirements', e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeRequirements ? 'border-red-500' : 'border-slate-300'}`}
                   placeholder="List key technical requirements..."
                 />
+                {errors.scopeRequirements && <p className="text-red-500 text-xs mt-1">{errors.scopeRequirements}</p>}
               </div>
             </div>
           )}
@@ -1077,7 +1133,7 @@ export function Estimator({
                         disabled={aiUsageCount.autofill >= 3}
                       >
                         <SparklesIcon size={14} className="group-hover:text-blue-500" />
-                        Autofill Configuration {aiUsageCount.autofill >= 3 && '(Max reached)'}
+                        Autofill Configurations {aiUsageCount.autofill >= 3 && '(Max reached)'}
                       </button>
                     )}
                   </div>
@@ -1182,14 +1238,14 @@ export function Estimator({
               <div className="md:hidden">
                 <button
                   onClick={() => onTriggerAIAction('autofill')}
-                  disabled={aiUsageCount.autofill >= 3 || !formData.projectDescription.trim()}
+                  disabled={aiUsageCount.autofill >= 3 || !(formData.projectDescription.trim() || formData.scopeGoals.trim() || formData.scopeProblems.trim() || formData.scopeRequirements.trim())}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <SparklesIcon size={18} />
                   <span className="font-medium text-[14px]">Assist Me</span>
                 </button>
-                {!formData.projectDescription.trim() && (
-                  <p className="text-[10px] text-slate-400 text-center mt-1.5">Add a project description above to enable AI assistance</p>
+                {!(formData.projectDescription.trim() || formData.scopeGoals.trim() || formData.scopeProblems.trim() || formData.scopeRequirements.trim()) && (
+                  <p className="text-[10px] text-slate-400 text-center mt-1.5">Add scope details or a project description to enable AI assistance</p>
                 )}
               </div>
             </div>
@@ -1276,7 +1332,7 @@ export function Estimator({
             <div className="flex justify-between w-full">
             {currentStep > 1 && (
               <button
-                onClick={handlePrevStep}
+                onClick={() => { handlePrevStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                 disabled={isAnalyzing}
                 className="px-5 py-3 md:px-6 md:py-2 min-h-[44px] min-w-[140px] md:min-w-[150px] flex items-center justify-center gap-2 text-[16px] md:text-[16px] border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
@@ -1286,19 +1342,21 @@ export function Estimator({
             
             {currentStep < 6 ? (
               <button
-                onClick={handleNextStep}
-                disabled={isAnalyzing}
-                className={`ml-auto flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-2 min-h-[44px] min-w-[140px] md:min-w-[150px] text-[16px] md:text-[16px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isAnalyzing ? 'opacity-70 cursor-wait' : ''}`}
+                onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
+                disabled={isAnalyzing || isGeneratingSummary}
+                className={`ml-auto flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-2 min-h-[44px] min-w-[140px] md:min-w-[150px] text-[16px] md:text-[16px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${(isAnalyzing || isGeneratingSummary) ? 'opacity-70 cursor-wait' : ''}`}
               >
                 {isAnalyzing ? (
                    <>Analyzing... <Loader2Icon size={18} /></>
+                ) : isGeneratingSummary ? (
+                   <>Summarizing... <Loader2Icon size={18} /></>
                 ) : (
                    <>Next <ArrowRightIcon size={18} /></>
                 )}
               </button>
             ) : (
               <button
-                onClick={calculateQuote}
+                onClick={() => { calculateQuote(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                 disabled={isFinalizing}
                 className={`ml-auto flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-3 min-h-[44px] min-w-[140px] md:min-w-[150px] text-[16px] md:text-[16px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${isFinalizing ? 'opacity-70 cursor-wait' : ''}`}
               >

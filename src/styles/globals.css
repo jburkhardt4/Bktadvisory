@@ -256,6 +256,19 @@
   }
 }
 
+/* Override Chrome autofill blue/purple highlight */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
 /* Mobile input text size — slightly larger for readability */
 @media (max-width: 768px) {
   input, textarea, select {

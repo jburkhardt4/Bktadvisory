@@ -871,6 +871,202 @@ app.post(`${ROUTE_PREFIX}/submit-quote`, async (c) => {
 });
 
 // ============================================================================
+// ROUTE: REQUEST CASE STUDY
+// ============================================================================
+
+type CaseStudyRequest = {
+  caseStudyLabel: string;
+  caseStudySummary: string;
+  sourceUrl: string;
+  requestedAt: string;
+};
+
+app.post(`${ROUTE_PREFIX}/request-case-study`, async (c) => {
+  const receivedAt = new Date().toISOString();
+  console.log(`📩 [request-case-study] Request received at ${receivedAt}`);
+
+  // ── Payload validation ───────────────────────────────────────────────────
+  let body: CaseStudyRequest;
+
+  try {
+    body = await c.req.json();
+  } catch {
+    console.error("[request-case-study] ❌ Failed to parse request body as JSON");
+    return c.json({ success: false, error: "Invalid JSON body" }, 400);
+  }
+
+  const missingFields: string[] = [];
+  if (!asString(body?.caseStudyLabel).trim()) missingFields.push("caseStudyLabel");
+  if (!asString(body?.caseStudySummary).trim()) missingFields.push("caseStudySummary");
+  if (!asString(body?.sourceUrl).trim()) missingFields.push("sourceUrl");
+  if (!asString(body?.requestedAt).trim()) missingFields.push("requestedAt");
+
+  if (missingFields.length > 0) {
+    console.error(`[request-case-study] ❌ Missing required fields: ${missingFields.join(", ")}`);
+    return c.json(
+      { success: false, error: "Missing required fields", fields: missingFields },
+      400,
+    );
+  }
+
+  const label = asString(body.caseStudyLabel).trim();
+  const summary = asString(body.caseStudySummary).trim();
+  const sourceUrl = asString(body.sourceUrl).trim();
+  const requestedAt = asString(body.requestedAt).trim();
+
+  console.log(`[request-case-study] 📋 Case study requested: "${label}"`);
+
+  // ── Environment variables ────────────────────────────────────────────────
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  const emailFrom = Deno.env.get("EMAIL_FROM");
+  const emailTo = Deno.env.get("EMAIL_TO");
+  const emailCc = Deno.env.get("EMAIL_CC");
+
+  if (!resendApiKey || !emailFrom || !emailTo) {
+    console.error(
+      "[request-case-study] ❌ Missing required env vars: RESEND_API_KEY, EMAIL_FROM, EMAIL_TO",
+    );
+    return c.json(
+      { success: false, error: "Server email configuration is incomplete" },
+      500,
+    );
+  }
+
+  // ── Build email ───────────────────────────────────────────────────────────
+  const subject = `BKT Advisory — Case Study Request: ${label}`;
+
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 600px;">
+      <h2 style="color: #1d4ed8; margin-bottom: 4px;">Case Study Request</h2>
+      <p style="color: #6b7280; font-size: 14px; margin-top: 0;">Received via BKT Advisory website</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 24px;">
+        <tr>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold; width: 35%;">Case Study</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">${label}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Summary</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">${summary}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Source Page</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+            <a href="${sourceUrl}" style="color: #1d4ed8;">${sourceUrl}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; font-weight: bold;">Requested At</td>
+          <td style="padding: 10px 0;">${requestedAt}</td>
+        </tr>
+      </table>
+
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+
+      <p style="font-size: 14px; color: #374151;">
+        A visitor on the BKT Advisory website clicked <strong>Request Case Study</strong>
+        for the <em>${label}</em> case study. Please follow up and share the relevant materials.
+      </p>
+
+      <p style="font-size: 13px; color: #6b7280; margin-top: 32px;">
+        —<br />
+        BKT Advisory Notification System<br />
+        <a href="https://bktadvisory.com" style="color: #1d4ed8;">bktadvisory.com</a>
+      </p>
+    </div>
+  `.trim();
+
+  const textBody = [
+    "BKT Advisory — Case Study Request",
+    "",
+    `Case Study  : ${label}`,
+    `Summary     : ${summary}`,
+    `Source Page : ${sourceUrl}`,
+    `Requested   : ${requestedAt}`,
+    "",
+    `A visitor clicked "Request Case Study" for the ${label} case study.`,
+    "Please follow up and share the relevant materials.",
+    "",
+    "— BKT Advisory Notification System",
+    "https://bktadvisory.com",
+  ].join("\n");
+
+  // ── Send via Resend ───────────────────────────────────────────────────────
+  const toAddresses = emailTo.split(",").map((e) => e.trim()).filter(Boolean);
+  const ccAddresses = emailCc
+    ? emailCc.split(",").map((e) => e.trim()).filter(Boolean)
+    : [];
+
+  const resendPayload: Record<string, unknown> = {
+    from: emailFrom,
+    to: toAddresses,
+    subject,
+    html: htmlBody,
+    text: textBody,
+  };
+
+  if (ccAddresses.length > 0) {
+    resendPayload.cc = ccAddresses;
+  }
+
+  console.log(`[request-case-study] 📤 Sending email via Resend to: ${toAddresses.join(", ")}`);
+
+  let resendResponse: Response;
+
+  try {
+    resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(resendPayload),
+    });
+  } catch (fetchError) {
+    console.error("[request-case-study] ❌ Network error contacting Resend:", fetchError);
+    return c.json(
+      { success: false, error: "Email service unreachable" },
+      502,
+    );
+  }
+
+  const resendBody = await resendResponse.text();
+
+  if (!resendResponse.ok) {
+    console.error(
+      `[request-case-study] ❌ Resend error ${resendResponse.status}: ${resendBody}`,
+    );
+    return c.json(
+      {
+        success: false,
+        error: "Failed to send email",
+        detail: resendBody,
+      },
+      502,
+    );
+  }
+
+  let emailId: string | undefined;
+
+  try {
+    const parsed = JSON.parse(resendBody) as { id?: string };
+    emailId = parsed?.id;
+  } catch {
+    // non-critical — email was still sent
+  }
+
+  console.log(
+    `[request-case-study] ✅ Email sent successfully. Resend ID: ${emailId ?? "unknown"}`,
+  );
+
+  return c.json({
+    success: true,
+    message: "Case study request received and forwarded to the BKT Advisory team.",
+    emailId: emailId ?? null,
+  });
+});
+
+// ============================================================================
 // SERVER
 // ============================================================================
 

@@ -763,10 +763,16 @@ export function Estimator({
                 </p>
               </div>
             </div>
-            <a href="https://www.upwork.com/freelancers/~01dd56d750898225c0" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
-              <span className="md:hidden">Upwork →</span>
-              <span className="hidden md:inline">View Upwork Profile →</span>
-            </a>
+            <div className="flex items-center gap-4">
+              <span className="text-blue-400 font-medium relative cursor-default text-sm md:text-base">
+                Project Estimator
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-400"></span>
+              </span>
+              <a href="https://www.upwork.com/freelancers/~01dd56d750898225c0" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-300 transition-colors text-sm">
+                <span className="md:hidden">Upwork →</span>
+                <span className="hidden md:inline">View Upwork Profile →</span>
+              </a>
+            </div>
           </div>
         </header>
 
@@ -834,7 +840,7 @@ export function Estimator({
             <div className="space-y-6">
               <div>
                 <div className="flex flex-row items-start justify-between">
-                  <h2 className="mb-0 text-[#0f172b] font-bold text-[18px] md:text-[20px]">Let's Get Started</h2>
+                  <h2 className="text-[#0f172b] font-bold text-[18px] md:text-[20px] mx-[0px] my-[4px]">Let's Get Started</h2>
                   <button
                     onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                     disabled={isAnalyzing || isGeneratingSummary}
@@ -853,7 +859,7 @@ export function Estimator({
                     )}
                   </button>
                   </div>
-                  <p className="text-slate-600 text-[14px] md:text-[16px]">Please provide your contact information to receive your personalized quote.</p>
+                  <p className="text-slate-600 text-[14px] mx-[0px] my-[4px]">Please provide your contact information to receive your personalized quote.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,5 +1,6 @@
 import { EstimatorCTA } from './EstimatorCTA';
 import { FinalCTA } from './FinalCTA';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const SearchIcon = ({ className, size }: { className?: string; size?: number }) => (
   <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -55,7 +56,7 @@ const steps: ProcessStep[] = [
     number: 1,
     icon: SearchIcon,
     title: 'Discover',
-    duration: '1–2 weeks',
+    duration: '1 – 2 weeks',
     description:
       'Deep dive into your current Salesforce setup, tech stack, and business goals. We identify gaps, opportunities, and quick wins through stakeholder interviews, system audits, and data analysis.',
     activities: [
@@ -75,7 +76,7 @@ const steps: ProcessStep[] = [
     number: 2,
     icon: MapIcon,
     title: 'Plan',
-    duration: '1–2 weeks',
+    duration: '1 – 2 weeks',
     description:
       'Design the architecture and roadmap — data models, integrations, AI agent workflows, and RevOps processes tailored to your growth targets. Every decision is guided by your business outcomes.',
     activities: [
@@ -96,7 +97,7 @@ const steps: ProcessStep[] = [
     number: 3,
     icon: HammerIcon,
     title: 'Build',
-    duration: '4–8 weeks',
+    duration: '4 – 8 weeks',
     description:
       'Hands-on implementation of Salesforce configurations, AI integrations, and automation workflows. We build in agile sprints with rigorous testing and continuous stakeholder feedback.',
     activities: [
@@ -117,7 +118,7 @@ const steps: ProcessStep[] = [
     number: 4,
     icon: RocketIcon,
     title: 'Launch',
-    duration: '1–2 weeks',
+    duration: '1 – 2 weeks',
     description:
       'Deploy to production with comprehensive user training, change management support, and real-time monitoring to ensure seamless adoption and immediate impact.',
     activities: [
@@ -158,6 +159,43 @@ const steps: ProcessStep[] = [
 ];
 
 export function ProcessPage() {
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [intensities, setIntensities] = useState<number[]>([1, 1, 1, 1, 1]);
+
+  const updateIntensities = useCallback(() => {
+    const viewportCenter = window.innerHeight / 2;
+    const distances = stepRefs.current.map((ref) => {
+      if (!ref) return Infinity;
+      const rect = ref.getBoundingClientRect();
+      // Distance from the step's icon area (top ~40px) to viewport center
+      const stepCenter = rect.top + 40;
+      return Math.abs(stepCenter - viewportCenter);
+    });
+
+    const newIntensities = distances.map((dist) => {
+      // === WIDE PEAK: Full intensity plateau within 100px of viewport center ===
+      if (dist <= 100) return 1.0;
+
+      // === SOFT FADE: Gradual fade over 700px range beyond the plateau edge ===
+      const fadeDistance = dist - 100;
+      const normalized = Math.min(fadeDistance / 700, 1);
+      return Math.max(0.12, 1 - normalized * 0.88);
+    });
+
+    setIntensities(newIntensities);
+  }, []);
+
+  useEffect(() => {
+    updateIntensities();
+    const onScroll = () => requestAnimationFrame(updateIntensities);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [updateIntensities]);
+
   return (
     <>
       {/* Page Hero */}
@@ -166,7 +204,7 @@ export function ProcessPage() {
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-[1200px] mx-auto px-6 lg:px-8 text-center">
+        <div className="relative max-w-[1200px] mx-auto px-6 lg:px-8 text-center pt-5 lg:pt-0 pb-1 lg:pb-0">
           <p className="text-blue-400 tracking-wide text-sm font-medium mb-4">BKT Advisory</p>
           <h1 className="text-4xl lg:text-5xl font-bold text-slate-50 tracking-tight mb-6">
             Our Process
@@ -183,17 +221,102 @@ export function ProcessPage() {
           <div className="space-y-0">
             {steps.map((step, index) => {
               const Icon = step.icon;
+              const intensity = intensities[index] ?? 0.15;
+              const iconBg = `rgba(37, 99, 235, ${intensity})`;
+              const shadowColor = `rgba(37, 99, 235, ${intensity * 0.25})`;
+              const labelOpacity = 0.2 + intensity * 0.7;
+              const connectorOpacity = intensity;
               return (
-                <div key={index} className="relative">
-                  {/* Connector line */}
+                <div key={index} className="relative" ref={(el) => { stepRefs.current[index] = el; }}>
+                  {/* Connector line - desktop */}
                   {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute left-[39px] top-[80px] bottom-0 w-0.5 bg-gradient-to-b from-blue-600 to-blue-200" />
+                    <div
+                      className="hidden lg:block absolute left-[119px] top-[80px] bottom-0 w-0.5 mx-[30px] my-[0px]"
+                      style={{ backgroundColor: `rgba(37, 99, 235, ${connectorOpacity})`, transition: 'background-color 0.3s ease' }}
+                    />
+                  )}
+                  {/* Connector line - mobile: left-aligned behind content */}
+                  {index < steps.length - 1 && (
+                    <div
+                      className="lg:hidden absolute left-[35px] top-[72px] bottom-0 w-0.5 z-0"
+                      style={{ backgroundColor: `rgba(37, 99, 235, ${connectorOpacity})`, transition: 'background-color 0.3s ease' }}
+                    />
                   )}
 
-                  <div className="grid lg:grid-cols-[80px_1fr] gap-8 pb-16 lg:pb-20">
-                    {/* Step Number & Icon */}
+                  {/* Mobile layout */}
+                  <div className="lg:hidden pb-16 relative">
+                    {/* Top row: Icon flush left + Step # + Title + Duration */}
+                    <div className="flex items-center gap-4 mb-5">
+                      {/* Icon */}
+                      <div
+                        className="w-18 h-18 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 relative z-10"
+                        style={{ backgroundColor: iconBg, boxShadow: `0 10px 15px -3px ${shadowColor}`, transition: 'background-color 0.3s ease, box-shadow 0.3s ease' }}
+                      >
+                        <Icon className="text-white" size={28} />
+                      </div>
+                      {/* Step # label + Title & duration below */}
+                      <div className="min-w-0">
+                        <span
+                          className="text-blue-600 font-bold block px-[0px] py-[3px]"
+                          style={{ fontSize: '1.3em', opacity: labelOpacity }}
+                        >
+                          Step {step.number}:
+                        </span>
+                        <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
+                          <h2 className="font-bold text-slate-900 tracking-tight text-[24px] leading-none">{step.title}</h2>
+                          <span className="bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100 mx-[10px] my-[0px] leading-none translate-y-[-2px] px-[10px] py-[3px]">
+                            {step.duration}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content - offset to clear the connector line */}
+                    <div className="relative z-10 space-y-6 pl-[96px] pr-[0px] py-[0px]">
+                      <p className="text-slate-700 leading-relaxed">{step.description}</p>
+
+                      <div className="grid gap-6">
+                        {/* Activities */}
+                        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                          <h3 className="text-sm font-bold text-slate-900 mb-4">Key Activities</h3>
+                          <ul className="space-y-2.5">
+                            {step.activities.map((activity, i) => (
+                              <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0" />
+                                {activity}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Deliverables */}
+                        <div className="bg-gradient-to-br from-blue-50 to-slate-50 rounded-xl p-6 border border-blue-100">
+                          <h3 className="text-sm font-bold text-slate-900 mb-4">Deliverables</h3>
+                          <ul className="space-y-2.5">
+                            {step.deliverables.map((del, i) => (
+                              <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 flex-shrink-0 mt-0.5">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                {del}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop layout */}
+                  <div className="hidden lg:grid lg:grid-cols-[80px_80px_1fr] gap-0 lg:gap-8 pb-16 lg:pb-20">
+                    {/* Step Label */}
+                    <div className="hidden lg:flex items-center h-20">
+                      <span className="text-blue-600 font-medium whitespace-nowrap mx-[8px] my-[0px] text-[24px]" style={{ opacity: labelOpacity, transition: 'opacity 0.3s ease' }}>Step {step.number}</span>
+                    </div>
+
+                    {/* Icon */}
                     <div className="flex lg:flex-col items-center gap-4 lg:gap-0">
-                      <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 relative z-10">
+                      <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg relative z-10" style={{ backgroundColor: iconBg, boxShadow: `0 10px 15px -3px ${shadowColor}`, transition: 'background-color 0.3s ease, box-shadow 0.3s ease' }}>
                         <Icon className="text-white" size={28} />
                       </div>
                     </div>
@@ -201,9 +324,8 @@ export function ProcessPage() {
                     {/* Content */}
                     <div className="space-y-6">
                       <div className="flex flex-wrap items-baseline gap-3">
-                        <span className="text-sm text-blue-600 font-medium">Step {step.number}</span>
-                        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">{step.title}</h2>
-                        <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100">
+                        <h2 className="font-bold text-slate-900 tracking-tight leading-none text-[32px]">{step.title}</h2>
+                        <span className="bg-blue-50 text-blue-700 font-medium rounded-full border border-blue-100 text-[14px] leading-none translate-y-[-2px] mx-[12px] my-[0px] px-[12px] py-[4px]">
                           {step.duration}
                         </span>
                       </div>

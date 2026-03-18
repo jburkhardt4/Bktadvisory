@@ -145,7 +145,7 @@ export function Reviews({ compact = false }: { compact?: boolean }) {
             </div>
             <span className="text-sm font-semibold text-slate-700">5.0 / 5.0</span>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-950 tracking-tight">
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-[#0f172b]">
             Client Reviews
           </h2>
           <p className="text-slate-600">

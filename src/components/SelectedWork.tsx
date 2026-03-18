@@ -67,7 +67,7 @@ export function SelectedWork() {
     <section id="work" className="bg-neutral-50 py-20 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h2 className="text-neutral-900 text-[24px] font-bold">Selected Work</h2>
+          <h2 className="text-neutral-900 font-bold text-[36px]">Selected Work</h2>
           <p className="text-neutral-600">
             Real results from Salesforce and AI transformations across FinTech, InsurTech, and high-growth startups.
           </p>

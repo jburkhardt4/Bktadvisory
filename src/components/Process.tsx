@@ -76,7 +76,7 @@ export function Process() {
     <section id="process" className="bg-white py-20 lg:py-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h2 className="text-neutral-900 text-[24px] font-bold">Process</h2>
+          <h2 className="font-bold text-[36px] text-[#0f172b]">Process</h2>
           <p className="text-neutral-600">
             A structured, five-phase approach from discovery to continuous growth—blending strategy with hands-on execution.
           </p>
@@ -97,7 +97,7 @@ export function Process() {
                   <div key={index} className="relative">
                     {/* Number Circle */}
                     <div className="flex justify-center mb-6">
-                      <div className="w-24 h-24 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center relative z-10">
+                      <div className="w-24 h-24 bg-white border-4 border-[#0F172B] rounded-full flex items-center justify-center relative z-10">
                         <div className="p-3 bg-blue-50 rounded-full">
                           <Icon className="text-blue-600" size={24} />
                         </div>
@@ -108,9 +108,9 @@ export function Process() {
                     <div className="text-center space-y-3">
                       <div className="space-y-1">
                         <p className="text-sm text-blue-600">Step {step.number}</p>
-                        <h3 className="text-neutral-900">{step.title}</h3>
+                        <h3 className="text-neutral-900 font-bold text-[20px]">{step.title}</h3>
                       </div>
-                      <p className="text-sm text-neutral-600">{step.description}</p>
+                      <p className="text-sm text-[#0f172b]">{step.description}</p>
                     </div>
                   </div>
                 );
@@ -127,7 +127,7 @@ export function Process() {
               <div key={index} className="flex gap-6">
                 {/* Left: Icon */}
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 bg-white border-4 border-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 bg-white border-4 border-[#0F172B] rounded-full flex items-center justify-center flex-shrink-0">
                     <Icon className="text-blue-600" size={20} />
                   </div>
                   {index < steps.length - 1 && (

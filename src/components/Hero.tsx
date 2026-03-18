@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ScheduleCallButton } from "./ScheduleCallButton";
 
 const SparklesIcon = ({ size, className }: { size?: number; className?: string }) => (
@@ -26,6 +27,41 @@ const ArrowRightIcon = ({ size, className }: { size?: number; className?: string
   </svg>
 );
 
+function MarqueeRow({ items, speed = 30 }: { items: string[]; speed?: number }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    const inner = innerRef.current;
+    if (!el || !inner) return;
+    let raf: number;
+    let pos = 0;
+    const halfWidth = inner.scrollWidth / 2;
+    const step = speed / 60;
+    const animate = () => {
+      pos += step;
+      if (pos >= halfWidth) pos = 0;
+      el.scrollLeft = pos;
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [speed]);
+
+  return (
+    <div ref={scrollRef} className="overflow-hidden whitespace-nowrap" style={{ scrollbarWidth: 'none' }}>
+      <div ref={innerRef} className="inline-flex gap-3">
+        {[...items, ...items].map((item, i) => (
+          <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-slate-300 backdrop-blur-sm flex-shrink-0">
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Hero() {
   const techStack = [
     "Salesforce",
@@ -46,7 +82,7 @@ export function Hero() {
           <div className="lg:col-span-7 space-y-8">
             {/* Eyebrow */}
             <p className="text-slate-400 tracking-wide">
-              Principal Consultant · BKT Advisory
+              Technical Consulting Advisor | BKT Advisory
             </p>
 
             {/* Headline */}
@@ -130,20 +166,17 @@ export function Hero() {
 
                 {/* Bottom Layer - Data Sources */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium text-xs sm:text-sm text-slate-300">
-                      Pipeline
-                    </span>
+                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
+                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">IT Systems</p>
+                    <MarqueeRow items={["Salesforce", "Agentforce", "Sales Cloud", "Service Cloud", "Marketing Cloud", "Financial Services Cloud (FSC)", "Insurance Cloud", "Experience Cloud", "Commerce Cloud"]} speed={25} />
                   </div>
-                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium text-xs sm:text-sm text-slate-300">
-                      Operations
-                    </span>
+                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
+                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">Cloud Apps</p>
+                    <MarqueeRow items={["Claude", "OpenAI Chat GPT 5", "Codex", "Copilot", "GitHub", "Figma", "Replit"]} speed={22} />
                   </div>
-                  <div className="group px-2 sm:px-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center text-center backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_15px_rgba(239,246,255,0.2)] cursor-default">
-                    <span className="font-medium text-xs sm:text-sm text-slate-300">
-                      Analytics
-                    </span>
+                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
+                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">AI Tools</p>
+                    <MarqueeRow items={["AI Agents", "n8n", "APIs", "RPA", "FSC", "n8n", "APIs", "RPA"]} speed={20} />
                   </div>
                 </div>
               </div>

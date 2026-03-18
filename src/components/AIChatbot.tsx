@@ -62,6 +62,8 @@ interface Message {
   showActionButtons?: boolean;
   isCalendarBooking?: boolean;
   calendarDuration?: '15min' | '30min' | '60min' | null;
+  isEstimatePrompt?: boolean;
+  hideCopy?: boolean;
 }
 
 type PageContext = "home" | "work" | "services" | "process" | "about";
@@ -91,6 +93,17 @@ export function AIChatbot() {
   const [hasGreeted, setHasGreeted] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingIframeUrl, setBookingIframeUrl] = useState<string | null>(null);
+  const [salesforcePromptUsed, setSalesforcePromptUsed] = useState(false);
+  const noFollowUpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup follow-up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (noFollowUpTimerRef.current) {
+        clearTimeout(noFollowUpTimerRef.current);
+      }
+    };
+  }, []);
 
   // Format messages: linkify "Project Estimator" references
   const formatMessageText = (text: string, sender: "user" | "bot") => {
@@ -182,6 +195,51 @@ export function AIChatbot() {
     setInputValue("");
     setIsLoading(true);
 
+    // Handle "Tell me about your Salesforce & AI services." prompt locally
+    if (text.trim() === "Tell me about your Salesforce & AI services.") {
+      // Mark as used so the button disappears
+      setSalesforcePromptUsed(true);
+      // Simulate a brief delay for natural feel
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const botMessage: Message = {
+        id: Date.now().toString() + "-bot",
+        text: "At BKT Advisory, our expertise extends far beyond standard Salesforce architecture. With the relentless surge of AI tools and software entering the market, it is easy for operations to become overwhelmed. We step in to turn that complexity into clarity through a creative, strategic lens\u2014leveraging a curated ecosystem of technology partners to build the exact right tech stack for your unique business.\n\nUltimately, we believe the most powerful solutions are often found in their simplest form. By eliminating technical friction, you don\u2019t just recover wasted time and capital\u2014you unlock the freedom to focus entirely on your next stage of growth.",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, botMessage]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Handle "No" response from the estimate prompt flow
+    if (text.trim() === "No") {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const noResponseMessage: Message = {
+        id: Date.now().toString() + "-bot",
+        text: "No worries! Please let me know if you have any other questions or if there is anything else you need.",
+        sender: "bot",
+        timestamp: new Date(),
+        hideCopy: true,
+      };
+      setMessages((prev) => [...prev, noResponseMessage]);
+      setIsLoading(false);
+
+      // Delayed follow-up message after 2.3 seconds
+      noFollowUpTimerRef.current = setTimeout(() => {
+        const followUpMessage: Message = {
+          id: Date.now().toString() + "-bot-followup",
+          text: "Well, are you looking for a quick automation, a full Salesforce implementation, or a custom AI workflow? If you share a bit about your current setup, I can suggest a scalable tech stack tailored to your team.",
+          sender: "bot",
+          timestamp: new Date(),
+          hideCopy: true,
+        };
+        setMessages((prev) => [...prev, followUpMessage]);
+      }, 2300);
+
+      return;
+    }
+
     try {
       const payload = {
         current_page: currentPage,
@@ -216,11 +274,20 @@ export function AIChatbot() {
 
       let botText = data.content || "";
       let isCalendarBooking = false;
+      let isEstimatePrompt = false;
 
       // Check if the response contains the Google Calendar booking URL
       const calendarUrlRegex = /https:\/\/calendar\.google\.com\/calendar\/appointments\/[^\s]+/;
       if (calendarUrlRegex.test(botText)) {
         isCalendarBooking = true;
+      }
+
+      // Check if the response is the estimate prompt (asking user to draft a description)
+      // The system prompt instructs the AI to respond with this exact phrasing
+      if (/would you like me to help you draft a description/i.test(botText)) {
+        isEstimatePrompt = true;
+        // Strip surrounding quotation marks if present
+        botText = botText.replace(/^["'\u201C\u201D]+|["'\u201C\u201D]+$/g, "").trim();
       }
 
       const botMessage: Message = {
@@ -229,6 +296,7 @@ export function AIChatbot() {
         sender: "bot",
         timestamp: new Date(),
         isCalendarBooking: isCalendarBooking,
+        isEstimatePrompt: isEstimatePrompt,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -459,8 +527,28 @@ export function AIChatbot() {
                       {formatMessageText(message.text, message.sender)}
                     </p>
 
-                    {/* Copy button for bot messages */}
-                    {message.sender === "bot" && message.text.length > 80 && (
+                    {/* Yes/No action buttons for estimate prompt messages */}
+                    {message.sender === "bot" && message.isEstimatePrompt && (
+                      <div className="flex flex-row gap-2 mt-3 pt-3 border-t border-slate-200">
+                        <button
+                          onClick={() => handleSendMessage("Yes")}
+                          disabled={isLoading}
+                          className="flex items-center gap-1 text-xs px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => handleSendMessage("No")}
+                          disabled={isLoading}
+                          className="flex items-center gap-1 text-xs px-4 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          No
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Copy button for bot messages (excluded: welcome message, estimate prompt, calendar booking, short messages) */}
+                    {message.sender === "bot" && message.text.length > 80 && message.id !== "1" && !message.isEstimatePrompt && !message.isCalendarBooking && !message.hideCopy && (
                       <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200">
                         <button
                           onClick={() => handleCopy(message.text, message.id)}
@@ -474,7 +562,6 @@ export function AIChatbot() {
                           ) : (
                             <>
                               <CopyIcon size={14} />
-                              Copy
                             </>
                           )}
                         </button>
@@ -499,7 +586,9 @@ export function AIChatbot() {
           <div className="p-4 bg-white border-t border-slate-200">
             {/* Quick Prompts */}
             <div className="mb-3 flex flex-wrap gap-2">
-              {getQuickPrompts().map((prompt, i) => (
+              {getQuickPrompts()
+                .filter((prompt) => !(salesforcePromptUsed && prompt === "Tell me about your Salesforce & AI services."))
+                .map((prompt, i) => (
                 <button
                   key={i}
                   onClick={() => handleSendMessage(prompt)}

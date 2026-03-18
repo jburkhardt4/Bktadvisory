@@ -47,7 +47,7 @@ export function About() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-neutral-900 mb-4 text-[24px] font-bold">About Me</h2>
+          <h2 className="text-neutral-900 mb-4 font-bold text-[36px]">About Me</h2>
           <p className="text-neutral-600 max-w-2xl mx-auto">
             Salesforce & AI Systems Architect helping companies build predictable growth engines
           </p>

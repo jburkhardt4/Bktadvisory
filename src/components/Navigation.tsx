@@ -34,6 +34,10 @@ const RocketIcon = ({ size }: { size?: number }) => (
 );
 
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
+
+const BKT_ICON_URL =
+  "https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo.png";
+
 import { ScheduleCallButton } from './ScheduleCallButton';
 
 const navLinks = [
@@ -83,10 +87,13 @@ export function Navigation() {
       <nav className="sticky top-0 z-50 bg-[#EFF6FF]/90 backdrop-blur-md border-b border-blue-100 px-[20px] py-[0px]">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-[116px]">
-            {/* Logo */}
-            <div className="py-4">
+            {/* Logo — hidden on mobile, shown md+ */}
+            <div className="py-4 hidden md:block">
               <Link to="/" className="block">
-                <img src={logo} alt="BKT Advisory Logo" className="h-[68px] w-auto" />
+                {/* Full logo — desktop xl+ only */}
+                <img src={logo} alt="BKT Advisory Logo" className="hidden xl:block h-[68px] w-auto" />
+                {/* Compact icon — md to xl */}
+                <img src={BKT_ICON_URL} alt="BKT Advisory" className="xl:hidden h-[48px] w-[48px] object-contain" />
               </Link>
             </div>
 
@@ -130,13 +137,18 @@ export function Navigation() {
               <ScheduleCallButton variant="nav" />
             </div>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 text-slate-900 hover:text-slate-700"
-            >
-              {isOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
-            </button>
+            {/* Mobile menu button + icon — anchored right */}
+            <div className="md:hidden flex items-center gap-3 ml-auto">
+              <Link to="/" className="block">
+                <img src={BKT_ICON_URL} alt="BKT Advisory" className="h-[40px] w-[40px] object-contain" />
+              </Link>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-2 text-slate-900 hover:text-slate-700"
+              >
+                {isOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+              </button>
+            </div>
           </div>
 
           {/* Mobile Navigation */}

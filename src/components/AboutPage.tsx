@@ -33,7 +33,10 @@ const ShieldCheckIcon = ({ className, size }: { className?: string; size?: numbe
 
 const certifications = [
   'Salesforce Certified Administrator',
+  'Salesforce Certified Business Analyst',
   'Salesforce Certified Platform App Builder',
+  'Salesforce Certified AI Associate',
+  'Salesforce Certified Agentforce Specialist',
   'Salesforce Certified Sales Cloud Consultant',
   'Salesforce Certified Service Cloud Consultant',
   'Salesforce Certified Financial Services Cloud (FSC)',
@@ -42,7 +45,7 @@ const certifications = [
 const highlights = [
   {
     icon: AwardIcon,
-    title: '5x Salesforce Certified',
+    title: '7x Salesforce Certified',
     description: 'Deep expertise across Sales Cloud, Service Cloud, and Financial Services Cloud',
   },
   {

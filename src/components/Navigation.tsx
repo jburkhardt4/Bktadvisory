@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 // Icon components to avoid lucide-react import issue
 const MenuIcon = ({ size }: { size?: number }) => (
@@ -79,23 +80,23 @@ export function Navigation({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
-            <a href="https://bktadvisory.com/#work" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
+            <Link to="/work" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
               Work
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-blue-700 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a href="https://bktadvisory.com/#services" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
+            </Link>
+            <Link to="/services" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
               Services
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-blue-700 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a href="https://bktadvisory.com/#process" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
+            </Link>
+            <Link to="/process" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
               Process
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-blue-700 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a href="https://bktadvisory.com/#about" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
+            </Link>
+            <Link to="/about" className="text-slate-900 hover:text-blue-700 transition-colors relative group">
               About
               <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-blue-700 group-hover:w-full transition-all duration-300"></span>
-            </a>
-            <a href="https://estimator.bktadvisory.com" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+            </Link>
+            <a href="https://estimator.bktadvisory.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
               <RocketIcon size={16} />
               Project Estimator
               <ExternalLinkIcon size={14} />
@@ -120,19 +121,19 @@ export function Navigation({
         {isOpen && (
           <div className="lg:hidden py-4 border-t border-blue-100">
             <div className="flex flex-col gap-4">
-              <a href="https://bktadvisory.com/#work" className="text-slate-900 hover:text-blue-700 transition-colors text-left">
+              <Link to="/work" onClick={() => setIsOpen(false)} className="text-slate-900 hover:text-blue-700 transition-colors text-left">
                 Work
-              </a>
-              <a href="https://bktadvisory.com/#services" className="text-slate-900 hover:text-blue-700 transition-colors text-left">
+              </Link>
+              <Link to="/services" onClick={() => setIsOpen(false)} className="text-slate-900 hover:text-blue-700 transition-colors text-left">
                 Services
-              </a>
-              <a href="https://bktadvisory.com/#process" className="text-slate-900 hover:text-blue-700 transition-colors text-left">
+              </Link>
+              <Link to="/process" onClick={() => setIsOpen(false)} className="text-slate-900 hover:text-blue-700 transition-colors text-left">
                 Process
-              </a>
-              <a href="https://bktadvisory.com/#about" className="text-slate-900 hover:text-blue-700 transition-colors text-left">
+              </Link>
+              <Link to="/about" onClick={() => setIsOpen(false)} className="text-slate-900 hover:text-blue-700 transition-colors text-left">
                 About
-              </a>
-              <a href="https://estimator.bktadvisory.com" className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+              </Link>
+              <a href="https://estimator.bktadvisory.com/home" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
                 <RocketIcon size={16} />
                 Project Estimator
                 <ExternalLinkIcon size={14} />

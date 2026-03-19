@@ -372,7 +372,7 @@ export function ProjectDetailPage() {
                   <div className="absolute left-4 top-4 bottom-4 w-px bg-slate-700" />
 
                   <div className="space-y-0">
-                    {projectEvents.map((event, idx) => (
+                    {projectEvents.map((event) => (
                       <div key={event.id} className="relative flex gap-4 pb-6 last:pb-0">
                         {/* Icon circle */}
                         <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${activityIconBg(event.type)}`}>
@@ -380,7 +380,7 @@ export function ProjectDetailPage() {
                         </div>
 
                         {/* Content */}
-                        <div className={`flex-1 min-w-0 pt-1 ${idx < projectEvents.length - 1 ? '' : ''}`}>
+                        <div className="flex-1 min-w-0 pt-1">
                           <p className="text-slate-200 text-sm leading-relaxed">{event.description}</p>
                           <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-500">
                             <span className="font-medium text-slate-400">{event.actor}</span>

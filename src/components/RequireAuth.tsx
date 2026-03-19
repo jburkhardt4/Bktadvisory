@@ -14,8 +14,12 @@ interface RequireAuthProps {
  */
 export function RequireAuth({ children }: RequireAuthProps) {
   const location = useLocation();
+
+  // Capture the full path, search queries, and hash fragments
+  const from = `${location.pathname}${location.search}${location.hash}`;
+
   if (!isAuthenticated()) {
-    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/auth" replace state={{ from }} />;
   }
   return <>{children}</>;
 }

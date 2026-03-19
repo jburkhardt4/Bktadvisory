@@ -4,7 +4,7 @@ import {
   convertInchesToTwip
 } from 'docx';
 import { useRef, useState, useEffect } from 'react';
-import { QuoteData } from '../App';
+import { QuoteData } from '../types';
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -1040,7 +1040,7 @@ export function Quote({ data, onBack }: QuoteProps) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Sticky wrapper for header (matching Estimator pattern) */}
-      <div className="sticky top-[116px] z-40 shadow-md">
+      <div className="sticky top-[80px] z-40 shadow-md">
         <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-4 px-4 md:py-6 md:px-8">
           <div className="max-w-[1440px] mx-auto flex justify-between items-center">
             <div className="flex items-center gap-4 md:gap-6">

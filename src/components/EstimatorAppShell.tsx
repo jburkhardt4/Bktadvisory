@@ -82,8 +82,6 @@ export function EstimatorAppShell() {
   };
 
   const handleNavigateToEstimator = () => {
-    // Already on the estimator page, maybe reset?
-    // For now, just scroll top
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

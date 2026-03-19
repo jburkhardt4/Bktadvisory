@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FormData, QuoteData } from '../App';
+import { FormData, QuoteData } from '../types';
 import { EstimatorStepper } from './EstimatorStepper';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
@@ -744,7 +744,7 @@ export function Estimator({
   return (
     <div className="min-h-screen flex-1 bg-[#eff6ff]">
       {/* Sticky wrapper for header + stepper (all viewports) */}
-      <div className="estimator-sticky-header sticky top-[116px] z-40 shadow-md">
+      <div className="estimator-sticky-header sticky top-[80px] z-40 shadow-md">
         <header className="bg-gradient-to-r from-[#0F172B] via-[#1e293b] to-[#0F172B] text-white py-4 px-4 md:py-6 md:px-8">
           <div className="max-w-[1440px] mx-auto flex justify-between items-center">
             <div className="flex items-center gap-4 md:gap-6">

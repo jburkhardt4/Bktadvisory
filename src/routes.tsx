@@ -8,6 +8,7 @@ import { AboutPage } from './components/AboutPage';
 import { AuthPage } from './components/AuthPage';
 import { PortalPlaceholder } from './components/PortalPlaceholder';
 import { EstimatorBoundary } from './components/EstimatorBoundary';
+import { ProjectDetailPage } from './components/portal/ProjectDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,8 @@ export const router = createBrowserRouter([
   { path: '/auth', Component: AuthPage },
   // Portal placeholder (Step 10 will add full portal dashboard)
   { path: '/portal', Component: PortalPlaceholder },
+  // Project detail page — drilldown from portal dashboard
+  { path: '/portal/project/:projectId', Component: ProjectDetailPage },
   // Estimator boundary — redirects to the standalone estimator app
   { path: '/estimator', Component: EstimatorBoundary },
 ]);

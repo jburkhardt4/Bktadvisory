@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { setSession, isAuthenticated } from '../utils/authSession';
 
 // BKT brand assets
 const BKT_ICON_URL =
@@ -89,6 +90,7 @@ interface FormErrors {
 type AuthMode = 'signup' | 'signin';
 
 export function AuthPage() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('signup');
   const [form, setForm] = useState<FormState>({
     firstName: '',
@@ -105,6 +107,12 @@ export function AuthPage() {
   const [ssoLoading, setSsoLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const firstNameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/portal', { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     firstNameRef.current?.focus();
@@ -167,15 +175,17 @@ export function AuthPage() {
     // Simulate API call
     await new Promise((r) => setTimeout(r, 1800));
     setIsLoading(false);
-    // Redirect concept
-    window.location.href = '/portal';
+    // Establish session then navigate to portal
+    setSession();
+    navigate('/portal', { replace: true });
   };
 
   const handleSSO = async (provider: string) => {
     setSsoLoading(provider);
     await new Promise((r) => setTimeout(r, 1500));
     setSsoLoading(null);
-    window.location.href = '/portal';
+    setSession();
+    navigate('/portal', { replace: true });
   };
 
   const inputClass = (field: string) =>

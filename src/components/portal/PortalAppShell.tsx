@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { clearSession } from '../../utils/authSession';
 
 const BKT_ICON_URL =
   'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo.png';
@@ -71,10 +72,12 @@ const navItems: { id: NavSection; label: string; disabled?: boolean; icon: React
 ];
 
 export function PortalAppShell({ children, activeSection = 'dashboard', onNavigate }: PortalAppShellProps) {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSignOut = () => {
-    console.log('[Portal] Sign out clicked — auth integration pending');
+    clearSession();
+    navigate('/auth', { replace: true });
   };
 
   const handleNavClick = (section: NavSection) => {

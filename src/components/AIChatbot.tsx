@@ -248,7 +248,7 @@ export function AIChatbot() {
       };
 
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-defb8dbd/chat`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/chat`,
         {
           method: "POST",
           headers: {

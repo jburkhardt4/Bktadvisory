@@ -18,7 +18,7 @@ app.use(
   }),
 );
 
-app.post("/make-server-defb8dbd/chat", async (c) => {
+app.post("/make-server-07a007e1/chat", async (c) => {
   try {
     const body = await c.req.json();
     const { current_page, current_date, project_goals } = body;
@@ -161,7 +161,7 @@ Continue gathering missing data until all fields are complete.`;
   }
 });
 
-app.post("/make-server-defb8dbd/request-case-study", async (c) => {
+app.post("/make-server-07a007e1/request-case-study", async (c) => {
   try {
     const body = await c.req.json();
     const { caseStudyLabel, caseStudySummary, sourceUrl, requestedAt } = body;

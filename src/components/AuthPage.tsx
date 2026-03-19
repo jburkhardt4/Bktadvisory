@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { setSession, isAuthenticated } from '../utils/authSession';
 
 // BKT brand assets
@@ -91,6 +91,7 @@ type AuthMode = 'signup' | 'signin';
 
 export function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mode, setMode] = useState<AuthMode>('signup');
   const [form, setForm] = useState<FormState>({
     firstName: '',
@@ -108,11 +109,40 @@ export function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const firstNameRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/portal', { replace: true });
+  const getSafeRedirectPath = (): string => {
+    const state = location.state as { from?: unknown } | null | undefined;
+    const from = state?.from;
+
+    // Handle React Router-style location object
+    if (from && typeof from === 'object' && 'pathname' in from) {
+      const loc = from as { pathname: string; search?: string; hash?: string };
+      const pathname = loc.pathname || '/portal';
+      const search = typeof loc.search === 'string' ? loc.search : '';
+      const hash = typeof loc.hash === 'string' ? loc.hash : '';
+      return pathname + search + hash;
     }
-  }, [navigate]);
+
+    // Handle simple string paths, guarding against open redirects
+    if (typeof from === 'string') {
+      try {
+        const url = new URL(from, window.location.origin);
+        if (url.origin !== window.location.origin) {
+          return '/portal';
+        }
+        return url.pathname + url.search + url.hash;
+      } catch {
+        return '/portal'; // Fallback for malformed URLs
+      }
+    }
+
+    return '/portal'; // Default fallback
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    const targetPath = getSafeRedirectPath();
+    navigate(targetPath, { replace: true });
+  }, [navigate, location]);
 
   useEffect(() => {
     firstNameRef.current?.focus();
@@ -175,9 +205,10 @@ export function AuthPage() {
     // Simulate API call
     await new Promise((r) => setTimeout(r, 1800));
     setIsLoading(false);
-    // Establish session then navigate to portal
+    // Establish session then navigate to saved destination
     setSession();
-    navigate('/portal', { replace: true });
+    const redirectPath = getSafeRedirectPath();
+    navigate(redirectPath, { replace: true });
   };
 
   const handleSSO = async (provider: string) => {
@@ -185,7 +216,8 @@ export function AuthPage() {
     await new Promise((r) => setTimeout(r, 1500));
     setSsoLoading(null);
     setSession();
-    navigate('/portal', { replace: true });
+    const redirectPath = getSafeRedirectPath();
+    navigate(redirectPath, { replace: true });
   };
 
   const inputClass = (field: string) =>

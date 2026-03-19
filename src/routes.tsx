@@ -6,6 +6,8 @@ import { ServicesPage } from './components/ServicesPage';
 import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
 import { AuthPage } from './components/AuthPage';
+import { PortalPlaceholder } from './components/PortalPlaceholder';
+import { EstimatorBoundary } from './components/EstimatorBoundary';
 
 export const router = createBrowserRouter([
   {
@@ -23,4 +25,8 @@ export const router = createBrowserRouter([
   },
   // Auth is a top-level route (no Layout shell)
   { path: '/auth', Component: AuthPage },
+  // Portal placeholder (Step 10 will add full portal dashboard)
+  { path: '/portal', Component: PortalPlaceholder },
+  // Estimator boundary — redirects to the standalone estimator app
+  { path: '/estimator', Component: EstimatorBoundary },
 ]);

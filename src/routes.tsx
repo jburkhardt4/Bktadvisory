@@ -5,6 +5,7 @@ import { WorkPage } from './components/WorkPage';
 import { ServicesPage } from './components/ServicesPage';
 import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
+import { AuthPage } from './components/AuthPage';
 
 export const router = createBrowserRouter([
   {
@@ -20,4 +21,6 @@ export const router = createBrowserRouter([
       { path: '*', Component: HomePage },
     ],
   },
+  // Auth is a top-level route (no Layout shell)
+  { path: '/auth', Component: AuthPage },
 ]);

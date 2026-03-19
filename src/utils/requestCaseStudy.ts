@@ -10,7 +10,7 @@ export interface CaseStudyRequest {
 export async function requestCaseStudy(
   payload: CaseStudyRequest
 ): Promise<{ success: boolean; message: string }> {
-  const endpoint = `https://${projectId}.supabase.co/functions/v1/make-server-defb8dbd/request-case-study`;
+  const endpoint = `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/request-case-study`;
 
   let response: Response;
   try {

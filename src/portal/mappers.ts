@@ -3,12 +3,18 @@
  *
  * These functions are pure (no side-effects, no UI imports) so they can be
  * consumed by both the estimator repo and the Bktadvisory portal repo.
+ *
+ * Visibility rules:
+ * - QuoteRecord and ProjectRecord are client-facing (visible in Client Portal).
+ * - OpportunityRecord is internal-only (BKT Advisory admin pipeline).
+ * - The Client Portal provides a secure, read-only dashboard — status flows
+ *   one-way from admin to client.
  */
 
 import type { QuoteData } from "../types";
 import type {
   ActivityEvent,
-  ActivityMilestone,
+  ActivityEventType,
   OpportunityRecord,
   ProjectRecord,
   QuoteRecord,
@@ -38,23 +44,26 @@ function nowISO(): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Create a placeholder activity event for a lifecycle milestone.
+ * Create an activity event for a lifecycle milestone.
  *
- * @param milestone - one of the predefined lifecycle milestones
- * @param actor     - (optional) email or user id of the person triggering the event
- * @param metadata  - (optional) arbitrary context for the event
+ * @param type        - one of the canonical activity event types
+ * @param recordId    - the quote, project, or other record this event belongs to
+ * @param description - human-readable description of the event
+ * @param actor       - email or user id of the person who triggered the event
  */
 export function createActivityEvent(
-  milestone: ActivityMilestone,
-  actor?: string,
-  metadata?: Record<string, unknown>,
+  type: ActivityEventType,
+  recordId: string,
+  description: string,
+  actor: string,
 ): ActivityEvent {
   return {
     id: generateId("evt"),
-    milestone,
+    type,
+    recordId,
+    description,
     timestamp: nowISO(),
-    ...(actor !== undefined && { actor }),
-    ...(metadata !== undefined && { metadata }),
+    actor,
   };
 }
 
@@ -63,80 +72,52 @@ export function createActivityEvent(
 // ---------------------------------------------------------------------------
 
 /**
+ * Estimator step → Quote lifecycle mapping:
+ *   Step 1 (Contact Info)           → draft
+ *   Steps 2–6 (Scope/Config)       → scoping
+ *   Step 7 (Get Quote / Generated)  → quoted
+ *   Step 8 (Download & Send Quote)  → sent
+ *   Step 9 (Resolution)            → accepted / declined / expired
+ */
+
+/**
  * Transform estimator `QuoteData` into a portal `QuoteRecord`.
  *
- * The resulting record has status `"draft"` and an initial `quote_generated`
- * activity event.  The caller can later update the status and append events
- * as the quote moves through its lifecycle.
+ * The resulting record has status `"quoted"` (the quote has been generated).
+ * The caller can later update the status and append activity events as the
+ * quote moves through its lifecycle.
  *
  * @param quoteData - output from the estimator's `calculateQuote` function
- * @param actor     - (optional) email of the user who generated the quote
  */
 export function mapQuoteDataToQuoteRecord(
   quoteData: QuoteData,
-  actor?: string,
 ): QuoteRecord {
   const now = nowISO();
   const { formData } = quoteData;
+  const id = generateId("quote");
 
   return {
-    id: generateId("quote"),
-    status: "draft" as QuoteStatus,
+    id,
+    clientName: `${formData.firstName} ${formData.lastName}`,
+    companyName: formData.companyName,
+    amount: quoteData.totalCost,
+    status: "quoted" as QuoteStatus,
     createdAt: now,
     updatedAt: now,
-
-    contact: {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      companyName: formData.companyName,
-      email: formData.workEmail,
-      phone: formData.mobilePhone,
-      website: formData.website,
-    },
-
-    project: {
-      type: formData.projectType,
-      description: formData.projectDescription,
-      scopeProblems: formData.scopeProblems,
-      scopeRequirements: formData.scopeRequirements,
-      scopeGoals: formData.scopeGoals,
-      selectedCRMs: [...formData.selectedCRMs],
-      selectedClouds: [...formData.selectedClouds],
-      selectedIntegrations: [...formData.selectedIntegrations],
-      selectedAITools: [...formData.selectedAITools],
-      additionalModules: [...formData.additionalModules],
-      deliveryTeam: formData.deliveryTeam,
-      powerUps: [...formData.powerUps],
-    },
-
-    pricing: {
-      baseHours: quoteData.baseHours,
-      complexityMultiplier: quoteData.complexityMultiplier,
-      adjustedHours: quoteData.adjustedHours,
-      adminRate: quoteData.adminRate,
-      developerRate: quoteData.developerRate,
-      baseBlendedRate: quoteData.baseBlendedRate,
-      powerUpRate: quoteData.powerUpRate,
-      finalHourlyRate: quoteData.finalHourlyRate,
-      totalCost: quoteData.totalCost,
-      estimatedWeeks: quoteData.estimatedWeeks,
-    },
-
-    valueStatement: formData.valueStatement,
-
-    activity: [createActivityEvent("quote_generated", actor)],
+    description: formData.projectDescription,
   };
 }
 
 // ---------------------------------------------------------------------------
-// OpportunityRecord mapper (optional)
+// OpportunityRecord mapper (internal-only — NEVER exposed to Client Portal)
 // ---------------------------------------------------------------------------
 
 /**
  * Create an `OpportunityRecord` from a `QuoteRecord`.
  *
- * An opportunity is optional and is typically created when a quote is first
- * sent to a prospect.  The caller decides when to invoke this mapper.
+ * An opportunity is internal-only and is typically created when a quote is
+ * first sent to a prospect. The caller decides when to invoke this mapper.
+ * This data must NEVER be exposed or rendered in the Client Portal UI.
  *
  * @param quote - the portal `QuoteRecord` to derive the opportunity from
  */
@@ -147,14 +128,12 @@ export function mapQuoteToOpportunityRecord(
 
   return {
     id: generateId("opp"),
-    quoteId: quote.id,
-    stage: "proposal",
+    name: `${quote.companyName} – Opportunity`,
+    companyName: quote.companyName,
+    status: "proposal_prepared",
+    value: quote.amount,
     createdAt: now,
     updatedAt: now,
-    companyName: quote.contact.companyName,
-    contactEmail: quote.contact.email,
-    estimatedValue: quote.pricing.totalCost,
-    description: quote.project.description,
   };
 }
 
@@ -164,16 +143,14 @@ export function mapQuoteToOpportunityRecord(
 
 /**
  * Rule: a `ProjectRecord` is created **only** when a quote reaches the
- * `"accepted"` status.  This function encodes that rule.
+ * `"accepted"` status. This function encodes that rule.
  *
  * @param quote       - the accepted `QuoteRecord`
- * @param opportunity - (optional) linked opportunity
  * @param actor       - (optional) email of the user who accepted the quote
  * @returns a new `ProjectRecord` or `null` if the quote is not accepted
  */
 export function mapAcceptedQuoteToProjectRecord(
   quote: QuoteRecord,
-  opportunity?: OpportunityRecord,
   actor?: string,
 ): ProjectRecord | null {
   // Rule: only accepted quotes produce a project record.
@@ -182,29 +159,15 @@ export function mapAcceptedQuoteToProjectRecord(
   }
 
   const now = nowISO();
-  const { contact, project, pricing } = quote;
 
   return {
     id: generateId("proj"),
-    quoteId: quote.id,
-    opportunityId: opportunity?.id,
-    status: "planning",
+    name: `${quote.companyName} – Project`,
+    companyName: quote.companyName,
+    status: "intake",
+    owner: actor ?? "system",
+    targetMilestone: "",
     createdAt: now,
     updatedAt: now,
-
-    name: `${contact.companyName} – ${project.type}`,
-    companyName: contact.companyName,
-    contactEmail: contact.email,
-    description: project.description,
-
-    estimatedHours: pricing.adjustedHours,
-    estimatedWeeks: pricing.estimatedWeeks,
-    totalBudget: pricing.totalCost,
-    hourlyRate: pricing.finalHourlyRate,
-
-    deliveryTeam: project.deliveryTeam,
-    powerUps: [...project.powerUps],
-
-    activity: [createActivityEvent("project_created", actor)],
   };
 }

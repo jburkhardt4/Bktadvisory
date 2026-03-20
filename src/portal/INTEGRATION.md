@@ -19,47 +19,79 @@ that the portal can persist and manage.
 
 | File | Purpose |
 |---|---|
-| `src/portal/types.ts` | TypeScript interfaces for `QuoteRecord`, `OpportunityRecord`, `ProjectRecord`, and `ActivityEvent` |
+| `src/portal/types.ts` | TypeScript interfaces for `QuoteRecord`, `OpportunityRecord`, `ProjectRecord`, and `ActivityEvent` — mirrors the canonical lifecycle model from `Bktadvisory/src/types/portal.ts` |
 | `src/portal/mappers.ts` | Pure mapper functions — no UI dependencies |
 | `src/portal/samples.ts` | Sample input (`QuoteData`) and output objects for integration testing |
 | `src/portal/index.ts` | Barrel re-export for convenient imports |
 
 ---
 
+## Visibility Rules
+
+- **QuoteRecord** and **ProjectRecord** are client-facing (visible in Client Portal).
+- **OpportunityRecord** is internal-only (BKT Advisory admin pipeline) — NEVER exposed to end-users.
+- The Client Portal provides a secure, read-only dashboard — status flows one-way from admin to client.
+
+---
+
 ## Mapper Functions
 
-### `mapQuoteDataToQuoteRecord(quoteData, actor?)`
+### `mapQuoteDataToQuoteRecord(quoteData)`
 
 Transforms estimator `QuoteData` → `QuoteRecord`.
 
-- Sets initial status to `"draft"`.
-- Appends a `quote_generated` activity event.
+- Sets initial status to `"quoted"` (the quote has been generated at Step 7).
 - **Call site:** immediately after `calculateQuote()` completes.
 
 ### `mapQuoteToOpportunityRecord(quoteRecord)`
 
 Creates an `OpportunityRecord` from a `QuoteRecord`.
 
-- Sets initial stage to `"proposal"`.
+- Sets initial status to `"proposal_prepared"`.
+- **Internal-only:** this record is never exposed to the Client Portal.
 - **Call site:** when the quote is first sent to a prospect (optional).
 
-### `mapAcceptedQuoteToProjectRecord(quoteRecord, opportunity?, actor?)`
+### `mapAcceptedQuoteToProjectRecord(quoteRecord, actor?)`
 
 Creates a `ProjectRecord` from an accepted `QuoteRecord`.
 
 - **Rule:** returns `null` unless `quote.status === "accepted"`.
-- Appends a `project_created` activity event.
+- Sets initial status to `"intake"`.
 - **Call site:** when the portal marks a quote as accepted.
 
-### `createActivityEvent(milestone, actor?, metadata?)`
+### `createActivityEvent(type, recordId, description, actor)`
 
 Factory for individual `ActivityEvent` objects.
 
-Supported milestones:
+Supported event types (canonical):
 - `quote_generated`
 - `quote_sent`
+- `quote_revised`
 - `quote_accepted`
 - `project_created`
+- `discovery_completed`
+- `scope_approved`
+- `design_started`
+- `build_started`
+- `client_feedback_requested`
+- `client_feedback_received`
+- `blocked`
+- `unblocked`
+- `uat_started`
+- `completed`
+- `archived`
+
+---
+
+## Estimator Step → Quote Lifecycle Mapping
+
+| Estimator Step | Quote Status |
+|---|---|
+| Step 1 (Contact Info) | `draft` |
+| Steps 2–6 (Upload Docs, Scope, IT Infrastructure, Services, Team & Extras) | `scoping` |
+| Step 7 (Get Quote / Generated Quote) | `quoted` |
+| Step 8 (Download & Send Quote) | `sent` |
+| Step 9 (Resolution) | `accepted` / `declined` / `expired` |
 
 ---
 
@@ -74,25 +106,25 @@ calculateQuote()
   QuoteData ──────────►  mapQuoteDataToQuoteRecord()
                                    │
                                    ▼
-                              QuoteRecord (draft)
+                              QuoteRecord (quoted)
                                    │
                          ┌─────────┴──────────┐
                          ▼                    ▼
               mapQuoteToOpportunity()   Send to prospect
-              (optional)                      │
+              (internal-only)                 │
                          │                    ▼
-                         ▼            ActivityEvent: quote_sent
+                         ▼            Status → sent
                   OpportunityRecord           │
-                                              ▼
+                  (proposal_prepared)         ▼
                                     Client accepts quote
-                                    ActivityEvent: quote_accepted
+                                    Status → accepted
                                               │
                                               ▼
                                   mapAcceptedQuoteToProjectRecord()
                                               │
                                               ▼
                                         ProjectRecord
-                                    ActivityEvent: project_created
+                                        (intake)
 ```
 
 ---
@@ -126,13 +158,18 @@ The **Bktadvisory** portal repository should:
 4. **Replace the ID generator** (`generateId`) with a production-grade
    strategy (e.g. UUID v4 or database-generated IDs).
 
-5. **Append activity events** to records as the lifecycle progresses:
+5. **Persist activity events** in a separate `activity_events` table (or
+   equivalent), keyed by `recordId` as a foreign key. The `recordId` field
+   is entity-agnostic — it may reference a quote, project, or any other
+   record. Activity events are appended as the lifecycle progresses:
    ```ts
-   quoteRecord.activity.push(
-     createActivityEvent("quote_sent", "sales@bktadvisory.com", {
-       recipientEmail: "client@example.com",
-     })
+   const event = createActivityEvent(
+     "quote_sent",
+     quoteRecord.id,
+     "Quote sent to client@example.com",
+     "sales@bktadvisory.com",
    );
+   // Persist `event` to the activity_events table
    ```
 
 ---

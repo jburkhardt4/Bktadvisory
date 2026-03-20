@@ -8,9 +8,9 @@
 
 export type {
   ActivityEvent,
-  ActivityMilestone,
+  ActivityEventType,
   OpportunityRecord,
-  OpportunityStage,
+  OpportunityStatus,
   ProjectRecord,
   ProjectStatus,
   QuoteRecord,

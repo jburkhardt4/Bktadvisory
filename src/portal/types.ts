@@ -2,6 +2,7 @@
  * Portal lifecycle record types.
  *
  * These types define the contract consumed by the Bktadvisory portal repository.
+ * They mirror the canonical lifecycle model defined in Bktadvisory/src/types/portal.ts.
  * They are intentionally decoupled from the estimator UI so that the portal can
  * import them without pulling in React or any UI dependency.
  */
@@ -10,129 +11,146 @@
 // Activity events
 // ---------------------------------------------------------------------------
 
-/** Milestone names emitted during the quote → project lifecycle. */
-export type ActivityMilestone =
+/**
+ * Activity event types: discrete events recorded in the project activity feed.
+ */
+export type ActivityEventType =
   | "quote_generated"
   | "quote_sent"
+  | "quote_revised"
   | "quote_accepted"
-  | "project_created";
+  | "project_created"
+  | "discovery_completed"
+  | "scope_approved"
+  | "design_started"
+  | "build_started"
+  | "client_feedback_requested"
+  | "client_feedback_received"
+  | "blocked"
+  | "unblocked"
+  | "uat_started"
+  | "completed"
+  | "archived";
 
-/** A single timestamped event in a record's activity log. */
+/** A single entry in the activity feed (may reference a quote, project, or other record). */
 export interface ActivityEvent {
   id: string;
-  milestone: ActivityMilestone;
+  type: ActivityEventType;
+  recordId: string;
+  description: string;
   timestamp: string; // ISO-8601
-  actor?: string; // email or user id of the person who triggered the event
-  metadata?: Record<string, unknown>;
+  actor: string;
 }
 
 // ---------------------------------------------------------------------------
 // Quote record
 // ---------------------------------------------------------------------------
 
-export type QuoteStatus = "draft" | "sent" | "accepted" | "rejected" | "expired";
+/**
+ * Quote lifecycle: tracks a quote from initial draft through acceptance or expiry.
+ * - draft: quote is being prepared
+ * - scoping: requirements are being gathered
+ * - quoted: quote has been generated
+ * - sent: quote has been delivered to client
+ * - revision_requested: client has asked for changes
+ * - accepted: client accepted the quote
+ * - declined: client declined the quote
+ * - expired: quote passed its validity window
+ */
+export type QuoteStatus =
+  | "draft"
+  | "scoping"
+  | "quoted"
+  | "sent"
+  | "revision_requested"
+  | "accepted"
+  | "declined"
+  | "expired";
 
+/** Canonical record for a quote in the client portal. */
 export interface QuoteRecord {
   id: string;
+  clientName: string;
+  companyName: string;
+  amount: number;
   status: QuoteStatus;
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601
-
-  // Contact snapshot
-  contact: {
-    firstName: string;
-    lastName: string;
-    companyName: string;
-    email: string;
-    phone: string;
-    website: string;
-  };
-
-  // Project summary
-  project: {
-    type: string;
-    description: string;
-    scopeProblems: string;
-    scopeRequirements: string;
-    scopeGoals: string;
-    selectedCRMs: string[];
-    selectedClouds: string[];
-    selectedIntegrations: string[];
-    selectedAITools: string[];
-    additionalModules: string[];
-    deliveryTeam: string;
-    powerUps: string[];
-  };
-
-  // Pricing
-  pricing: {
-    baseHours: number;
-    complexityMultiplier: number;
-    adjustedHours: number;
-    adminRate: number;
-    developerRate: number;
-    baseBlendedRate: number;
-    powerUpRate: number;
-    finalHourlyRate: number;
-    totalCost: number;
-    estimatedWeeks: number;
-  };
-
-  valueStatement?: string;
-
-  activity: ActivityEvent[];
+  description: string;
 }
 
 // ---------------------------------------------------------------------------
-// Opportunity record (optional — created alongside certain quotes)
+// Opportunity record (internal-only — NEVER exposed to Client Portal UI)
 // ---------------------------------------------------------------------------
 
-export type OpportunityStage =
-  | "prospecting"
-  | "qualification"
-  | "proposal"
+/**
+ * Opportunity lifecycle: tracks a sales opportunity from discovery through close.
+ * This data is strictly internal to BKT Advisory's admin pipeline.
+ * - discovery: initial exploration of the opportunity
+ * - solutioning: designing the proposed solution
+ * - proposal_prepared: proposal document is ready
+ * - proposal_sent: proposal has been sent to prospect
+ * - negotiation: terms are being negotiated
+ * - closed_won: deal was won
+ * - closed_lost: deal was lost
+ */
+export type OpportunityStatus =
+  | "discovery"
+  | "solutioning"
+  | "proposal_prepared"
+  | "proposal_sent"
   | "negotiation"
   | "closed_won"
   | "closed_lost";
 
+/** Canonical record for a sales opportunity. Internal-only, not client-facing. */
 export interface OpportunityRecord {
   id: string;
-  quoteId: string;
-  stage: OpportunityStage;
+  name: string;
+  companyName: string;
+  status: OpportunityStatus;
+  value: number;
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601
-  companyName: string;
-  contactEmail: string;
-  estimatedValue: number;
-  description: string;
 }
 
 // ---------------------------------------------------------------------------
 // Project record (created when a quote is accepted)
 // ---------------------------------------------------------------------------
 
-export type ProjectStatus = "planning" | "in_progress" | "on_hold" | "completed" | "cancelled";
+/**
+ * Project lifecycle: tracks an active engagement from intake through archival.
+ * - intake: project is being onboarded
+ * - discovery: requirements and context are being gathered
+ * - scoping: full scope is being defined
+ * - design_in_progress: solution design is underway
+ * - build_in_progress: development or implementation is active
+ * - awaiting_client: blocked pending client input or approval
+ * - blocked: blocked by an internal or external dependency
+ * - uat: client is performing user acceptance testing
+ * - completed: all deliverables have been accepted
+ * - archived: project is closed and archived for record-keeping
+ */
+export type ProjectStatus =
+  | "intake"
+  | "discovery"
+  | "scoping"
+  | "design_in_progress"
+  | "build_in_progress"
+  | "awaiting_client"
+  | "blocked"
+  | "uat"
+  | "completed"
+  | "archived";
 
+/** Canonical record for an active or historical project. */
 export interface ProjectRecord {
   id: string;
-  quoteId: string;
-  opportunityId?: string;
-  status: ProjectStatus;
-  createdAt: string; // ISO-8601
-  updatedAt: string; // ISO-8601
-
   name: string;
   companyName: string;
-  contactEmail: string;
-  description: string;
-
-  estimatedHours: number;
-  estimatedWeeks: number;
-  totalBudget: number;
-  hourlyRate: number;
-
-  deliveryTeam: string;
-  powerUps: string[];
-
-  activity: ActivityEvent[];
+  status: ProjectStatus;
+  owner: string;
+  targetMilestone: string;
+  createdAt: string; // ISO-8601
+  updatedAt: string; // ISO-8601
 }

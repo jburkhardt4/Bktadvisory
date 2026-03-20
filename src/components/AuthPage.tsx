@@ -33,12 +33,6 @@ const MicrosoftIcon = () => (
   </svg>
 );
 
-const SalesforceIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M10.05 4.22a4.46 4.46 0 0 1 3.3-1.46c1.72 0 3.22.98 3.96 2.41a5.2 5.2 0 0 1 2.13-.46c2.87 0 5.2 2.32 5.2 5.18 0 2.87-2.33 5.19-5.2 5.19-.35 0-.7-.04-1.03-.1a3.94 3.94 0 0 1-3.5 2.15c-.57 0-1.11-.12-1.6-.34a4.67 4.67 0 0 1-4.25 2.75 4.68 4.68 0 0 1-4.42-3.13 4.16 4.16 0 0 1-.64.05c-2.3 0-4.16-1.86-4.16-4.16 0-1.6.9-2.99 2.22-3.69A4.88 4.88 0 0 1 6.56 4.3a4.87 4.87 0 0 1 3.49 1.92V4.22z" />
-  </svg>
-);
-
 const ShieldCheckIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -231,7 +225,6 @@ export function AuthPage() {
     { id: 'linkedin', label: 'Continue with LinkedIn', icon: <LinkedInIcon />, color: 'text-[#0A66C2]' },
     { id: 'google', label: 'Continue with Google Workspace', icon: <GoogleIcon />, color: '' },
     { id: 'microsoft', label: 'Continue with Microsoft Business', icon: <MicrosoftIcon />, color: '' },
-    { id: 'salesforce', label: 'Continue with Salesforce', icon: <SalesforceIcon />, color: 'text-[#00A1E0]' },
   ];
 
   return (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { isAuthenticated } from '../utils/authSession';
+import { useAuth } from '../contexts/AuthContext';
 
 // Icon components to avoid lucide-react import issue
 const MenuIcon = ({ size }: { size?: number }) => (
@@ -61,7 +61,8 @@ export function Navigation({
   onNavigateToEstimator: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const authed = isAuthenticated();
+  const { session } = useAuth();
+  const authed = !!session;
 
   return (
     <nav className="sticky top-0 z-50 bg-[#EFF6FF]/90 backdrop-blur-md border-b border-blue-100">

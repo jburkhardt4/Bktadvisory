@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-
-import logo from "figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png";
+import { useNavigate, useLocation } from "react-router";
+import { supabase } from "../supabase/client";
 
 // BKT brand assets
 const BKT_ICON_URL =
@@ -112,10 +112,11 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-const UserIcon = ({ size = 16 }: { size?: number }) => (
+const UserIcon = ({ size = 16, className }: { size?: number; className?: string }) => (
   <svg
     width={size}
     height={size}
+    className={className}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -145,7 +146,10 @@ interface FormErrors {
 type AuthMode = "signup" | "signin";
 
 export function AuthPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [mode, setMode] = useState<AuthMode>("signup");
+  const [serverError, setServerError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
     firstName: "",
     lastName: "",
@@ -235,18 +239,62 @@ export function AuthPage() {
     e.preventDefault();
     if (!validateAll()) return;
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1800));
-    setIsLoading(false);
-    // Redirect concept
-    window.location.href = "/portal";
+    setServerError(null);
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: form.workEmail,
+          password: form.password,
+          options: {
+            data: {
+              first_name: form.firstName,
+              last_name: form.lastName,
+            },
+          },
+        });
+        if (error) {
+          setServerError(error.message);
+          return;
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: form.workEmail,
+          password: form.password,
+        });
+        if (error) {
+          setServerError(error.message);
+          return;
+        }
+      }
+      const from = location.state?.from;
+      const destination = typeof from === "string" && from.startsWith("/") ? from : "/portal";
+      navigate(destination, { replace: true });
+    } catch {
+      setServerError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSSO = async (provider: string) => {
-    setSsoLoading(provider);
-    await new Promise((r) => setTimeout(r, 1500));
-    setSsoLoading(null);
-    window.location.href = "/portal";
+  const handleSSO = async (providerId: string) => {
+    setSsoLoading(providerId);
+    setServerError(null);
+    const providerMap: Record<string, string> = {
+      google: "google",
+      microsoft: "azure",
+      linkedin: "linkedin_oidc",
+    };
+    const from = location.state?.from;
+    const destination = typeof from === "string" && from.startsWith("/") ? from : "/portal";
+    const redirectTo = `${window.location.origin}${destination}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: (providerMap[providerId] ?? providerId) as "google" | "azure" | "linkedin_oidc",
+      options: { redirectTo },
+    });
+    if (error) {
+      setServerError(error.message);
+      setSsoLoading(null);
+    }
   };
 
   const inputClass = (field: string) =>
@@ -348,13 +396,13 @@ export function AuthPage() {
             <a href="https://bktadvisory.com" className="block">
               {/* Full Logo (Desktop/Large Screens) */}
               <img
-                src={logo}
+                src={BKT_FULL_LOGO}
                 alt="BKT Advisory Logo"
                 className="h-[52px] w-auto hidden xl:block mx-auto"
               />
               {/* Icon Logo (Tablet/Medium Screens) */}
               <img
-                src={logo}
+                src={BKT_ICON_URL}
                 alt="BKT Advisory"
                 className="h-[52px] w-auto block xl:hidden mx-auto"
               />
@@ -374,6 +422,13 @@ export function AuthPage() {
                 : "Enter your details below to sign in to your account."}
             </p>
           </div>
+
+          {/* Server Error */}
+          {serverError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {serverError}
+            </div>
+          )}
 
           {/* SSO Buttons */}
           <div className="space-y-3 mb-6">
@@ -579,6 +634,7 @@ export function AuthPage() {
                     setMode("signin");
                     setErrors({});
                     setTouched({});
+                    setServerError(null);
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                 >
@@ -593,6 +649,7 @@ export function AuthPage() {
                     setMode("signup");
                     setErrors({});
                     setTouched({});
+                    setServerError(null);
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                 >

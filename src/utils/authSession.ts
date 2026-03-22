@@ -1,16 +1,24 @@
-const SESSION_KEY = 'bkt_session';
+import { supabase } from '../lib/supabaseClient';
+import type { AuthChangeEvent, Session } from '@jsr/supabase__supabase-js';
 
-/** Mark the current browser session as authenticated. */
-export function setSession(): void {
-  sessionStorage.setItem(SESSION_KEY, '1');
+/** Retrieves the current Supabase session (null when signed out). */
+export async function getSession(): Promise<Session | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
 }
 
-/** Remove the session, effectively signing the user out. */
-export function clearSession(): void {
-  sessionStorage.removeItem(SESSION_KEY);
+/**
+ * Subscribes to Supabase auth state changes.
+ * Returns the subscription so the caller can unsubscribe on cleanup.
+ */
+export function onAuthChange(
+  callback: (event: AuthChangeEvent, session: Session | null) => void,
+) {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(callback);
+  return subscription;
 }
 
-/** Returns true when an active session exists. */
-export function isAuthenticated(): boolean {
-  return sessionStorage.getItem(SESSION_KEY) === '1';
+/** Signs the current user out. */
+export async function clearSession(): Promise<void> {
+  await supabase.auth.signOut();
 }

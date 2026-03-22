@@ -75,8 +75,8 @@ export function PortalAppShell({ children, activeSection = 'dashboard', onNaviga
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleSignOut = () => {
-    clearSession();
+  const handleSignOut = async () => {
+    await clearSession();
     navigate('/auth', { replace: true });
   };
 

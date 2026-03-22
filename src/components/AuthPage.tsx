@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
-import { setSession, isAuthenticated } from '../utils/authSession';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 
 // BKT brand assets
 const BKT_ICON_URL =
@@ -86,6 +87,7 @@ type AuthMode = 'signup' | 'signin';
 export function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { session } = useAuth();
   const [mode, setMode] = useState<AuthMode>('signup');
   const [form, setForm] = useState<FormState>({
     firstName: '',
@@ -101,6 +103,7 @@ export function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [ssoLoading, setSsoLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const firstNameRef = useRef<HTMLInputElement>(null);
 
   const getSafeRedirectPath = (): string => {
@@ -132,11 +135,12 @@ export function AuthPage() {
     return '/portal'; // Default fallback
   };
 
+  // Redirect already-authenticated users
   useEffect(() => {
-    if (!isAuthenticated()) return;
+    if (!session) return;
     const targetPath = getSafeRedirectPath();
     navigate(targetPath, { replace: true });
-  }, [navigate, location]);
+  }, [session, navigate, location]);
 
   useEffect(() => {
     firstNameRef.current?.focus();
@@ -196,22 +200,48 @@ export function AuthPage() {
     e.preventDefault();
     if (!validateAll()) return;
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1800));
+    setAuthError(null);
+
+    let error;
+    if (mode === 'signin') {
+      ({ error } = await supabase.auth.signInWithPassword({
+        email: form.workEmail,
+        password: form.password,
+      }));
+    } else {
+      ({ error } = await supabase.auth.signUp({
+        email: form.workEmail,
+        password: form.password,
+        options: {
+          data: {
+            first_name: form.firstName,
+            last_name: form.lastName,
+            company_name: form.companyName,
+            website: form.website,
+            mobile_phone: form.mobilePhone,
+          },
+        },
+      }));
+    }
+
     setIsLoading(false);
-    // Establish session then navigate to saved destination
-    setSession();
+
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+
+    // Navigate to the intended destination after successful auth
     const redirectPath = getSafeRedirectPath();
     navigate(redirectPath, { replace: true });
   };
 
   const handleSSO = async (provider: string) => {
     setSsoLoading(provider);
-    await new Promise((r) => setTimeout(r, 1500));
+    setAuthError(null);
+    // SSO providers (LinkedIn, Google, Microsoft) are not yet wired to Supabase OAuth;
+    // the buttons are preserved to avoid visual changes to the login form.
     setSsoLoading(null);
-    setSession();
-    const redirectPath = getSafeRedirectPath();
-    navigate(redirectPath, { replace: true });
   };
 
   const inputClass = (field: string) =>
@@ -432,6 +462,13 @@ export function AuthPage() {
                     Forgot password?
                   </button>
                 </div>
+              )}
+
+              {/* Auth error */}
+              {authError && (
+                <p className="text-red-400 text-sm text-center rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2">
+                  {authError}
+                </p>
               )}
 
               {/* Submit */}

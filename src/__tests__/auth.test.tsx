@@ -162,7 +162,6 @@ describe('RequireAuth', () => {
       <AuthProvider>
         <MemoryRouter
           initialEntries={['/portal']}
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
         >
           <RequireAuth>
             <div data-testid="protected">Protected content</div>

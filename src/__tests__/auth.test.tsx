@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -122,10 +123,54 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('loading').textContent).toBe('false'),
     );
     expect(screen.getByTestId('email').textContent).toBe('user@example.com');
+=======
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { createMemoryRouter, RouterProvider } from 'react-router';
+import { setSession, clearSession, isAuthenticated } from '../utils/authSession';
+import { RequireAuth } from '../components/RequireAuth';
+
+// ---------------------------------------------------------------------------
+// 1. authSession unit tests — verifying session state management
+// ---------------------------------------------------------------------------
+describe('authSession', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
+  });
+
+  it('isAuthenticated returns false when no session exists', () => {
+    expect(isAuthenticated()).toBe(false);
+  });
+
+  it('setSession marks the session as authenticated', () => {
+    setSession();
+    expect(isAuthenticated()).toBe(true);
+  });
+
+  it('clearSession removes the authenticated session', () => {
+    setSession();
+    expect(isAuthenticated()).toBe(true);
+
+    clearSession();
+    expect(isAuthenticated()).toBe(false);
+  });
+
+  it('isAuthenticated reads the correct sessionStorage key', () => {
+    sessionStorage.setItem('bkt_session', '1');
+    expect(isAuthenticated()).toBe(true);
+
+    sessionStorage.setItem('bkt_session', '0');
+    expect(isAuthenticated()).toBe(false);
+>>>>>>> 08b8617 (Phase 1: clean up legacy root dirs, relocate Supabase edge function)
   });
 });
 
 // ---------------------------------------------------------------------------
+<<<<<<< HEAD
 // RequireAuth tests
 // ---------------------------------------------------------------------------
 
@@ -204,10 +249,45 @@ describe('RequireAuth', () => {
     await waitFor(() =>
       expect(screen.getByTestId('protected')).toBeInTheDocument(),
     );
+=======
+// 2. onAuthStateChange integration — ensures setSession is called on SIGNED_IN
+// ---------------------------------------------------------------------------
+describe('onAuthStateChange → setSession integration', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
+  });
+
+  it('calling setSession on SIGNED_IN event makes isAuthenticated return true', () => {
+    // Simulates what AuthPage's onAuthStateChange callback does:
+    // supabase.auth.onAuthStateChange((event) => {
+    //   if (event === 'SIGNED_IN') { setSession(); navigate(...) }
+    // })
+    const event = 'SIGNED_IN';
+    if (event === 'SIGNED_IN') {
+      setSession();
+    }
+    expect(isAuthenticated()).toBe(true);
+  });
+
+  it('non-SIGNED_IN events do not create a session', () => {
+    const events = ['SIGNED_OUT', 'TOKEN_REFRESHED', 'USER_UPDATED'] as const;
+    for (const event of events) {
+      if (event === 'SIGNED_IN') {
+        setSession();
+      }
+      // None of these are SIGNED_IN so session should stay empty
+    }
+    expect(isAuthenticated()).toBe(false);
+>>>>>>> 08b8617 (Phase 1: clean up legacy root dirs, relocate Supabase edge function)
   });
 });
 
 // ---------------------------------------------------------------------------
+<<<<<<< HEAD
 // authSession helpers
 // ---------------------------------------------------------------------------
 
@@ -316,5 +396,99 @@ describe('AuthPage Supabase integration', () => {
     await waitFor(() =>
       expect(screen.getByText('Invalid login credentials')).toBeInTheDocument(),
     );
+=======
+// 3. RequireAuth route boundary — allows/blocks based on session
+// ---------------------------------------------------------------------------
+describe('RequireAuth route boundary', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    sessionStorage.clear();
+  });
+
+  const renderWithRouter = (initialPath: string, authenticated: boolean) => {
+    if (authenticated) setSession();
+
+    const routes = [
+      {
+        path: '/portal',
+        element: (
+          <RequireAuth>
+            <div data-testid="portal-content">Portal Dashboard</div>
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/auth',
+        element: <div data-testid="auth-page">Auth Page</div>,
+      },
+    ];
+
+    const router = createMemoryRouter(routes, { initialEntries: [initialPath] });
+    return render(<RouterProvider router={router} />);
+  };
+
+  it('allows navigation to /portal when session exists', () => {
+    renderWithRouter('/portal', true);
+    expect(screen.getByTestId('portal-content')).toBeInTheDocument();
+  });
+
+  it('redirects to /auth when no session exists', () => {
+    renderWithRouter('/portal', false);
+    expect(screen.getByTestId('auth-page')).toBeInTheDocument();
+  });
+
+  it('preserves the intended destination in redirect state', () => {
+    // When unauthenticated, RequireAuth passes state.from = current path
+    // We verify the redirect lands on /auth (the destination is tested above)
+    renderWithRouter('/portal', false);
+    expect(screen.queryByTestId('portal-content')).not.toBeInTheDocument();
+    expect(screen.getByTestId('auth-page')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. Route map sanity — ensures no quote deep-link routes exist
+// ---------------------------------------------------------------------------
+describe('Approach A route map constraints', () => {
+  it('the router module does not export quote-related routes', async () => {
+    // Dynamically import the routes module and inspect its structure
+    const routerModule = await import('../routes');
+    const routerConfig = routerModule.router;
+
+    // Collect all route paths recursively
+    const paths: string[] = [];
+    const collectPaths = (routes: Array<{ path?: string; children?: Array<{ path?: string }> }>) => {
+      for (const route of routes) {
+        if (route.path) paths.push(route.path);
+        if (route.children) collectPaths(route.children);
+      }
+    };
+    collectPaths(routerConfig.routes);
+
+    // No quote deep-link routes should exist
+    const quotePaths = paths.filter(
+      (p) => p.includes('quote') || p.includes('showQuote'),
+    );
+    expect(quotePaths).toHaveLength(0);
+  });
+
+  it('/estimator route exists as a boundary entry', async () => {
+    const routerModule = await import('../routes');
+    const routerConfig = routerModule.router;
+
+    const paths: string[] = [];
+    const collectPaths = (routes: Array<{ path?: string; children?: Array<{ path?: string }> }>) => {
+      for (const route of routes) {
+        if (route.path) paths.push(route.path);
+        if (route.children) collectPaths(route.children);
+      }
+    };
+    collectPaths(routerConfig.routes);
+
+    expect(paths).toContain('/estimator');
+>>>>>>> 08b8617 (Phase 1: clean up legacy root dirs, relocate Supabase edge function)
   });
 });

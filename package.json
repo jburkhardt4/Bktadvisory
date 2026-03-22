@@ -1,5 +1,5 @@
 {
-  "name": "BKT Advisory",
+  "name": "bkt-advisory",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -57,17 +57,12 @@
     "@tailwindcss/vite": "4.1.12",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-<<<<<<< HEAD
     "@testing-library/user-event": "^14.6.1",
-=======
->>>>>>> 08b8617 (Phase 1: clean up legacy root dirs, relocate Supabase edge function)
     "@types/node": "^20.10.0",
     "@vitejs/plugin-react": "^4.7.0",
-<<<<<<< HEAD
     "@vitest/coverage-v8": "^4.1.0",
-=======
->>>>>>> 08b8617 (Phase 1: clean up legacy root dirs, relocate Supabase edge function)
     "jsdom": "^29.0.1",
+    "supabase": "^2.83.0",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5",
     "vitest": "^4.1.0"

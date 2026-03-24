@@ -17,6 +17,7 @@ export function ActionDropdown({ label, items }: ActionDropdownProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!open) return;
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
@@ -29,7 +30,7 @@ export function ActionDropdown({ label, items }: ActionDropdownProps) {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [open]);
 
   return (
     <div ref={ref} className="relative">

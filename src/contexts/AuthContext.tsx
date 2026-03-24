@@ -3,14 +3,18 @@ import type { ReactNode } from 'react';
 import type { Session } from '@jsr/supabase__supabase-js';
 import { supabase } from '../lib/supabaseClient';
 
+export type UserRole = 'admin' | 'client';
+
 interface AuthContextValue {
   session: Session | null;
   loading: boolean;
+  role: UserRole;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   session: null,
   loading: true,
+  role: 'client',
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -35,8 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const role: UserRole = session?.user?.user_metadata?.role === 'admin' ? 'admin' : 'client';
+
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, role }}>
       {children}
     </AuthContext.Provider>
   );

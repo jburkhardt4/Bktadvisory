@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Project, ProjectStatus, ProjectActivityType } from './portalData';
 import { PROJECT_STATUS_CONFIG } from './portalData';
 import { ProjectStatusBadge } from './StatusBadge';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   ArrowLeftIcon, CheckCircleIcon, ClockIcon, UserIcon, BuildingIcon,
   TargetIcon, AlertTriangleIcon, FileTextIcon, FolderIcon,
@@ -12,6 +13,7 @@ import {
 } from './PortalIcons';
 
 import { ActionDropdown, EditButton } from './ActionDropdown';
+import { PortalModal } from './PortalModal';
 
 /* ─── Lifecycle Stepper ─── */
 
@@ -235,7 +237,9 @@ function DocumentRow({ doc }: { doc: import('./portalData').ProjectDocument }) {
 /* ─── Main Component ─── */
 
 export function ProjectDetail({ project, onBack }: { project: Project; onBack: () => void }) {
+  const { role } = useAuth();
   const [activityFilter, setActivityFilter] = useState<'all' | 'milestones' | 'blockers'>('all');
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   const completedMilestones = project.milestones.filter(m => m.completed).length;
   const totalMilestones = project.milestones.length;
   const activities = project.projectActivity || [];
@@ -260,11 +264,12 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
         </button>
         <ActionDropdown
           label="Actions"
+          userRole={role}
           items={[
-            { label: 'Update Project', icon: <FolderIcon size={15} /> },
-            { label: 'Add Milestone', icon: <TargetIcon size={15} /> },
-            { label: 'Add Activity', icon: <ZapIcon size={15} /> },
-            { label: 'Upload Document', icon: <UploadIcon size={15} /> },
+            { label: 'Update Project', icon: <FolderIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('update-project') },
+            { label: 'Add Milestone', icon: <TargetIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('add-milestone') },
+            { label: 'Add Activity', icon: <ZapIcon size={15} />, onClick: () => setActiveModal('add-activity') },
+            { label: 'Upload Document', icon: <UploadIcon size={15} />, onClick: () => setActiveModal('upload-document') },
           ]}
         />
       </div>
@@ -552,6 +557,30 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
           </div>
         </div>
       </div>
+
+      {/* Action Modals */}
+      <PortalModal
+        open={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        title={
+          activeModal === 'update-project' ? 'Update Project' :
+          activeModal === 'add-milestone' ? 'Add Milestone' :
+          activeModal === 'add-activity' ? 'Add Activity' :
+          activeModal === 'upload-document' ? 'Upload Document' :
+          ''
+        }
+      >
+        <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+            <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter a title…" />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Submit</button>
+          </div>
+        </form>
+      </PortalModal>
     </div>
   );
 }

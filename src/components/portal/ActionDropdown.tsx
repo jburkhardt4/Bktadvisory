@@ -5,14 +5,17 @@ interface ActionItem {
   label: string;
   icon: React.ReactNode;
   onClick?: () => void;
+  adminOnly?: boolean;
 }
 
 interface ActionDropdownProps {
   label: string;
   items: ActionItem[];
+  userRole?: 'admin' | 'client';
 }
 
-export function ActionDropdown({ label, items }: ActionDropdownProps) {
+export function ActionDropdown({ label, items, userRole = 'client' }: ActionDropdownProps) {
+  const visibleItems = items.filter(item => !item.adminOnly || userRole === 'admin');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,6 +35,8 @@ export function ActionDropdown({ label, items }: ActionDropdownProps) {
     };
   }, [open]);
 
+  if (visibleItems.length === 0) return null;
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -45,7 +50,7 @@ export function ActionDropdown({ label, items }: ActionDropdownProps) {
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150" role="menu">
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <button
               key={item.label}
               onClick={() => { item.onClick?.(); setOpen(false); }}

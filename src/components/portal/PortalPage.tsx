@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Project } from './portalData';
+import { useAuth } from '../../contexts/AuthContext';
 import { UserProfile } from './UserProfile';
 import { QuotesTable } from './QuotesTable';
 import { ProjectsView } from './ProjectsView';
@@ -9,12 +10,15 @@ import { ProjectDetail } from './ProjectDetail';
 import { LogOutIcon, BellIcon } from './PortalIcons';
 import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
 import { ActionDropdown, EditButton } from './ActionDropdown';
+import { PortalModal } from './PortalModal';
 
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 
 export function PortalPage() {
+  const { role } = useAuth();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -109,11 +113,12 @@ export function PortalPage() {
                   <div className="px-4">
                     <ActionDropdown
                       label="Actions"
+                      userRole={role}
                       items={[
-                        { label: 'Create Quote', icon: <FileTextIcon size={15} /> },
-                        { label: 'Create Project', icon: <FolderIcon size={15} /> },
-                        { label: 'Add Activity', icon: <ActivityIcon size={15} /> },
-                        { label: 'Request Scope Change', icon: <PenIcon size={15} /> },
+                        { label: 'Create Quote', icon: <FileTextIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('create-quote') },
+                        { label: 'Create Project', icon: <FolderIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('create-project') },
+                        { label: 'Add Activity', icon: <ActivityIcon size={15} />, onClick: () => setActiveModal('add-activity') },
+                        { label: 'Request Scope Change', icon: <PenIcon size={15} />, onClick: () => setActiveModal('request-scope-change') },
                       ]}
                     />
                   </div>
@@ -137,6 +142,30 @@ export function PortalPage() {
           </div>
         )}
       </main>
+
+      {/* Action Modals */}
+      <PortalModal
+        open={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        title={
+          activeModal === 'create-quote' ? 'Create Quote' :
+          activeModal === 'create-project' ? 'Create Project' :
+          activeModal === 'add-activity' ? 'Add Activity' :
+          activeModal === 'request-scope-change' ? 'Request Scope Change' :
+          ''
+        }
+      >
+        <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+            <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter a title…" />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Submit</button>
+          </div>
+        </form>
+      </PortalModal>
     </div>
   );
 }

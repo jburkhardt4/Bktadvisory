@@ -14,6 +14,8 @@ import {
 
 import { ActionDropdown, EditButton } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
+import { AddActivityForm } from './forms/AddActivityForm';
+import { AddMilestoneForm } from './forms/AddMilestoneForm';
 
 /* ─── Lifecycle Stepper ─── */
 
@@ -559,28 +561,50 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
       </div>
 
       {/* Action Modals */}
-      <PortalModal
-        open={activeModal !== null}
-        onClose={() => setActiveModal(null)}
-        title={
-          activeModal === 'update-project' ? 'Update Project' :
-          activeModal === 'add-milestone' ? 'Add Milestone' :
-          activeModal === 'add-activity' ? 'Add Activity' :
-          activeModal === 'upload-document' ? 'Upload Document' :
-          ''
-        }
-      >
-        <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
-            <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter a title…" />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
-            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Submit</button>
-          </div>
-        </form>
-      </PortalModal>
+      {activeModal === 'update-project' && (
+        <PortalModal open onClose={() => setActiveModal(null)} title="Update Project">
+          <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
+              <input type="text" defaultValue={project.name} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+              <textarea rows={3} defaultValue={project.description} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Save Changes</button>
+            </div>
+          </form>
+        </PortalModal>
+      )}
+      {activeModal === 'add-milestone' && (
+        <PortalModal open onClose={() => setActiveModal(null)} title="Add Milestone">
+          <AddMilestoneForm onClose={() => setActiveModal(null)} projectId={project.id} />
+        </PortalModal>
+      )}
+      {activeModal === 'add-activity' && (
+        <PortalModal open onClose={() => setActiveModal(null)} title="Add Activity">
+          <AddActivityForm onClose={() => setActiveModal(null)} projectId={project.id} />
+        </PortalModal>
+      )}
+      {activeModal === 'upload-document' && (
+        <PortalModal open onClose={() => setActiveModal(null)} title="Upload Document">
+          <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">File</label>
+              <div className="w-full py-8 border-2 border-dashed border-slate-300 rounded-lg text-center text-sm text-slate-500 hover:border-slate-400 transition-colors cursor-pointer">
+                Click or drag to upload a file
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Upload</button>
+            </div>
+          </form>
+        </PortalModal>
+      )}
     </div>
   );
 }

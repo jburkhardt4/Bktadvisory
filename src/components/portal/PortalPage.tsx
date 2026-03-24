@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import type { Project } from './portal/portalData';
-import { UserProfile } from './portal/UserProfile';
-import { QuotesTable } from './portal/QuotesTable';
-import { ProjectsView } from './portal/ProjectsView';
-import { ActivityTimeline } from './portal/ActivityTimeline';
-import { ProjectDetail } from './portal/ProjectDetail';
-import { LogOutIcon, BellIcon } from './portal/PortalIcons';
-import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './portal/PortalIcons';
-import { ActionDropdown, EditButton } from './portal/ActionDropdown';
+import type { Project } from './portalData';
+import { UserProfile } from './UserProfile';
+import { QuotesTable } from './QuotesTable';
+import { ProjectsView } from './ProjectsView';
+import { ActivityTimeline } from './ActivityTimeline';
+import { ProjectDetail } from './ProjectDetail';
+import { LogOutIcon, BellIcon } from './PortalIcons';
+import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
+import { ActionDropdown, EditButton } from './ActionDropdown';
 
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 

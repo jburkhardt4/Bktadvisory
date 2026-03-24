@@ -6,9 +6,8 @@ import { ServicesPage } from './components/ServicesPage';
 import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
 import { AuthPage } from './components/AuthPage';
-import { PortalDashboardPage } from './components/portal/PortalDashboardPage';
+import { PortalPage } from './components/portal/PortalPage';
 import { EstimatorBoundary } from './components/EstimatorBoundary';
-import { ProjectDetailPage } from './components/portal/ProjectDetailPage';
 import { RequireAuth } from './components/RequireAuth';
 
 export const router = createBrowserRouter([
@@ -30,11 +29,7 @@ export const router = createBrowserRouter([
   // Portal routes — auth-guarded
   {
     path: '/portal',
-    element: <RequireAuth><PortalDashboardPage /></RequireAuth>,
-  },
-  {
-    path: '/portal/project/:projectId',
-    element: <RequireAuth><ProjectDetailPage /></RequireAuth>,
+    element: <RequireAuth><PortalPage /></RequireAuth>,
   },
   // Estimator boundary — redirects to the standalone estimator app
   { path: '/estimator', Component: EstimatorBoundary },

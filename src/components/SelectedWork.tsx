@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { requestCaseStudy } from '../utils/requestCaseStudy';
+
 // Icon components to avoid lucide-react import issue
 const FileCheckIcon = ({ className, size }: { className?: string; size?: number }) => (
   <svg width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -30,6 +33,33 @@ const ArrowRightIcon = ({ className, size }: { className?: string; size?: number
 );
 
 export function SelectedWork() {
+  const [loadingMap, setLoadingMap] = useState<Record<number, boolean>>({});
+  const [successMap, setSuccessMap] = useState<Record<number, boolean>>({});
+  const [errorMap, setErrorMap] = useState<Record<number, boolean>>({});
+
+  const handleRequestCaseStudy = async (index: number, label: string, summary: string) => {
+    setLoadingMap((prev) => ({ ...prev, [index]: true }));
+    setSuccessMap((prev) => ({ ...prev, [index]: false }));
+    setErrorMap((prev) => ({ ...prev, [index]: false }));
+
+    try {
+      await requestCaseStudy({
+        caseStudyLabel: label,
+        caseStudySummary: summary,
+        sourceUrl: window.location.href,
+        requestedAt: new Date().toISOString(),
+      });
+      setSuccessMap((prev) => ({ ...prev, [index]: true }));
+      setTimeout(() => setSuccessMap((prev) => ({ ...prev, [index]: false })), 3000);
+    } catch (err) {
+      console.error('requestCaseStudy error:', err);
+      setErrorMap((prev) => ({ ...prev, [index]: true }));
+      setTimeout(() => setErrorMap((prev) => ({ ...prev, [index]: false })), 3000);
+    } finally {
+      setLoadingMap((prev) => ({ ...prev, [index]: false }));
+    }
+  };
+
   const cases = [
     {
       icon: FileCheckIcon,
@@ -109,9 +139,36 @@ export function SelectedWork() {
                   </div>
 
                   {/* CTA */}
-                  <button className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 group">
-                    Request Case Study
-                    <ArrowRightIcon size={16} className="group-hover:translate-x-1 transition-transform" />
+                  <button
+                    className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 group disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={loadingMap[index] || successMap[index]}
+                    onClick={() => handleRequestCaseStudy(index, caseStudy.label, caseStudy.summary)}
+                  >
+                    {loadingMap[index] ? (
+                      <>
+                        <svg className="animate-spin" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                        Sending...
+                      </>
+                    ) : successMap[index] ? (
+                      <>
+                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Sent!
+                      </>
+                    ) : errorMap[index] ? (
+                      <>
+                        Failed — Try Again
+                        <ArrowRightIcon size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    ) : (
+                      <>
+                        Request Case Study
+                        <ArrowRightIcon size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

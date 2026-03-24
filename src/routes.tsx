@@ -6,7 +6,10 @@ import { ServicesPage } from './components/ServicesPage';
 import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
 import { AuthPage } from './components/AuthPage';
-import { PortalPage } from './components/PortalPage';
+import { PortalDashboardPage } from './components/portal/PortalDashboardPage';
+import { EstimatorBoundary } from './components/EstimatorBoundary';
+import { ProjectDetailPage } from './components/portal/ProjectDetailPage';
+import { RequireAuth } from './components/RequireAuth';
 
 export const router = createBrowserRouter([
   {
@@ -24,5 +27,15 @@ export const router = createBrowserRouter([
   },
   // Auth is a top-level route (no Layout shell)
   { path: '/auth', Component: AuthPage },
-  { path: '/portal', Component: PortalPage },
+  // Portal routes — auth-guarded
+  {
+    path: '/portal',
+    element: <RequireAuth><PortalDashboardPage /></RequireAuth>,
+  },
+  {
+    path: '/portal/project/:projectId',
+    element: <RequireAuth><ProjectDetailPage /></RequireAuth>,
+  },
+  // Estimator boundary — redirects to the standalone estimator app
+  { path: '/estimator', Component: EstimatorBoundary },
 ]);

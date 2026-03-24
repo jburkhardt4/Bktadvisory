@@ -1,0 +1,688 @@
+BKT ADVISORY:  WEBSITE IMPLEMENTATION – APPROACH A
+
+Executive Summary:
+Below is the final corrected version of the chronological prompt plan, with the exact GitHub repo or Figma project you should submit each prompt into.
+
+The repo/project split should follow the current internal boundaries:
+ • Bktadvisory is the main-site / marketing platform repo and should own standard routing, auth entry, portal UI, and main-site CTA behavior. Its guidelines explicitly say it handles the front-end marketing site and standard routing, and does not own the estimator’s complex state logic.
+ • Bktadvisoryprojectestimator is the estimator repo and should own the estimator’s single-page conditional rendering, showQuote, quoting logic, AI refinement, and document generation. Its guidelines explicitly say the estimator uses single-page conditional rendering and that marketing/portfolio work belongs to the main BKT Advisory site.
+ • The estimator repo README also ties that codebase directly to the “BKT Advisory (Project Estimator)” Figma design.
+
+Canonical Destination Map:
+  GitHub Repos
+   • Bktadvisory
+   • Bktadvisoryprojectestimator
+
+Figma Projects:
+   • BKT Advisory
+   • BKT Advisory (Project Estimator)
+————————————————
+
+Final Chronological Submission Order with Exact Destinations:
+————
+1) Copilot — extract the estimator into a protected feature shell
+   • Submit into GitHub repo: Bktadvisoryprojectestimator
+   • Figma project: none
+
+You are refactoring the BKT Advisory Project Estimator codebase for Approach A architecture.
+
+Repository context:
+- You are working inside the `Bktadvisoryprojectestimator` repository.
+- This repo is the dedicated estimator application and must remain focused on estimator state, quoting logic, AI scope refinement, and document generation.
+- Preserve the current single-page conditional rendering architecture.
+
+Context you must preserve:
+- The current estimator app uses a local `showQuote` state machine to switch between Estimator and Quote views.
+- That `showQuote` behavior must remain intact and must NOT be converted into a route-based quote flow.
+- The estimator currently owns `showQuote`, `quoteData`, `formData`, `currentStep`, `aiActionTrigger`, and `aiUsageCount`.
+- Manual sign-up later must mirror the existing Step 1 contact fields exactly:
+  `firstName`, `lastName`, `companyName`, `website`, `workEmail`, `mobilePhone`.
+- Stack: React + TypeScript + Vite + Tailwind CSS v4.
+- Do NOT use lucide-react. Use inline SVG only.
+
+Task:
+1. Extract the current estimator logic from `src/App.tsx` into a new `EstimatorAppShell.tsx`.
+2. Preserve all current behavior exactly:
+   - estimator rendering
+   - quote rendering
+   - `showQuote` conditional transitions
+   - AI chatbot integration
+   - sticky header behavior
+3. Keep the estimator shell self-contained and feature-local.
+4. Do NOT add routes inside the estimator shell.
+5. Return:
+   - the new `EstimatorAppShell.tsx`
+   - the minimal changes needed to `App.tsx`
+   - a regression checklist for quote generation and back-navigation
+
+Important:
+- This is a preservation refactor, not a redesign.
+- Do not change business logic unless strictly necessary for extraction.
+————
+
+2) Copilot — add the thin top-level route shell
+   • Submit into GitHub repo: Bktadvisory
+   • Figma project: none
+
+You are implementing Approach A for the BKT Advisory main website ecosystem.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- This repo owns the top-level marketing shell, standard routing, auth entry, and portal UI.
+- Do NOT move the estimator’s internal quote state logic into this repo.
+
+Architecture requirements:
+- Introduce only a thin top-level route shell.
+- Add top-level route boundaries for:
+  - `/` -> marketing
+  - `/auth` -> authentication gateway
+  - `/portal` -> authenticated client portal
+  - `/estimator` -> estimator entry or shell boundary
+- The estimator must remain a separate feature experience and preserve its internal `showQuote` state machine in the estimator repo.
+- Do NOT rewrite Quote as a route.
+- Do NOT introduce route-based logic inside estimator internals.
+- Stack: React + TypeScript + Vite + Tailwind CSS v4.
+- No lucide-react.
+
+Task:
+1. Create a top-level router structure for the main app.
+2. Mount:
+   - `MarketingAppShell`
+   - `AuthGatewayPage`
+   - `PortalAppShell`
+   - `Estimator entry boundary`
+3. Keep `/portal` ready for auth guarding.
+4. Leave estimator behavior unchanged beyond being linked or mounted at the shell boundary.
+5. Return:
+   - `AppRouter.tsx` or `routes.tsx` updates
+   - updated top-level app entry
+   - route file structure
+   - short explanation of why this avoids breaking `showQuote`
+
+Important:
+- Keep this implementation minimal and low-risk.
+- No deep-link quote routes in this phase.
+- Do not copy estimator business logic into the main-site repo.
+————
+
+3) Copilot — define lifecycle types before any portal design
+   • Submit into GitHub repo: Bktadvisory
+   • Figma project: none
+
+You are creating the canonical lifecycle model for the BKT Advisory authenticated portal.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- These lifecycle types are for the client portal and related main-site authenticated experiences.
+
+Goal:
+Define the lifecycle states and TypeScript types BEFORE any portal UI is designed.
+
+Use the following required lifecycle states.
+
+Quote lifecycle:
+- draft
+- scoping
+- quoted
+- sent
+- revision_requested
+- accepted
+- declined
+- expired
+
+Opportunity lifecycle:
+- discovery
+- solutioning
+- proposal_prepared
+- proposal_sent
+- negotiation
+- closed_won
+- closed_lost
+
+Project lifecycle:
+- intake
+- discovery
+- scoping
+- design_in_progress
+- build_in_progress
+- awaiting_client
+- blocked
+- uat
+- completed
+- archived
+
+Activity event types:
+- quote_generated
+- quote_sent
+- quote_revised
+- quote_accepted
+- project_created
+- discovery_completed
+- scope_approved
+- design_started
+- build_started
+- client_feedback_requested
+- client_feedback_received
+- blocked
+- unblocked
+- uat_started
+- completed
+- archived
+
+Task:
+1. Create TypeScript enums or string union types for these states.
+2. Create canonical interfaces for:
+   - `QuoteRecord`
+   - `OpportunityRecord`
+   - `ProjectRecord`
+   - `ActivityEvent`
+3. Add realistic mock data for each type.
+4. Add mapper comments showing how estimator output can later map into these records.
+5. Return:
+   - `src/types/portal.ts`
+   - `src/mocks/portalData.ts`
+   - concise documentation comments for each lifecycle
+
+Important:
+- Do not invent extra states.
+- Keep names stable and implementation-friendly.
+————
+
+4) Copilot — build the backend-triggered case-study email action
+   • Submit into GitHub repo: Bktadvisory
+   • Figma project: none
+
+You are implementing backend-triggered case-study email automation for BKT Advisory.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- This is for the main-site "Request Case Study" CTA, not the estimator app.
+
+Requirements:
+- This must be backend-triggered only.
+- Do NOT use `mailto:`.
+- Do NOT rely on a client-side-only email script.
+- Use a Supabase Edge Function routed through `/make-server-07a007e1`.
+- The current "Request Case Study" CTA is a frontend button only and must call this backend endpoint.
+- The endpoint should be named `request-case-study`.
+
+Input payload:
+- `caseStudyLabel`
+- `caseStudySummary`
+- `sourceUrl`
+- `requestedAt`
+
+Task:
+1. Create a Supabase Edge Function for `/make-server-07a007e1/request-case-study`.
+2. Validate the request payload.
+3. Build a predefined email subject, body, and signature.
+4. Send the email to predefined TO and CC recipients from environment variables.
+5. Return structured success/failure JSON.
+6. Include robust logging and error handling.
+7. Return:
+   - full edge function code
+   - env var contract
+   - request/response examples
+   - deployment notes
+
+Important:
+- Secrets must remain server-side.
+- This is a production implementation, not a demo.
+————
+
+5) Copilot — connect the main-site case-study CTA to the backend
+   • Submit into GitHub repo: Bktadvisory
+   • Figma project: none
+
+You are updating the BKT Advisory main site to bind the existing "Request Case Study" buttons to a backend-triggered action.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- The current CTA exists in `src/components/SelectedWork.tsx`.
+
+Context:
+- Preserve the existing visual design and card layout.
+- Do NOT use `mailto:`.
+- Call the Supabase Edge Function behind `/make-server-07a007e1/request-case-study`.
+- Stack: React + TypeScript + Tailwind CSS.
+- No lucide-react.
+
+Task:
+1. Update `SelectedWork.tsx` so each case-study button sends:
+   - `caseStudyLabel`
+   - `caseStudySummary`
+   - `sourceUrl`
+   - `requestedAt`
+2. Add button loading, success, and error states.
+3. Create a small reusable client utility for the POST request.
+4. Keep styling unchanged.
+5. Return:
+   - updated `SelectedWork.tsx`
+   - the client utility
+   - typed payload interface
+   - concise test checklist
+
+Important:
+- This should feel seamless to the user.
+- Do not redesign the component.
+————
+
+6) Figma — design the auth gateway
+   • Submit into Figma project: BKT Advisory
+   • GitHub repo for later implementation: Bktadvisory
+
+Design a new BKT Advisory Authentication Gateway for a React + Tailwind enterprise web app.
+
+Project context:
+- This design belongs in the `BKT Advisory` Figma project.
+- This screen will live at `/auth`.
+- It must fit Approach A architecture, where auth is a top-level route shell and the estimator remains a separate feature route.
+- The UI should feel high-trust, premium, and executive-grade, consistent with BKT Advisory and the Project Estimator.
+- Deep navy, slate, and blue accents.
+- Clean enterprise SaaS tone.
+- Desktop-first with polished mobile responsiveness.
+- Include a top-navigation entry concept with a clear “Sign In” or “Get Started” path from the main site into `/auth`.
+
+Required content:
+1. SSO buttons for:
+   - Continue with LinkedIn
+   - Continue with Google Workspace
+   - Continue with Microsoft Business
+   - Continue with Salesforce
+2. Divider labeled "or continue manually"
+3. Manual sign-up form mirroring estimator Step 1 fields exactly:
+   - First Name
+   - Last Name
+   - Company Name
+   - Website
+   - Work Email
+   - Mobile Phone
+4. Primary CTA: Create Account
+5. Secondary CTA: Already have an account? Sign In
+6. Helper / compliance microcopy
+7. Error, focus, loading, and disabled states
+
+Design requirements:
+- Reuse BKT Advisory brand language
+- Do not look like a consumer social login page
+- Include both desktop and mobile frames
+- Include a signed-in redirect concept to `/portal`
+————
+
+7) Copilot — implement the auth gateway page
+   • Submit into GitHub repo: Bktadvisory
+   • Figma source: BKT Advisory
+
+You are implementing the BKT Advisory Auth Gateway page at `/auth`.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- Build from the approved auth gateway design in the `BKT Advisory` Figma project.
+
+Requirements:
+- Stack: React + TypeScript + Tailwind CSS v4
+- Use inline SVG icons only
+- No lucide-react
+- Manual sign-up fields must match the estimator Step 1 contract exactly:
+  `firstName`, `lastName`, `companyName`, `website`, `workEmail`, `mobilePhone`
+- This page should integrate cleanly into the top-level route shell
+- Do not alter estimator internals
+
+Task:
+1. Build `AuthGatewayPage.tsx` or `AuthPage.tsx`.
+2. Include SSO buttons for:
+   - LinkedIn
+   - Google Workspace
+   - Microsoft Business
+   - Salesforce
+3. Include typed form state for manual sign-up.
+4. Add validation and inline field errors.
+5. Add props or handlers for:
+   - `onProviderAuth(provider)`
+   - `onManualSignup(formValues)`
+   - `onSwitchToLogin()`
+6. Return:
+   - full component code
+   - inline SVG provider icons
+   - validation helpers
+   - example route integration
+
+Important:
+- Keep the visual style premium and consistent with the approved Figma design.
+- Do not add unrelated auth complexity.
+————
+
+8) Figma — design the portal dashboard from the approved lifecycle states
+   • Submit into Figma project: BKT Advisory
+   • GitHub repo for later implementation: Bktadvisory
+
+Design a new authenticated BKT Advisory Client Portal dashboard for `/portal`.
+
+Project context:
+- This design belongs in the `BKT Advisory` Figma project.
+- This portal must be designed against approved lifecycle states, not generic admin labels.
+- Quote lifecycle:
+  draft, scoping, quoted, sent, revision_requested, accepted, declined, expired
+- Project lifecycle:
+  intake, discovery, scoping, design_in_progress, build_in_progress, awaiting_client, blocked, uat, completed, archived
+- The experience should feel like a premium consulting workspace, not a generic admin template.
+- Visual tone: enterprise, executive, clean, trustworthy, modern.
+
+Required sections:
+1. User Profile section
+   - name
+   - company
+   - contact details
+   - account status
+2. Quotes overview
+   - table/list of generated quotes
+   - quote state badges from the approved lifecycle
+   - created date
+   - amount
+   - actions
+3. Projects segmented view
+   - Active
+   - Awaiting Client
+   - Blocked
+   - Completed / Archived
+4. Activity / Status tracker
+   - timeline or progress rail
+   - lifecycle-aware events and updates
+5. Empty states, loading states, and no-data states
+
+Design requirements:
+- Reuse BKT Advisory visual language: navy, slate, blue, premium typography
+- Include desktop and mobile frames
+- Include one dashboard overview and one project detail / drilldown concept
+- Show status chips and timeline patterns that map cleanly to the approved lifecycle states
+————
+
+9) Figma — design the project detail / activity experience
+   • Submit into Figma project: BKT Advisory
+   • GitHub repo for later implementation: Bktadvisory
+
+Design a BKT Advisory Project Detail / Activity screen for the authenticated client portal.
+
+Project context:
+- This design belongs in the `BKT Advisory` Figma project.
+- This is a drilldown screen from the main portal dashboard.
+- It must visually express project progress using the approved project lifecycle:
+  intake, discovery, scoping, design_in_progress, build_in_progress, awaiting_client, blocked, uat, completed, archived
+- It should also support lifecycle-aware activities such as:
+  quote_generated, quote_sent, quote_accepted, project_created, discovery_completed, scope_approved, design_started, build_started, blocked, unblocked, uat_started, completed
+
+Required UI:
+1. Project header
+   - project name
+   - client/company
+   - current lifecycle state
+   - owner
+   - target milestone
+2. Status rail or stepper
+3. Activity timeline
+4. Recent updates / blockers panel
+5. Client action cards
+   - awaiting approval
+   - awaiting content
+   - awaiting credentials
+6. File/document placeholder area
+7. Mobile and desktop versions
+
+Design requirements:
+- Premium consulting dashboard aesthetic
+- Strong hierarchy
+- Clear distinction between active progress, waiting states, and blocked states
+- Avoid generic PM-tool visual patterns
+————
+
+10) Copilot — implement the portal shell and dashboard
+   • Submit into GitHub repo: Bktadvisory
+   • Figma source: BKT Advisory
+
+You are implementing the authenticated BKT Advisory Client Portal for Approach A.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- Build from the approved portal dashboard designs in the `BKT Advisory` Figma project.
+
+Requirements:
+- Stack: React + TypeScript + Tailwind CSS v4
+- No lucide-react
+- Inline SVG only
+- Portal lives at `/portal`
+- Use the previously defined canonical lifecycle types
+- Build from typed mock data first
+- Keep estimator architecture isolated; portal must not directly modify estimator internals
+
+Build:
+1. `PortalAppShell`
+2. `UserProfileCard`
+3. `QuotesTable`
+4. `ProjectSegmentedView`
+5. `ActivityTimeline`
+6. `PortalDashboardPage`
+
+Task:
+1. Render portal UI from the approved lifecycle state model.
+2. Use typed mock records for quotes, projects, and activities.
+3. Add lifecycle-aware status chips and segmented filters.
+4. Support responsive layouts.
+5. Return:
+   - component code
+   - shared types imports
+   - mock data integration
+   - portal shell layout
+   - concise QA checklist
+
+Important:
+- Keep the design enterprise-grade and clean.
+- Do not introduce unrelated business logic.
+————
+
+11) Copilot — implement the project detail screen
+   • Submit into GitHub repo: Bktadvisory
+   • Figma source: BKT Advisory
+
+You are implementing a BKT Advisory Project Detail page inside the authenticated portal.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- Build from the approved project detail design in the `BKT Advisory` Figma project.
+
+Requirements:
+- Use the approved project lifecycle states:
+  intake, discovery, scoping, design_in_progress, build_in_progress, awaiting_client, blocked, uat, completed, archived
+- Use approved activity event types
+- React + TypeScript + Tailwind
+- Inline SVG only
+- No lucide-react
+
+Task:
+1. Build a `ProjectDetailPage` component.
+2. Include:
+   - project header
+   - lifecycle status rail
+   - activity timeline
+   - blockers/awaiting client panel
+   - recent milestones
+   - document/file placeholder area
+3. Render from typed mock project + activity data.
+4. Add responsive mobile handling.
+5. Return:
+   - component code
+   - mock data example
+   - helper components if needed
+   - acceptance checklist
+
+Important:
+- Keep the UI aligned to the Figma portal concept.
+- This is a lifecycle-driven screen, not a generic task board.
+————
+
+12) Copilot — connect estimator quote output to portal records
+   • Primary GitHub repo: Bktadvisoryprojectestimator
+   • Secondary receiving repo: Bktadvisory
+Figma project: none
+
+You are integrating the existing BKT Advisory estimator output into the new authenticated portal model.
+
+Repository context:
+- You are working inside the `Bktadvisoryprojectestimator` repository.
+- This repo should emit or prepare lifecycle-aware quote/project payloads without changing the current estimator UX.
+- The resulting mapper contract must be consumable by the portal in the `Bktadvisory` repository.
+
+Context:
+- The estimator must remain self-contained and preserve `showQuote`.
+- The portal uses typed lifecycle records:
+  - `QuoteRecord`
+  - `OpportunityRecord`
+  - `ProjectRecord`
+  - `ActivityEvent`
+- Generated quotes should map into lifecycle-aware portal records.
+
+Task:
+1. Create mapper functions that transform estimator output into:
+   - `QuoteRecord`
+   - optional `OpportunityRecord`
+2. Define the rule for when an accepted quote creates a `ProjectRecord`.
+3. Create placeholder activity events from key milestones such as:
+   - quote_generated
+   - quote_sent
+   - quote_accepted
+   - project_created
+4. Keep these mappers isolated from UI components.
+5. Return:
+   - mapper functions
+   - types used
+   - sample input/output objects
+   - integration notes showing what the `Bktadvisory` portal repo must consume
+
+Important:
+- Do not change the estimator’s current quote-generation flow.
+- This is an integration layer, not a rewrite.
+————
+
+13) Copilot — add auth guard and shell hardening
+   • Submit into GitHub repo: Bktadvisory
+   • Figma project: none
+
+You are hardening the BKT Advisory Approach A architecture.
+
+Repository context:
+- You are working inside the `Bktadvisory` repository.
+- This repo owns `/auth`, `/portal`, and the top-level shell.
+
+Requirements:
+- `/portal` must be auth-guarded
+- `/auth` remains public
+- `/estimator` remains stable and independently accessible unless explicitly restricted later
+- Preserve estimator `showQuote` behavior by keeping estimator logic out of this repo
+- React + TypeScript + Tailwind
+- No lucide-react
+
+Task:
+1. Add a lightweight auth/session guard for `/portal`.
+2. Add redirect behavior from `/auth` to `/portal` when already authenticated.
+3. Keep the route shell thin and maintainable.
+4. Return:
+   - guard component or hook
+   - route integration changes
+   - example unauthenticated redirect flow
+   - regression checklist confirming estimator boundaries remain unaffected
+
+Important:
+- Do not create a large auth framework unless required.
+- This should be low-debt and route-boundary only.
+————
+
+14) Copilot — final QA / regression sweep
+  Run twice
+   1. GitHub repo: Bktadvisory
+   2. GitHub repo: Bktadvisoryprojectestimator
+      Figma projects for reference: BKT Advisory, BKT Advisory (Project Estimator)
+
+You are performing a final implementation review for the BKT Advisory Approach A rollout.
+
+Repository context:
+- Validate only the code in the currently open repository.
+- If cross-repo dependencies exist, call them out explicitly.
+- Use the approved Figma designs as visual reference where relevant.
+
+Review targets:
+1. Estimator architecture
+   - `showQuote` still controls Estimator <-> Quote transitions
+   - no route-based quote drift
+2. Route shell
+   - `/`
+   - `/auth`
+   - `/portal`
+   - `/estimator` or estimator boundary entry
+3. Backend-triggered case-study email
+   - uses `/make-server-07a007e1/request-case-study`
+   - no `mailto:`
+4. Auth gateway
+   - manual sign-up fields match estimator Step 1
+5. Portal
+   - uses approved lifecycle states only
+   - renders from typed records
+6. Code quality
+   - no lucide-react
+   - inline SVG only
+   - Tailwind styling consistent with BKT Advisory
+
+Task:
+1. Produce a release-readiness review.
+2. Flag any architectural drift, lifecycle inconsistencies, or hidden debt.
+3. Return:
+   - PASS or FAIL
+   - prioritized issues
+   - exact remediation suggestions
+   - acceptance checklist
+   - Go / No-Go recommendation
+
+Important:
+- Be strict.
+- Treat any route-based quote-state drift as a release risk.
+————————————————————————————————————————————————————————————————
+
+Recommended Working Rhythm
+
+Prompt Execution – Exact Sequence:
+ • Copilot architecture extraction → Bktadvisoryprojectestimator
+ • Copilot route shell → Bktadvisory
+ • Copilot lifecycle types → Bktadvisory
+ • Copilot backend email function → Bktadvisory
+ • Copilot CTA integration → Bktadvisory
+ • Figma auth gateway → BKT Advisory
+ • Copilot auth gateway build → Bktadvisory
+ • Figma portal dashboard → BKT Advisory
+ • Figma project detail → BKT Advisory
+ • Copilot portal dashboard build → Bktadvisory
+ • Copilot project detail build → Bktadvisory
+ • Copilot estimator → portal mappers → Bktadvisoryprojectestimator
+ • Copilot auth guard → Bktadvisory
+ • Copilot final QA → both repos, one pass each
+————
+
+Quick Routing Rule:
+
+Use Bktadvisory + BKT Advisory for:
+ • auth
+ • portal
+ • main navigation
+ • main-site CTA wiring
+ • top-level routing
+ • dashboard / project detail UI
+
+Use Bktadvisoryprojectestimator + BKT Advisory (Project Estimator) for:
+ • showQuote
+ • estimator shell
+ • quote generation
+ • estimator state
+ • AI refinement
+ • document generation
+ • estimator-side mapping/export contract
+————
+
+Provenance:
+This destination map is grounded in the current repo boundaries: the main-site repo is defined internally as the source of truth for the marketing site, standard routing, and UI shell, while explicitly excluding estimator complex state logic; the estimator repo is defined internally as the source of truth for single-page estimator state, AI workflows, quoting, and document generation, with showQuote governing Estimator ↔ Quote behavior and marketing work explicitly excluded. The estimator README also directly ties that repo to the “BKT Advisory (Project Estimator)” Figma design.

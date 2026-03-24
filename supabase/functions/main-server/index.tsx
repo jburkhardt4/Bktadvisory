@@ -18,7 +18,7 @@ app.use(
   }),
 );
 
-app.post("/make-server-defb8dbd/chat", async (c) => {
+app.post("/make-server-07a007e1/chat", async (c) => {
   try {
     const body = await c.req.json();
     const { current_page, current_date, project_goals } = body;
@@ -156,6 +156,103 @@ Continue gathering missing data until all fields are complete.`;
 
   } catch (e) {
     console.error("Server Error:", e);
+    // @ts-ignore: Error handling
+    return c.json({ error: e.message || "Unknown server error" }, 500);
+  }
+});
+
+app.post("/make-server-07a007e1/request-case-study", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { caseStudyLabel, caseStudySummary, sourceUrl, requestedAt } = body;
+
+    if (!caseStudyLabel || !caseStudySummary || !sourceUrl || !requestedAt) {
+      console.warn("request-case-study: missing required fields", {
+        caseStudyLabel: !!caseStudyLabel,
+        caseStudySummary: !!caseStudySummary,
+        sourceUrl: !!sourceUrl,
+        requestedAt: !!requestedAt,
+      });
+      return c.json({ error: "Missing required fields: caseStudyLabel, caseStudySummary, sourceUrl, requestedAt" }, 400);
+    }
+
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const toEmail = Deno.env.get("CASE_STUDY_TO_EMAIL");
+    const ccEmail = Deno.env.get("CASE_STUDY_CC_EMAIL");
+
+    if (!resendApiKey || !toEmail) {
+      console.error("request-case-study: missing required environment variables (RESEND_API_KEY, CASE_STUDY_TO_EMAIL)");
+      return c.json({ error: "Server configuration error" }, 500);
+    }
+
+    const subject = `Case Study Request: ${caseStudyLabel}`;
+    const body_html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+        <h2 style="color: #1d4ed8; border-bottom: 2px solid #1d4ed8; padding-bottom: 8px;">
+          Case Study Request — BKT Advisory
+        </h2>
+        <p>A visitor has requested the <strong>${caseStudyLabel}</strong> case study from the BKT Advisory website.</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+          <tr>
+            <td style="padding: 8px 12px; background: #f1f5f9; font-weight: bold; width: 160px; border: 1px solid #e2e8f0;">Case Study</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${caseStudyLabel}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; background: #f1f5f9; font-weight: bold; border: 1px solid #e2e8f0;">Summary</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${caseStudySummary}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; background: #f1f5f9; font-weight: bold; border: 1px solid #e2e8f0;">Source URL</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;"><a href="${sourceUrl}" style="color: #1d4ed8;">${sourceUrl}</a></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; background: #f1f5f9; font-weight: bold; border: 1px solid #e2e8f0;">Requested At</td>
+            <td style="padding: 8px 12px; border: 1px solid #e2e8f0;">${new Date(requestedAt).toLocaleString('en-US', { timeZone: 'America/New_York' })} ET</td>
+          </tr>
+        </table>
+        <p style="margin-top: 24px; color: #64748b; font-size: 13px;">
+          This notification was sent automatically by the BKT Advisory website. Please follow up with the requester promptly.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="color: #94a3b8; font-size: 12px;">BKT Advisory — bktadvisory.com</p>
+      </div>
+    `;
+
+    const emailPayload: Record<string, unknown> = {
+      from: "BKT Advisory <noreply@bktadvisory.com>",
+      to: [toEmail],
+      subject,
+      html: body_html,
+    };
+
+    if (ccEmail) {
+      emailPayload.cc = [ccEmail];
+    }
+
+    console.log(`request-case-study: sending email for "${caseStudyLabel}" to ${toEmail}`);
+
+    const resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    if (!resendResponse.ok) {
+      const errorText = await resendResponse.text();
+      console.error("request-case-study: Resend API error", resendResponse.status, errorText);
+      return c.json({ error: "Failed to send email notification" }, 500);
+    }
+
+    console.log(`request-case-study: email sent successfully for "${caseStudyLabel}"`);
+    return c.json({
+      success: true,
+      message: `Your request for the "${caseStudyLabel}" case study has been received. We'll be in touch shortly.`,
+    });
+  } catch (e) {
+    console.error("request-case-study: unexpected error", e);
     // @ts-ignore: Error handling
     return c.json({ error: e.message || "Unknown server error" }, 500);
   }

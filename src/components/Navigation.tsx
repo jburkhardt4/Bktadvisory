@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useAuth } from '../contexts/AuthContext';
 
 // Icon components to avoid lucide-react import issue
 const MenuIcon = ({ size }: { size?: number }) => (
@@ -61,8 +60,6 @@ export function Navigation({
   onNavigateToEstimator: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { session } = useAuth();
-  const authed = !!session;
 
   return (
     <nav className="sticky top-0 z-50 bg-[#EFF6FF]/90 backdrop-blur-md border-b border-blue-100">
@@ -78,12 +75,12 @@ export function Navigation({
                 className="h-[52px] w-auto hidden xl:block"
               />
               <img
-                src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png"
+                src={logo}
                 alt="BKT Advisory"
                 className="h-[52px] w-auto hidden md:block xl:hidden"
               />
               <img
-                src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png"
+                src={mobileLogo}
                 alt="BKT Advisory"
                 className="h-[52px] w-auto block md:hidden"
               />
@@ -131,11 +128,11 @@ export function Navigation({
               </ScheduleCallButton>
 
               <Link
-                to={authed ? "/portal" : "/auth"}
+                to="/auth"
                 className="whitespace-nowrap inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-400 rounded-lg transition-all duration-200 relative group"
               >
                 <UserIcon size={15} />
-                {authed ? 'My Portal' : 'Sign In'}
+                Sign In
                 <span className="absolute bottom-1.5 left-4 right-4 h-[2px] bg-blue-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
             </div>
@@ -144,11 +141,11 @@ export function Navigation({
           {/* ── Mobile hamburger ── */}
           <div className="lg:hidden flex items-center ml-auto">
             <Link
-                to={authed ? "/portal" : "/auth"}
+                to="/auth"
                 className="whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 border border-slate-300 hover:border-blue-400 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-700 transition-all duration-200 py-2 mx-1 relative group"
               >
                 <UserIcon size={15} />
-                {authed ? 'My Portal' : 'Sign In'}
+                Sign In
                 <span className="absolute bottom-1.5 left-3.5 right-3.5 h-[2px] bg-blue-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
             <button
@@ -191,12 +188,12 @@ export function Navigation({
               <ScheduleCallButton />
 
               <Link
-                to={authed ? "/portal" : "/auth"}
+                to="/auth"
                 onClick={() => setIsOpen(false)}
                 className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-700 hover:border-blue-400 transition-all duration-200"
               >
                 <UserIcon size={15} />
-                {authed ? 'My Portal' : 'Sign In'}
+                Sign In
               </Link>
             </div>
           </div>

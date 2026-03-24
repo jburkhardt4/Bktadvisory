@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
-import { AuthProvider } from "./contexts/AuthContext";
 
 // BKT icon from Supabase Storage (Logos bucket)
 const BKT_ICON_URL =
@@ -169,11 +168,7 @@ function App() {
     }
   }, []);
 
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

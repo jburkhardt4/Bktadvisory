@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import type { Project, ProjectStatus, ProjectActivityType } from './portalData';
+import { useState, useEffect } from 'react';
+import type { ProjectStatus } from './portalData';
 import { PROJECT_STATUS_CONFIG } from './portalData';
 import { ProjectStatusBadge } from './StatusBadge';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../supabase/client';
+import type { Database } from '../../types/supabase';
 import {
   ArrowLeftIcon, CheckCircleIcon, ClockIcon, UserIcon, BuildingIcon,
   TargetIcon, AlertTriangleIcon, FileTextIcon, FolderIcon,
@@ -16,6 +18,40 @@ import { ActionDropdown, EditButton } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
 import { AddActivityForm } from './forms/AddActivityForm';
 import { AddMilestoneForm } from './forms/AddMilestoneForm';
+
+type ActivityEventType = Database['public']['Enums']['activity_event_type'];
+
+interface DbProject {
+  id: string;
+  name: string;
+  company_name: string;
+  status: ProjectStatus;
+  owner: string;
+  target_milestone: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DbMilestone {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string;
+  target_date: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DbActivity {
+  id: string;
+  type: ActivityEventType;
+  client_id: string | null;
+  record_id: string;
+  description: string;
+  actor: string | null;
+  created_at: string;
+}
 
 /* ─── Lifecycle Stepper ─── */
 
@@ -134,22 +170,26 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
 
 /* ─── Activity Timeline ─── */
 
-const ACTIVITY_TYPE_CONFIG: Record<ProjectActivityType, { color: string; bg: string; icon: React.ReactNode }> = {
+const ACTIVITY_TYPE_CONFIG: Partial<Record<ActivityEventType, { color: string; bg: string; icon: React.ReactNode }>> = {
   quote_generated: { color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', icon: <FileTextIcon size={13} /> },
   quote_sent: { color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', icon: <SendIcon size={13} /> },
+  quote_revised: { color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', icon: <FileTextIcon size={13} /> },
   quote_accepted: { color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', icon: <CheckCircleIcon size={13} /> },
   project_created: { color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', icon: <FolderIcon size={13} /> },
   discovery_completed: { color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', icon: <SearchIcon size={13} /> },
   scope_approved: { color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', icon: <ShieldIcon size={13} /> },
   design_started: { color: 'text-cyan-400', bg: 'bg-cyan-400/10 border-cyan-400/20', icon: <PenIcon size={13} /> },
   build_started: { color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', icon: <ZapIcon size={13} /> },
+  client_feedback_requested: { color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', icon: <MessageSquareIcon size={13} /> },
+  client_feedback_received: { color: 'text-teal-400', bg: 'bg-teal-400/10 border-teal-400/20', icon: <MessageSquareIcon size={13} /> },
   blocked: { color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', icon: <AlertTriangleIcon size={13} /> },
   unblocked: { color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', icon: <UnlockIcon size={13} /> },
   uat_started: { color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', icon: <PlayIcon size={13} /> },
   completed: { color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', icon: <CheckCircleIcon size={13} /> },
-  comment: { color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', icon: <MessageSquareIcon size={13} /> },
-  document_uploaded: { color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', icon: <PaperclipIcon size={13} /> },
+  archived: { color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', icon: <ArchiveIcon size={13} /> },
 };
+
+const DEFAULT_ACTIVITY_STYLE = { color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', icon: <AlertCircleIcon size={13} /> };
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -159,95 +199,127 @@ function formatTime(ts: string) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-/* ─── Client Action Card ─── */
-
-function ClientActionCard({ action }: { action: import('./portalData').ClientAction }) {
-  const typeConfig = {
-    awaiting_approval: { icon: <ShieldIcon size={18} />, accent: 'from-amber-500 to-orange-500', label: 'Awaiting Approval', border: 'border-amber-200', iconBg: 'bg-amber-50 text-amber-600' },
-    awaiting_content: { icon: <UploadIcon size={18} />, accent: 'from-cyan-500 to-blue-500', label: 'Awaiting Content', border: 'border-cyan-200', iconBg: 'bg-cyan-50 text-cyan-600' },
-    awaiting_credentials: { icon: <KeyIcon size={18} />, accent: 'from-red-500 to-rose-500', label: 'Awaiting Credentials', border: 'border-red-200', iconBg: 'bg-red-50 text-red-600' },
-  };
-  const cfg = typeConfig[action.type];
-  const priorityColors = {
-    high: 'text-red-600 bg-red-50 border-red-200',
-    medium: 'text-amber-600 bg-amber-50 border-amber-200',
-    low: 'text-slate-600 bg-slate-50 border-slate-200',
-  };
-
-  return (
-    <div className={`bg-white border ${cfg.border} rounded-xl p-4 hover:shadow-md transition-all`}>
-      <div className="flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${cfg.iconBg}`}>
-          {cfg.icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className={`text-[10px] uppercase tracking-wider font-bold bg-gradient-to-r ${cfg.accent} bg-clip-text text-transparent`}>
-              {cfg.label}
-            </span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-semibold ${priorityColors[action.priority]}`}>
-              {action.priority}
-            </span>
-          </div>
-          <p className="text-sm font-semibold text-slate-900">{action.title}</p>
-          <p className="text-xs text-slate-600 mt-1 leading-relaxed">{action.description}</p>
-          {action.dueDate && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
-              <CalendarCheckIcon size={12} />
-              <span>Due {formatDate(action.dueDate)}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Document Row ─── */
-
-const FILE_TYPE_COLORS: Record<string, string> = {
-  pdf: 'text-red-600 bg-red-50',
-  docx: 'text-blue-600 bg-blue-50',
-  xlsx: 'text-emerald-600 bg-emerald-50',
-  pptx: 'text-orange-600 bg-orange-50',
-  figma: 'text-purple-600 bg-purple-50',
-  link: 'text-cyan-600 bg-cyan-50',
-};
-
-function DocumentRow({ doc }: { doc: import('./portalData').ProjectDocument }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors rounded-lg group">
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${FILE_TYPE_COLORS[doc.type] || 'text-slate-600 bg-slate-100'}`}>
-        {doc.type === 'figma' ? <LayersIcon size={16} /> :
-         doc.type === 'link' ? <ExternalLinkIcon size={16} /> :
-         <FileTextIcon size={16} />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-900 truncate">{doc.name}</p>
-        <p className="text-xs text-slate-500">
-          {doc.uploadedBy} · {formatDate(doc.uploadedAt)}
-          {doc.size && <span> · {doc.size}</span>}
-        </p>
-      </div>
-      <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-        <DownloadIcon size={15} />
-      </button>
-    </div>
-  );
+function formatEventTitle(type: ActivityEventType): string {
+  return type
+    .split('_')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 /* ─── Main Component ─── */
 
-export function ProjectDetail({ project, onBack }: { project: Project; onBack: () => void }) {
+export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack: () => void }) {
   const { role } = useAuth();
+  const [project, setProject] = useState<DbProject | null>(null);
+  const [milestones, setMilestones] = useState<DbMilestone[]>([]);
+  const [activities, setActivities] = useState<DbActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<'all' | 'milestones' | 'blockers'>('all');
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const completedMilestones = project.milestones.filter(m => m.completed).length;
-  const totalMilestones = project.milestones.length;
-  const activities = project.projectActivity || [];
-  const clientActions = project.clientActions || [];
-  const blockers = project.blockers || [];
-  const documents = project.documents || [];
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      const [projRes, msRes, actRes] = await Promise.all([
+        supabase.from('projects').select('*').eq('id', projectId).single(),
+        supabase.from('milestones').select('*').eq('project_id', projectId).order('target_date', { ascending: true }),
+        supabase.from('activity_events').select('*').eq('record_id', projectId).order('created_at', { ascending: false }),
+      ]);
+
+      if (projRes.error) {
+        setError(projRes.error.message);
+        setLoading(false);
+        return;
+      }
+
+      setProject(projRes.data as DbProject);
+      setMilestones((msRes.data as DbMilestone[]) ?? []);
+      setActivities((actRes.data as DbActivity[]) ?? []);
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center">
+          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer group">
+            <ArrowLeftIcon size={16} />
+            <span className="group-hover:underline">Back to Dashboard</span>
+          </button>
+        </div>
+        {/* Hero skeleton */}
+        <div className="bg-gradient-to-br from-[#0F172B] via-slate-800 to-purple-950 rounded-2xl p-6 lg:p-8 shadow-lg border border-slate-700/50 animate-pulse">
+          <div className="h-4 w-32 bg-white/10 rounded mb-3" />
+          <div className="h-8 w-2/3 bg-white/10 rounded mb-2" />
+          <div className="h-4 w-1/2 bg-white/5 rounded" />
+          <div className="flex gap-4 mt-6 pt-5 border-t border-white/[0.08]">
+            <div className="h-3 w-24 bg-white/5 rounded" />
+            <div className="h-3 w-32 bg-white/5 rounded" />
+            <div className="h-3 w-28 bg-white/5 rounded" />
+          </div>
+        </div>
+        {/* Stepper skeleton */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
+          <div className="h-4 w-40 bg-slate-200 rounded mb-4" />
+          <div className="flex items-center gap-2">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex items-center flex-1 last:flex-none">
+                <div className="w-9 h-9 rounded-full bg-slate-200" />
+                {i < 6 && <div className="flex-1 h-[2px] bg-slate-200 mx-1" />}
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Grid skeleton */}
+        <div className="grid lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
+            <div className="h-4 w-32 bg-slate-200 rounded mb-4" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-3/4 bg-slate-200 rounded" />
+                    <div className="h-3 w-full bg-slate-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
+            <div className="h-4 w-32 bg-slate-200 rounded mb-4" />
+            <div className="h-3 w-full bg-slate-100 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="space-y-6">
+        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer group">
+          <ArrowLeftIcon size={16} />
+          <span className="group-hover:underline">Back to Dashboard</span>
+        </button>
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 text-center">
+          <AlertCircleIcon size={32} />
+          <h3 className="text-base font-semibold text-slate-900 mt-3">Unable to load project</h3>
+          <p className="text-sm text-slate-500 mt-1">{error ?? 'Project not found'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const completedMilestones = milestones.filter(m => m.completed).length;
+  const totalMilestones = milestones.length;
+  const progress = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
 
   const filteredActivities = activities.filter(a => {
     if (activityFilter === 'all') return true;
@@ -276,25 +348,24 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
         />
       </div>
 
-      {/* ── Project Header (Dark Gradient Hero) - No Progress Stats ── */}
+      {/* ── Project Header (Dark Gradient Hero) ── */}
       <div className="bg-gradient-to-br from-[#0F172B] via-slate-800 to-purple-950 rounded-2xl p-6 lg:p-8 shadow-lg border border-slate-700/50">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap mb-2">
-              <span className="text-xs text-slate-400 font-mono uppercase tracking-wider">{project.id}</span>
+              <span className="text-xs text-slate-400 font-mono uppercase tracking-wider">{project.id.slice(0, 8)}</span>
               <ProjectStatusBadge status={project.status} />
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-slate-50 tracking-tight">{project.name}</h1>
-            <p className="text-sm text-slate-400 mt-2 max-w-2xl leading-relaxed">{project.description}</p>
           </div>
         </div>
 
         {/* Meta row */}
         <div className="flex flex-wrap gap-x-6 gap-y-2 mt-5 pt-5 border-t border-white/[0.08]">
-          {project.company && (
+          {project.company_name && (
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <BuildingIcon size={14} />
-              <span>{project.company}</span>
+              <span>{project.company_name}</span>
             </div>
           )}
           {project.owner && (
@@ -304,19 +375,15 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
               <span className="text-slate-600">· Lead</span>
             </div>
           )}
-          {project.targetMilestone && (
+          {project.target_milestone && (
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <TargetIcon size={14} />
-              <span>Target: <span className="text-slate-300">{project.targetMilestone}</span></span>
+              <span>Target: <span className="text-slate-300">{project.target_milestone}</span></span>
             </div>
           )}
           <div className="flex items-center gap-2 text-sm text-slate-400">
             <CalendarCheckIcon size={14} />
-            <span>Est. {formatDate(project.estimatedEnd)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="text-slate-600">Quote:</span>
-            <span className="font-mono text-slate-400">{project.quoteRef}</span>
+            <span>Created {formatDate(project.created_at)}</span>
           </div>
         </div>
       </div>
@@ -324,37 +391,21 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
       {/* ── Lifecycle Progress Stepper ── */}
       <StatusStepper status={project.status} />
 
-      {/* ── 2-Column Grid: Blocker (Left) + Progress (Right) ── */}
+      {/* ── 2-Column Grid: Status (Left) + Progress (Right) ── */}
       <div className="grid lg:grid-cols-5 gap-6">
-        {/* Left Column: Critical Blocker */}
+        {/* Left Column: Status */}
         <div className="lg:col-span-3 space-y-3">
-          {blockers.length > 0 ? (
-            blockers.map(b => (
-              <div key={b.id} className={`bg-white border rounded-2xl shadow-sm p-5 flex items-start gap-4 ${
-                b.severity === 'critical'
-                  ? 'border-red-200'
-                  : 'border-amber-200'
-              }`}>
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                  b.severity === 'critical' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                }`}>
-                  <AlertTriangleIcon size={20} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`text-xs uppercase tracking-wider font-bold ${
-                      b.severity === 'critical' ? 'text-red-600' : 'text-amber-600'
-                    }`}>
-                      {b.severity === 'critical' ? 'Critical Blocker' : 'Warning'}
-                    </span>
-                    <span className="text-xs text-slate-400">· {formatDate(b.createdAt)}</span>
-                  </div>
-                  <p className="text-base font-semibold text-slate-900 mt-1">{b.title}</p>
-                  <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{b.description}</p>
-                  <p className="text-xs text-slate-500 mt-2">Owner: <span className="text-slate-700 font-medium">{b.owner}</span></p>
-                </div>
+          {project.status === 'blocked' ? (
+            <div className="bg-white border border-red-200 rounded-2xl shadow-sm p-5 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-red-50 text-red-600">
+                <AlertTriangleIcon size={20} />
               </div>
-            ))
+              <div className="min-w-0 flex-1">
+                <span className="text-xs uppercase tracking-wider font-bold text-red-600">Blocked</span>
+                <p className="text-base font-semibold text-slate-900 mt-1">This project is currently blocked</p>
+                <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">Check the activity timeline for details.</p>
+              </div>
+            </div>
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
               <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
@@ -371,7 +422,7 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
           <div className="absolute top-4 right-4"><EditButton /></div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-slate-900">Overall Progress</h3>
-            <span className="text-xl font-bold text-slate-900 mr-6">{project.progress}%</span>
+            <span className="text-xl font-bold text-slate-900 mr-6">{progress}%</span>
           </div>
           <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
             <div
@@ -384,12 +435,12 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600'
               }`}
-              style={{ width: `${project.progress}%` }}
+              style={{ width: `${progress}%` }}
             />
           </div>
           <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
-            <span>{formatDate(project.startDate)}</span>
-            <span>{formatDate(project.estimatedEnd)}</span>
+            <span>{formatDate(project.created_at)}</span>
+            <span>{formatDate(project.updated_at)}</span>
           </div>
           
           {/* Progress details */}
@@ -404,7 +455,7 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Started</span>
-              <span className="text-slate-900">{formatDate(project.startDate)}</span>
+              <span className="text-slate-900">{formatDate(project.created_at)}</span>
             </div>
           </div>
         </div>
@@ -413,24 +464,8 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
       {/* ── Two-column layout ── */}
       <div className="grid lg:grid-cols-5 gap-6">
 
-        {/* Left column: Activity + Client Actions (3 cols) */}
+        {/* Left column: Activity (3 cols) */}
         <div className="lg:col-span-3 space-y-6">
-
-          {/* Client Action Cards */}
-          {clientActions.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-slate-900">Action Required</h3>
-                  <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-bold flex items-center justify-center">{clientActions.length}</span>
-                </div>
-                <span className="text-xs text-slate-500">Items awaiting your input</span>
-              </div>
-              <div className="p-4 space-y-3">
-                {clientActions.map(a => <ClientActionCard key={a.id} action={a} />)}
-              </div>
-            </div>
-          )}
 
           {/* Activity Timeline */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -462,7 +497,7 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
               ) : (
                 <div className="space-y-0">
                   {filteredActivities.map((event, i) => {
-                    const cfg = ACTIVITY_TYPE_CONFIG[event.type];
+                    const cfg = ACTIVITY_TYPE_CONFIG[event.type] ?? DEFAULT_ACTIVITY_STYLE;
                     return (
                       <div key={event.id} className="flex gap-4">
                         <div className="flex flex-col items-center">
@@ -473,13 +508,15 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
                         </div>
                         <div className="pb-6 pt-1 min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <p className="text-sm font-medium text-slate-900">{event.title}</p>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">{formatDate(event.timestamp)} · {formatTime(event.timestamp)}</span>
+                            <p className="text-sm font-medium text-slate-900">{formatEventTitle(event.type)}</p>
+                            <span className="text-[11px] text-slate-500 whitespace-nowrap">{formatDate(event.created_at)} · {formatTime(event.created_at)}</span>
                           </div>
                           <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{event.description}</p>
-                          <p className="text-[11px] text-slate-500 mt-1">
-                            <span className="text-slate-600">{event.user}</span>
-                          </p>
+                          {event.actor && (
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              <span className="text-slate-600">{event.actor}</span>
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
@@ -499,56 +536,53 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
               <h3 className="text-sm font-semibold text-slate-900">Milestones</h3>
               <EditButton />
             </div>
-            <div className="p-4 space-y-0">
-              {project.milestones.map((m, i) => (
-                <div key={m.id} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-                      m.completed
-                        ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
-                        : m.title === project.targetMilestone
-                        ? 'bg-blue-50 border-blue-500 text-blue-600 ring-2 ring-blue-100'
-                        : 'bg-slate-50 border-slate-300 text-slate-400'
-                    }`}>
-                      {m.completed ? <CheckCircleIcon size={12} /> : <ClockIcon size={12} />}
+            {milestones.length === 0 ? (
+              <div className="py-10 text-center">
+                <p className="text-sm text-slate-500">No milestones yet</p>
+              </div>
+            ) : (
+              <div className="p-4 space-y-0">
+                {milestones.map((m, i) => (
+                  <div key={m.id} className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
+                        m.completed
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                          : m.title === project.target_milestone
+                          ? 'bg-blue-50 border-blue-500 text-blue-600 ring-2 ring-blue-100'
+                          : 'bg-slate-50 border-slate-300 text-slate-400'
+                      }`}>
+                        {m.completed ? <CheckCircleIcon size={12} /> : <ClockIcon size={12} />}
+                      </div>
+                      {i < milestones.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1" />}
                     </div>
-                    {i < project.milestones.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1" />}
-                  </div>
-                  <div className="pb-4 pt-0.5 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`text-xs font-semibold ${m.completed ? 'text-emerald-600' : m.title === project.targetMilestone ? 'text-blue-700' : 'text-slate-500'}`}>{m.title}</p>
-                      {m.completed && <span className="text-[10px] text-emerald-600 font-medium">Done</span>}
-                      {m.title === project.targetMilestone && !m.completed && <span className="text-[10px] text-blue-600 font-medium">Current Target</span>}
+                    <div className="pb-4 pt-0.5 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className={`text-xs font-semibold ${m.completed ? 'text-emerald-600' : m.title === project.target_milestone ? 'text-blue-700' : 'text-slate-500'}`}>{m.title}</p>
+                        {m.completed && <span className="text-[10px] text-emerald-600 font-medium">Done</span>}
+                        {m.title === project.target_milestone && !m.completed && <span className="text-[10px] text-blue-600 font-medium">Current Target</span>}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{m.description}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{formatDate(m.target_date)}</p>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{m.description}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{formatDate(m.date)}</p>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Documents */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-900">Documents</h3>
-              {documents.length > 0 && (
-                <span className="text-xs text-slate-500">{documents.length} files</span>
-              )}
             </div>
-            {documents.length === 0 ? (
-              <div className="py-10 text-center">
-                <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
-                  <PaperclipIcon size={20} />
-                </div>
-                <p className="text-xs text-slate-600">No documents uploaded yet.</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Files will appear here as they're shared.</p>
+            <div className="py-10 text-center">
+              <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                <PaperclipIcon size={20} />
               </div>
-            ) : (
-              <div className="p-2 space-y-0.5">
-                {documents.map(doc => <DocumentRow key={doc.id} doc={doc} />)}
-              </div>
-            )}
+              <p className="text-xs text-slate-600">No documents uploaded yet.</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Files will appear here as they're shared.</p>
+            </div>
             {/* Upload placeholder */}
             <div className="px-4 pb-4 pt-2">
               <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -567,10 +601,6 @@ export function ProjectDetail({ project, onBack }: { project: Project; onBack: (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
               <input type="text" defaultValue={project.name} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-              <textarea rows={3} defaultValue={project.description} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>

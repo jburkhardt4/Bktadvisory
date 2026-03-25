@@ -48,7 +48,7 @@ function mapToProject(row: any): Project {
   };
 }
 
-export function ProjectsView({ onSelectProject }: { onSelectProject: (p: Project) => void }) {
+export function ProjectsView({ onSelectProject }: { onSelectProject: (id: string) => void }) {
   const { projects: rawProjects, loading } = useUserProjects();
   const [activeTab, setActiveTab] = useState<Tab>('active');
 
@@ -116,7 +116,7 @@ export function ProjectsView({ onSelectProject }: { onSelectProject: (p: Project
           {filtered.map(p => (
             <button
               key={p.id}
-              onClick={() => onSelectProject(p)}
+              onClick={() => onSelectProject(p.id)}
               className="w-full px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
             >
               <div className="flex-1 min-w-0">

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import type { Project } from './portalData';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserProfile } from './UserProfile';
 import { QuotesTable } from './QuotesTable';
@@ -19,7 +18,7 @@ import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 
 export function PortalPage() {
   const { role } = useAuth();
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
@@ -53,7 +52,7 @@ export function PortalPage() {
       {/* Main content */}
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8 py-8">
         {selectedProject ? (
-          <ProjectDetail project={selectedProject} onBack={() => setSelectedProject(null)} />
+          <ProjectDetail projectId={selectedProject} onBack={() => setSelectedProject(null)} />
         ) : (
           <div className="space-y-6">
             {/* Hero Section with Dark Gradient - Welcome + User Profile */}

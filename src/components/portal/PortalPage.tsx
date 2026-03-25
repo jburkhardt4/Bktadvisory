@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../supabase/client';
 import { UserProfile } from './UserProfile';
 import { QuotesTable } from './QuotesTable';
 import { ProjectsView } from './ProjectsView';
@@ -16,11 +17,31 @@ import { AddActivityForm } from './forms/AddActivityForm';
 
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function PortalPage() {
-  const { role } = useAuth();
+  const { session, role } = useAuth();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    supabase
+      .from('profiles')
+      .select('first_name')
+      .eq('id', session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.first_name) setFirstName(data.first_name);
+      });
+  }, [session?.user?.id]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -60,7 +81,7 @@ export function PortalPage() {
               <div className="space-y-6">
                 {/* Welcome header */}
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-50">Good afternoon, Sarah</h1>
+                  <h1 className="text-2xl font-bold text-slate-50">{getGreeting()}{firstName ? `, ${firstName}` : ''}</h1>
                   <p className="text-sm text-slate-400 mt-1">Here's a summary of your account and active engagements.</p>
                 </div>
 

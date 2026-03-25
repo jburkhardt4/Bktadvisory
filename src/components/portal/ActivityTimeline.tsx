@@ -9,10 +9,11 @@ type ActivityEventType = Database['public']['Enums']['activity_event_type'];
 interface Activity {
   id: string;
   type: ActivityEventType;
-  project_id: string;
+  client_id: string | null;
+  record_id: string;
   description: string;
-  timestamp: string;
-  actor: string;
+  actor: string | null;
+  created_at: string;
 }
 
 const QUOTE_TYPES: Set<ActivityEventType> = new Set([
@@ -65,42 +66,19 @@ export function ActivityTimeline() {
       if (!user) return;
 
       try {
+        let query = supabase
+          .from('activity_events')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(15);
+
         if (role === 'client') {
-          // Get project IDs owned by this user first
-          const { data: projects, error: projErr } = await supabase
-            .from('projects')
-            .select('id')
-            .eq('client_id', user.id);
-
-          if (projErr) throw projErr;
-
-          const projectIds = projects?.map(p => p.id) ?? [];
-          if (projectIds.length === 0) {
-            setActivities([]);
-            setLoading(false);
-            return;
-          }
-
-          const { data, error: evtErr } = await supabase
-            .from('activity_events')
-            .select('*')
-            .in('project_id', projectIds)
-            .order('timestamp', { ascending: false })
-            .limit(15);
-
-          if (evtErr) throw evtErr;
-          setActivities((data as Activity[]) ?? []);
-        } else {
-          // Admin sees all events
-          const { data, error: evtErr } = await supabase
-            .from('activity_events')
-            .select('*')
-            .order('timestamp', { ascending: false })
-            .limit(15);
-
-          if (evtErr) throw evtErr;
-          setActivities((data as Activity[]) ?? []);
+          query = query.eq('client_id', user.id);
         }
+
+        const { data, error: evtErr } = await query;
+        if (evtErr) throw evtErr;
+        setActivities((data as Activity[]) ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load activity');
       } finally {
@@ -174,7 +152,7 @@ export function ActivityTimeline() {
                 <div className="pb-5 min-w-0 pt-1">
                   <p className="text-sm font-medium text-slate-900">{formatEventTitle(event.type)}</p>
                   <p className="text-xs text-slate-600 mt-0.5">{event.description}</p>
-                  <p className="text-xs text-slate-400 mt-1">{formatDate(event.timestamp)}</p>
+                  <p className="text-xs text-slate-400 mt-1">{formatDate(event.created_at)}</p>
                 </div>
               </div>
             );

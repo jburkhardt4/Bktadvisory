@@ -145,31 +145,34 @@ export type Database = {
         Row: {
           id: string;
           type: Database['public']['Enums']['activity_event_type'];
-          project_id: string;
+          client_id: string | null;
+          record_id: string;
           description: string;
-          timestamp: string;
-          actor: string;
+          actor: string | null;
+          created_at: string;
         };
         Insert: {
           id?: string;
           type: Database['public']['Enums']['activity_event_type'];
-          project_id: string;
+          client_id?: string | null;
+          record_id: string;
           description?: string;
-          timestamp?: string;
-          actor: string;
+          actor?: string | null;
+          created_at?: string;
         };
         Update: {
           id?: string;
           type?: Database['public']['Enums']['activity_event_type'];
-          project_id?: string;
+          client_id?: string | null;
+          record_id?: string;
           description?: string;
-          timestamp?: string;
-          actor?: string;
+          actor?: string | null;
+          created_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'activity_events_project_id_fkey';
-            columns: ['project_id'];
+            foreignKeyName: 'activity_events_record_id_fkey';
+            columns: ['record_id'];
             isOneToOne: false;
             referencedRelation: 'projects';
             referencedColumns: ['id'];

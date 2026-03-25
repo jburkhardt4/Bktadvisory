@@ -42,7 +42,7 @@ function mapToProject(row: any): Project {
       type: e.type,
       title: e.description,
       description: e.description,
-      timestamp: e.timestamp,
+      timestamp: e.created_at,
       user: e.actor,
     })),
   };

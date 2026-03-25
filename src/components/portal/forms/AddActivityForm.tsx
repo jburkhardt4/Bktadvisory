@@ -45,9 +45,10 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
 
     const { error: insertError } = await supabase.from('activity_events').insert({
       type,
-      project_id: projectId.trim(),
+      record_id: projectId.trim(),
       description: description.trim() || undefined,
       actor: session?.user?.email ?? 'unknown',
+      client_id: session?.user?.id ?? null,
     });
 
     setIsSubmitting(false);

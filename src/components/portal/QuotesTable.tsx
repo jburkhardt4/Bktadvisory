@@ -4,18 +4,30 @@ import type { QuoteStatus } from './portalData';
 import { QuoteStatusBadge } from './StatusBadge';
 import { EyeIcon, DownloadIcon } from './PortalIcons';
 
+interface QuoteFormData {
+  client_name?: string;
+  company_name?: string;
+  description?: string;
+}
+
 interface Quote {
   id: string;
-  client_name: string;
-  company_name: string;
-  description: string;
   status: QuoteStatus;
-  amount: number;
+  estimated_budget_min: number | null;
+  estimated_budget_max: number | null;
+  form_data: QuoteFormData | null;
   created_at: string;
 }
 
-function formatCurrency(amount: number) {
-  return `$${amount.toLocaleString()}`;
+function formatCurrency(value: number | null | undefined) {
+  if (value == null) return '$0';
+  return `$${value.toLocaleString()}`;
+}
+
+function formatBudgetRange(min: number | null, max: number | null) {
+  if (min == null && max == null) return '—';
+  if (min != null && max != null) return `${formatCurrency(min)} – ${formatCurrency(max)}`;
+  return formatCurrency(min ?? max);
 }
 
 function formatDate(dateStr: string) {
@@ -38,7 +50,7 @@ export function QuotesTable() {
 
         const { data, error: queryError } = await supabase
           .from('quotes')
-          .select('*')
+          .select('id, status, estimated_budget_min, estimated_budget_max, form_data, created_at')
           .order('created_at', { ascending: false });
 
         if (queryError) throw queryError;
@@ -104,7 +116,7 @@ export function QuotesTable() {
               <th className="px-6 py-3 font-medium">Reference</th>
               <th className="px-6 py-3 font-medium">Title</th>
               <th className="px-6 py-3 font-medium">Status</th>
-              <th className="px-6 py-3 font-medium text-right">Amount</th>
+              <th className="px-6 py-3 font-medium text-right">Budget</th>
               <th className="px-6 py-3 font-medium">Created</th>
               <th className="px-6 py-3 font-medium text-right">Actions</th>
             </tr>
@@ -113,9 +125,9 @@ export function QuotesTable() {
             {quotes.map((q) => (
               <tr key={q.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 text-slate-600 font-mono text-xs">{q.id.slice(0, 8).toUpperCase()}</td>
-                <td className="px-6 py-4 text-slate-900 font-medium">{q.description || q.client_name}</td>
+                <td className="px-6 py-4 text-slate-900 font-medium">{q.form_data?.description || q.form_data?.company_name || '—'}</td>
                 <td className="px-6 py-4"><QuoteStatusBadge status={q.status} /></td>
-                <td className="px-6 py-4 text-slate-900 text-right font-semibold">{formatCurrency(q.amount)}</td>
+                <td className="px-6 py-4 text-slate-900 text-right font-semibold">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</td>
                 <td className="px-6 py-4 text-slate-600">{formatDate(q.created_at)}</td>
                 <td className="px-6 py-4 text-right">
                   <div className="inline-flex items-center gap-1">
@@ -135,14 +147,14 @@ export function QuotesTable() {
           <div key={q.id} className="px-5 py-4 space-y-2">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-900">{q.description || q.client_name}</p>
+                <p className="text-sm font-medium text-slate-900">{q.form_data?.description || q.form_data?.company_name || '—'}</p>
                 <p className="text-xs text-slate-500 font-mono mt-0.5">{q.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <QuoteStatusBadge status={q.status} />
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">{formatDate(q.created_at)}</span>
-              <span className="font-semibold text-slate-900">{formatCurrency(q.amount)}</span>
+              <span className="font-semibold text-slate-900">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</span>
             </div>
           </div>
         ))}

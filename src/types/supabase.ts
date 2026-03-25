@@ -51,31 +51,28 @@ export type Database = {
       quotes: {
         Row: {
           id: string;
-          client_name: string;
-          company_name: string;
-          amount: number;
           status: Database['public']['Enums']['quote_status'];
-          description: string;
+          estimated_budget_min: number | null;
+          estimated_budget_max: number | null;
+          form_data: Json | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          client_name: string;
-          company_name: string;
-          amount: number;
           status?: Database['public']['Enums']['quote_status'];
-          description?: string;
+          estimated_budget_min?: number | null;
+          estimated_budget_max?: number | null;
+          form_data?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          client_name?: string;
-          company_name?: string;
-          amount?: number;
           status?: Database['public']['Enums']['quote_status'];
-          description?: string;
+          estimated_budget_min?: number | null;
+          estimated_budget_max?: number | null;
+          form_data?: Json | null;
           created_at?: string;
           updated_at?: string;
         };

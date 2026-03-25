@@ -12,7 +12,9 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
-          full_name: string | null;
+          first_name: string | null;
+          last_name: string | null;
+          email: string;
           company_name: string | null;
           avatar_url: string | null;
           role: string;
@@ -21,7 +23,9 @@ export type Database = {
         };
         Insert: {
           id: string;
-          full_name?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          email: string;
           company_name?: string | null;
           avatar_url?: string | null;
           role?: string;
@@ -30,7 +34,9 @@ export type Database = {
         };
         Update: {
           id?: string;
-          full_name?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          email?: string;
           company_name?: string | null;
           avatar_url?: string | null;
           role?: string;

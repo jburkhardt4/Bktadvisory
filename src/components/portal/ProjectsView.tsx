@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { mockProjects } from './portalData';
+import { useUserProjects } from '../../hooks/useUserProjects';
 import type { Project, ProjectStatus } from './portalData';
 import { ProjectStatusBadge } from './StatusBadge';
 import { ChevronRightIcon, InboxIcon } from './PortalIcons';
@@ -13,16 +13,64 @@ const TAB_FILTERS: Record<Tab, ProjectStatus[]> = {
   completed: ['completed', 'archived'],
 };
 
+function mapToProject(row: any): Project {
+  const milestones = (row.milestones ?? []).map((m: any) => ({
+    id: m.id,
+    title: m.title,
+    date: m.target_date,
+    completed: m.completed,
+    description: m.description ?? '',
+  }));
+  const completedCount = milestones.filter((m: any) => m.completed).length;
+  const progress = milestones.length > 0 ? Math.round((completedCount / milestones.length) * 100) : 0;
+
+  return {
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    startDate: row.created_at,
+    estimatedEnd: row.target_milestone ?? row.created_at,
+    progress,
+    quoteRef: '',
+    description: '',
+    milestones,
+    owner: row.owner,
+    company: row.company_name,
+    targetMilestone: row.target_milestone,
+    projectActivity: (row.activity_events ?? []).map((e: any) => ({
+      id: e.id,
+      type: e.type,
+      title: e.description,
+      description: e.description,
+      timestamp: e.timestamp,
+      user: e.actor,
+    })),
+  };
+}
+
 export function ProjectsView({ onSelectProject }: { onSelectProject: (p: Project) => void }) {
+  const { projects: rawProjects, loading } = useUserProjects();
   const [activeTab, setActiveTab] = useState<Tab>('active');
 
-  const filtered = mockProjects.filter(p => TAB_FILTERS[activeTab].includes(p.status));
+  const allProjects = rawProjects.map(mapToProject);
+  const filtered = allProjects.filter(p => TAB_FILTERS[activeTab].includes(p.status));
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'active', label: 'Active', count: mockProjects.filter(p => TAB_FILTERS.active.includes(p.status)).length },
-    { key: 'awaiting', label: 'Awaiting Client', count: mockProjects.filter(p => TAB_FILTERS.awaiting.includes(p.status)).length },
-    { key: 'blocked', label: 'Blocked', count: mockProjects.filter(p => TAB_FILTERS.blocked.includes(p.status)).length },
-    { key: 'completed', label: 'Completed', count: mockProjects.filter(p => TAB_FILTERS.completed.includes(p.status)).length },
+    { key: 'active', label: 'Active', count: allProjects.filter(p => TAB_FILTERS.active.includes(p.status)).length },
+    { key: 'awaiting', label: 'Awaiting Client', count: allProjects.filter(p => TAB_FILTERS.awaiting.includes(p.status)).length },
+    { key: 'blocked', label: 'Blocked', count: allProjects.filter(p => TAB_FILTERS.blocked.includes(p.status)).length },
+    { key: 'completed', label: 'Completed', count: allProjects.filter(p => TAB_FILTERS.completed.includes(p.status)).length },
   ];
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
+          <div className="h-3 bg-slate-200 rounded w-1/2 mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

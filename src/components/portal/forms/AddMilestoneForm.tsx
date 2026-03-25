@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../../../lib/supabaseClient';
 
 interface AddMilestoneFormProps {
   onClose: () => void;
@@ -18,18 +19,27 @@ export function AddMilestoneForm({ onClose, projectId }: AddMilestoneFormProps) 
     setError(null);
     setIsSubmitting(true);
 
-    // Milestones table is not yet provisioned in the database.
-    // This will be wired once the migration is applied.
-    await new Promise(r => setTimeout(r, 500));
+    const { error: insertError } = await supabase.from('milestones').insert({
+      project_id: projectId ?? '',
+      title: title.trim(),
+      description: description.trim() || undefined,
+      target_date: date,
+    });
 
     setIsSubmitting(false);
-    setError('Milestones table is pending migration — feature coming soon.');
+
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+
+    onClose();
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="px-3 py-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg">{error}</div>
+        <div className="px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg">{error}</div>
       )}
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Milestone Title</label>

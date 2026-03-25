@@ -36,7 +36,7 @@ export function PortalPage() {
     supabase
       .from('profiles')
       .select('first_name')
-      .eq('id', session.user.id)
+      .eq('id',  session.user.id)
       .single()
       .then(({ data }) => {
         if (data?.first_name) setFirstName(data.first_name);

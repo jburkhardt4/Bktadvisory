@@ -17,29 +17,47 @@ const AuthContext = createContext<AuthContextValue>({
   role: 'client',
 });
 
+async function fetchRole(userId: string): Promise<UserRole> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (error || !data) return 'client';
+  return data.role === 'admin' ? 'admin' : 'client';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<UserRole>('client');
 
   useEffect(() => {
     // Fetch the initial session once on mount
-    supabase.auth.getSession().then(({ data: { session: initial } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initial } }) => {
       setSession(initial);
+      if (initial?.user) {
+        setRole(await fetchRole(initial.user.id));
+      }
       setLoading(false);
     });
 
     // Subscribe to future auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      async (_event, newSession) => {
         setSession(newSession);
+        if (newSession?.user) {
+          setRole(await fetchRole(newSession.user.id));
+        } else {
+          setRole('client');
+        }
         setLoading(false);
       },
     );
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const role: UserRole = session?.user?.user_metadata?.role === 'admin' ? 'admin' : 'client';
 
   return (
     <AuthContext.Provider value={{ session, loading, role }}>

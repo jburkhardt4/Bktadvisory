@@ -14,7 +14,7 @@ export function QuoteStatusBadge({ status }: { status: QuoteStatus }) {
 export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
   const config = PROJECT_STATUS_CONFIG[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full border ${config.bg} ${config.color}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full border capitalize ${config.bg} ${config.color}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${config.color.replace('text-', 'bg-')}`} />
       {config.label}
     </span>

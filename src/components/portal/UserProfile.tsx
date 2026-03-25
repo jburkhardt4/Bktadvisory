@@ -11,6 +11,17 @@ interface Profile {
   phone: string | null;
 }
 
+// Utility to format raw 10-digit strings into (###) ###-####
+const formatPhoneNumber = (phone: string | null) => {
+  if (!phone) return null;
+  const cleaned = ('' + phone).replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    return `(${match[1]}) ${match[2]}-${match[3]}`;
+  }
+  return phone; // Return original if it doesn't match 10 digits
+};
+
 export function UserProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +73,7 @@ export function UserProfile() {
       <div className="flex items-start gap-5">
         {/* Avatar */}
         <div className="w-14 h-14 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-900/20">
-          {profile.first_name?.[0]}{profile.last_name?.[0]}
+          {profile.first_name?.[0] || ''}{profile.last_name?.[0] || ''}
         </div>
         
         <div className="flex-1">
@@ -96,7 +107,8 @@ export function UserProfile() {
             {profile.phone && (
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-slate-500" />
-                <span>{profile.phone}</span>
+                {/* Render formatted phone number */}
+                <span>{formatPhoneNumber(profile.phone)}</span>
               </div>
             )}
           </div>

@@ -19,9 +19,9 @@ import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning, ';
-  if (hour < 17) return 'Good Afternoon, ';
-  return 'Good Evening, ';
+  if (hour < 12) return 'Good Morning,  ';
+  if (hour < 17) return 'Good Afternoon,  ';
+  return 'Good Evening,  ';
 }
 
 export function PortalPage() {
@@ -36,7 +36,7 @@ export function PortalPage() {
     supabase
       .from('profiles')
       .select('first_name')
-      .eq('id', session.user.id)
+      .eq(session.user.id)
       .single()
       .then(({ data }) => {
         if (data?.first_name) setFirstName(data.first_name);

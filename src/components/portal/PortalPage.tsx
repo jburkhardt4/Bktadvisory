@@ -11,6 +11,7 @@ import { LogOutIcon, BellIcon } from './PortalIcons';
 import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
 import { ActionDropdown, EditButton } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
+import { SettingsModal } from './SettingsModal';
 import { CreateQuoteForm } from './forms/CreateQuoteForm';
 import { CreateProjectForm } from './forms/CreateProjectForm';
 import { AddActivityForm } from './forms/AddActivityForm';
@@ -58,7 +59,10 @@ export function PortalPage() {
               <BellIcon size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
             </button>
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-[#1d293d] transition-colors cursor-pointer">
+            <button
+              onClick={() => setActiveModal('settings')}
+              className="p-2 rounded-lg hover:bg-slate-100 text-[#1d293d] transition-colors cursor-pointer"
+            >
               <SettingsIcon size={18} />
             </button>
             <div className="w-px h-6 bg-slate-200" />
@@ -181,6 +185,9 @@ export function PortalPage() {
         <PortalModal open onClose={() => setActiveModal(null)} title="Add Activity">
           <AddActivityForm onClose={() => setActiveModal(null)} />
         </PortalModal>
+      )}
+      {activeModal === 'settings' && (
+        <SettingsModal open onClose={() => setActiveModal(null)} />
       )}
       {activeModal === 'request-scope-change' && (
         <PortalModal open onClose={() => setActiveModal(null)} title="Request Scope Change">

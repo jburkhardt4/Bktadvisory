@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../supabase/client';
+import { PortalProfileProvider, usePortalProfile } from '../../contexts/PortalProfileContext';
 import { clearSession } from '../../utils/authSession';
 import { UserProfile } from './UserProfile';
 import { QuotesTable } from './QuotesTable';
@@ -12,7 +12,7 @@ import { LogOutIcon, BellIcon } from './PortalIcons';
 import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
 import { ActionDropdown } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
-import { SettingsModal } from './SettingsModal';
+import { SettingsModal, type SettingsCategory } from './SettingsModal';
 import { CreateQuoteForm } from './forms/CreateQuoteForm';
 import { CreateProjectForm } from './forms/CreateProjectForm';
 import { AddActivityForm } from './forms/AddActivityForm';
@@ -27,38 +27,23 @@ function getGreeting(): string {
 }
 
 export function PortalPage() {
-  const { session, role } = useAuth();
+  return (
+    <PortalProfileProvider>
+      <PortalPageContent />
+    </PortalProfileProvider>
+  );
+}
+
+function PortalPageContent() {
+  const { role } = useAuth();
+  const { profile } = usePortalProfile();
   const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState<string | null>(null);
+  const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('profile');
   const [isSigningOut, setIsSigningOut] = useState(false);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    if (!session?.user?.id) {
-      setFirstName(null);
-      return () => {
-        isCancelled = true;
-      };
-    }
-
-    void supabase
-      .from('profiles')
-      .select('first_name')
-      .eq('id', session.user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (isCancelled || error) return;
-        setFirstName(data?.first_name ?? null);
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [session?.user?.id]);
+  const firstName = profile?.firstName || null;
 
   async function handleSignOut() {
     if (isSigningOut) return;
@@ -72,6 +57,11 @@ export function PortalPage() {
     }
 
     navigate('/auth', { replace: true });
+  }
+
+  function openSettings(category: SettingsCategory = 'profile') {
+    setSettingsCategory(category);
+    setActiveModal('settings');
   }
 
   return (
@@ -90,7 +80,7 @@ export function PortalPage() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
             </button>
             <button
-              onClick={() => setActiveModal('settings')}
+              onClick={() => openSettings('profile')}
               className="p-2 rounded-lg hover:bg-slate-100 text-[#1d293d] transition-colors cursor-pointer"
             >
               <SettingsIcon size={18} />
@@ -127,7 +117,7 @@ export function PortalPage() {
                 </div>
 
                 {/* User Profile */}
-                <UserProfile />
+                <UserProfile onEditProfile={() => openSettings('profile')} />
 
                 {/* Stat cards - Reduced height by ~30% */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -224,7 +214,11 @@ export function PortalPage() {
         </PortalModal>
       )}
       {activeModal === 'settings' && (
-        <SettingsModal open onClose={() => setActiveModal(null)} />
+        <SettingsModal
+          open
+          initialCategory={settingsCategory}
+          onClose={() => setActiveModal(null)}
+        />
       )}
       {activeModal === 'request-scope-change' && (
         <PortalModal open onClose={() => setActiveModal(null)} title="Request Scope Change">

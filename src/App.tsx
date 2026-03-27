@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { RouterProvider } from "react-router";
+import { Toaster } from "sonner";
 import { router } from "./routes";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -172,6 +173,7 @@ function App() {
   return (
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster richColors position="top-right" closeButton />
     </AuthProvider>
   );
 }

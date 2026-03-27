@@ -249,6 +249,8 @@ export function AuthPage() {
             data: {
               first_name: form.firstName,
               last_name: form.lastName,
+              company_name: form.companyName || null,
+              phone: form.mobilePhone || null,
             },
           },
         });

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { UserIcon, BellIcon, ShieldIcon } from './PortalIcons';
+import { EditProfilePanel } from './EditProfilePanel';
 
-type SettingsCategory = 'profile' | 'appearance' | 'notifications' | 'security';
+export type SettingsCategory = 'profile' | 'appearance' | 'notifications' | 'security';
 type ThemeMode = 'light' | 'dark' | 'system';
 
 interface SettingsModalProps {
   open: boolean;
   onClose: () => void;
+  initialCategory?: SettingsCategory;
 }
 
 /* ── Inline icons not already in PortalIcons ─────────────────────────── */
@@ -102,48 +104,6 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
         />
       </button>
     </label>
-  );
-}
-
-/* ── Section panels ──────────────────────────────────────────────────── */
-
-function ProfilePanel() {
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
-  const [title, setTitle] = useState('');
-
-  const inputCls =
-    'w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors';
-
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-semibold text-slate-900">Profile</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Update your personal information.</p>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your full name" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
-          <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Company name" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Job title" className={inputCls} />
-        </div>
-      </div>
-      <div className="flex justify-end pt-2">
-        <button
-          type="button"
-          className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
-        >
-          Save Changes
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -242,7 +202,7 @@ function SecurityPanel() {
 /* ── Panel renderer ──────────────────────────────────────────────────── */
 
 const panels: Record<SettingsCategory, () => ReactNode> = {
-  profile: ProfilePanel,
+  profile: EditProfilePanel,
   appearance: AppearancePanel,
   notifications: NotificationsPanel,
   security: SecurityPanel,
@@ -250,8 +210,8 @@ const panels: Record<SettingsCategory, () => ReactNode> = {
 
 /* ── Main modal ──────────────────────────────────────────────────────── */
 
-export function SettingsModal({ open, onClose }: SettingsModalProps) {
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('profile');
+export function SettingsModal({ open, onClose, initialCategory = 'profile' }: SettingsModalProps) {
+  const [activeCategory, setActiveCategory] = useState<SettingsCategory>(initialCategory);
 
   // Close on Escape
   useEffect(() => {
@@ -262,6 +222,11 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    setActiveCategory(initialCategory);
+  }, [initialCategory, open]);
 
   if (!open) return null;
 

@@ -9,7 +9,7 @@ import { ActivityTimeline } from './ActivityTimeline';
 import { ProjectDetail } from './ProjectDetail';
 import { LogOutIcon, BellIcon } from './PortalIcons';
 import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
-import { ActionDropdown, EditButton } from './ActionDropdown';
+import { ActionDropdown } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
 import { SettingsModal } from './SettingsModal';
 import { CreateQuoteForm } from './forms/CreateQuoteForm';

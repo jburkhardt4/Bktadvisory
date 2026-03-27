@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useTheme } from 'next-themes';
 import { UserIcon, BellIcon, ShieldIcon } from './PortalIcons';
 import { EditProfilePanel } from './EditProfilePanel';
 
@@ -61,44 +62,23 @@ const categories: { key: SettingsCategory; label: string; icon: ReactNode }[] = 
   { key: 'security', label: 'Security', icon: <ShieldIcon size={18} /> },
 ];
 
-/* ── Theme helpers ───────────────────────────────────────────────────── */
-
-function getStoredTheme(): ThemeMode {
-  try {
-    const stored = localStorage.getItem('bkt-theme');
-    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
-  } catch { /* SSR / quota */ }
-  return 'system';
-}
-
-function applyTheme(mode: ThemeMode) {
-  const root = document.documentElement;
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (mode === 'dark' || (mode === 'system' && prefersDark)) {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
-  try { localStorage.setItem('bkt-theme', mode); } catch { /* quota */ }
-}
-
 /* ── Toggle switch ───────────────────────────────────────────────────── */
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <label className="flex items-center justify-between cursor-pointer group">
-      <span className="text-sm text-slate-700">{label}</span>
+      <span className="text-sm text-slate-700 dark:text-slate-200">{label}</span>
       <button
         role="switch"
         type="button"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer ${
-          checked ? 'bg-blue-600' : 'bg-slate-300'
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 cursor-pointer ${
+          checked ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+          className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform dark:bg-slate-100 ${
             checked ? 'translate-x-6' : 'translate-x-1'
           }`}
         />
@@ -108,18 +88,17 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 function AppearancePanel() {
-  const [theme, setTheme] = useState<ThemeMode>(getStoredTheme);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { applyTheme(theme); }, [theme]);
-
-  // Listen for system preference changes when in "system" mode
   useEffect(() => {
-    if (theme !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyTheme('system');
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, [theme]);
+    setMounted(true);
+  }, []);
+
+  const selectedTheme: ThemeMode =
+    theme === 'light' || theme === 'dark' || theme === 'system'
+      ? theme
+      : 'system';
 
   const opts: { mode: ThemeMode; label: string; icon: ReactNode }[] = [
     { mode: 'light', label: 'Light', icon: <SunIcon size={20} /> },
@@ -130,8 +109,14 @@ function AppearancePanel() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-base font-semibold text-slate-900">Appearance</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Choose how the portal looks for you.</p>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Appearance</h3>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          {mounted
+            ? selectedTheme === 'system'
+              ? `Following your system preference (${resolvedTheme ?? 'light'} mode).`
+              : `Using ${selectedTheme} mode across the portal.`
+            : 'Loading your appearance preference…'}
+        </p>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {opts.map(o => (
@@ -139,16 +124,21 @@ function AppearancePanel() {
             key={o.mode}
             type="button"
             onClick={() => setTheme(o.mode)}
-            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-              theme === o.mode
-                ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+            aria-pressed={selectedTheme === o.mode}
+            disabled={!mounted}
+            className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all cursor-pointer disabled:cursor-wait disabled:opacity-70 ${
+              selectedTheme === o.mode
+                ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800/70'
             }`}
           >
             {o.icon}
             <span className="text-xs font-semibold">{o.label}</span>
           </button>
         ))}
+      </div>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
+        Tailwind dark classes now follow this setting globally, including the portal shell and toast notifications.
       </div>
     </div>
   );
@@ -161,17 +151,17 @@ function NotificationsPanel() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-base font-semibold text-slate-900">Notifications</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Manage how you receive updates.</p>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Notifications</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage how you receive updates.</p>
       </div>
-      <div className="space-y-4 divide-y divide-slate-100">
+      <div className="space-y-4 divide-y divide-slate-100 dark:divide-slate-800">
         <div className="pt-0">
           <Toggle checked={emailNotifs} onChange={setEmailNotifs} label="Email Notifications" />
-          <p className="text-xs text-slate-400 mt-1 ml-0">Receive project updates and quote notifications via email.</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 ml-0">Receive project updates and quote notifications via email.</p>
         </div>
         <div className="pt-4">
           <Toggle checked={portalAlerts} onChange={setPortalAlerts} label="Portal Alerts" />
-          <p className="text-xs text-slate-400 mt-1 ml-0">Show in-app notification badges and banners.</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 ml-0">Show in-app notification badges and banners.</p>
         </div>
       </div>
     </div>
@@ -182,12 +172,12 @@ function SecurityPanel() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-base font-semibold text-slate-900">Security</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Manage your account security settings.</p>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Security</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage your account security settings.</p>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
-        <p className="text-sm text-slate-700">Password</p>
-        <p className="text-xs text-slate-500">Update your password periodically to keep your account secure.</p>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3 dark:border-slate-800 dark:bg-slate-950/60">
+        <p className="text-sm text-slate-700 dark:text-slate-100">Password</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Update your password periodically to keep your account secure.</p>
         <button
           type="button"
           className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
@@ -238,15 +228,15 @@ export function SettingsModal({ open, onClose, initialCategory = 'profile' }: Se
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[85vh]"
+        className="w-full max-w-2xl mx-4 flex max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900">Settings</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 shrink-0 dark:border-slate-800">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Settings</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="Close"
           >
             <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -257,7 +247,7 @@ export function SettingsModal({ open, onClose, initialCategory = 'profile' }: Se
         </div>
 
         {/* Mobile tabs (visible < md) */}
-        <div className="flex md:hidden border-b border-slate-200 overflow-x-auto shrink-0">
+        <div className="flex overflow-x-auto border-b border-slate-200 md:hidden shrink-0 dark:border-slate-800 dark:bg-slate-950/40">
           {categories.map(c => (
             <button
               key={c.key}
@@ -265,8 +255,8 @@ export function SettingsModal({ open, onClose, initialCategory = 'profile' }: Se
               onClick={() => setActiveCategory(c.key)}
               className={`flex items-center gap-1.5 px-4 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                 activeCategory === c.key
-                  ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? 'border-blue-600 text-blue-700 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
               {c.icon}
@@ -278,7 +268,7 @@ export function SettingsModal({ open, onClose, initialCategory = 'profile' }: Se
         {/* Body: sidebar + content */}
         <div className="flex flex-1 min-h-0">
           {/* Desktop sidebar (hidden < md) */}
-          <nav className="hidden md:flex flex-col w-48 border-r border-slate-200 py-3 shrink-0">
+          <nav className="hidden w-48 shrink-0 flex-col border-r border-slate-200 py-3 md:flex dark:border-slate-800 dark:bg-slate-950/40">
             {categories.map(c => (
               <button
                 key={c.key}
@@ -286,8 +276,8 @@ export function SettingsModal({ open, onClose, initialCategory = 'profile' }: Se
                 onClick={() => setActiveCategory(c.key)}
                 className={`flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium transition-colors text-left cursor-pointer ${
                   activeCategory === c.key
-                    ? 'text-blue-700 bg-blue-50 border-r-2 border-blue-600'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    ? 'border-r-2 border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:hover:text-slate-50'
                 }`}
               >
                 {c.icon}

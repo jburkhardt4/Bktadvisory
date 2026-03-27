@@ -145,15 +145,15 @@ export function EditProfilePanel() {
     return (
       <div className="space-y-5">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Edit Profile</h3>
-          <p className="text-xs text-slate-500 mt-0.5">Loading your account details…</p>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Edit Profile</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Loading your account details…</p>
         </div>
         <div className="animate-pulse space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
-          <div className="h-10 rounded-xl bg-slate-200" />
+          <div className="h-14 w-14 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
         </div>
       </div>
     );
@@ -163,10 +163,10 @@ export function EditProfilePanel() {
     return (
       <div className="space-y-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-900">Edit Profile</h3>
-          <p className="text-xs text-slate-500 mt-0.5">We could not load your profile details.</p>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Edit Profile</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">We could not load your profile details.</p>
         </div>
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
           {error ?? 'Please try again.'}
         </div>
         <button
@@ -174,7 +174,7 @@ export function EditProfilePanel() {
           onClick={() => {
             void refreshProfile();
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Retry
         </button>
@@ -191,29 +191,29 @@ export function EditProfilePanel() {
     .join('');
 
   const inputClass =
-    'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500';
+    'w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400';
   const errorClass = 'mt-1 text-xs text-red-600';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <h3 className="text-base font-semibold text-slate-900">Edit Profile</h3>
-        <p className="text-xs text-slate-500 mt-0.5">Update your public portal details and account email.</p>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Edit Profile</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Update your public portal details and account email.</p>
       </div>
 
       {!profile.hasProfileRow && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
           We are still syncing your profile record. Saving again may take a moment while Supabase finishes creating it.
         </div>
       )}
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </div>
       )}
 
-      <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
         <div className="relative shrink-0">
           {displayAvatarUrl ? (
             <img
@@ -231,7 +231,7 @@ export function EditProfilePanel() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isSaving}
-            className="absolute -bottom-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="absolute -bottom-2 -right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-md transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
             aria-label="Change avatar"
           >
             <CameraIcon size={14} />
@@ -246,12 +246,12 @@ export function EditProfilePanel() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-slate-900">{profile.fullName || 'Add your full name'}</p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{profile.fullName || 'Add your full name'}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Recommended image: PNG or JPEG, under 2 MB, roughly square.
           </p>
           {avatarFile && (
-            <p className="mt-2 text-xs text-blue-700">
+            <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
               Selected avatar: {avatarFile.name}
             </p>
           )}
@@ -260,7 +260,7 @@ export function EditProfilePanel() {
 
       <div className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Full Name</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Full Name</label>
           <input
             type="text"
             value={formValues.fullName}
@@ -273,7 +273,7 @@ export function EditProfilePanel() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Email</label>
           <input
             type="email"
             value={formValues.email}
@@ -284,14 +284,14 @@ export function EditProfilePanel() {
           />
           {formErrors.email && <p className={errorClass}>{formErrors.email}</p>}
           {pendingEmail && (
-            <p className="mt-1 text-xs text-amber-700">
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
               Email change pending confirmation for {pendingEmail}.
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Phone Number</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Phone Number</label>
           <input
             type="tel"
             value={formValues.phone}
@@ -302,12 +302,12 @@ export function EditProfilePanel() {
           />
           {formErrors.phone && <p className={errorClass}>{formErrors.phone}</p>}
           {!formErrors.phone && profile.phone && (
-            <p className="mt-1 text-xs text-slate-500">Current format: {formatPhoneNumber(profile.phone)}</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Current format: {formatPhoneNumber(profile.phone)}</p>
           )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Company Name</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Company Name</label>
           <input
             type="text"
             value={formValues.companyName}

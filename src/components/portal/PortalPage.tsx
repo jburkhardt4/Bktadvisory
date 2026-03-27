@@ -65,34 +65,34 @@ function PortalPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Portal Nav */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-slate-200 bg-white shadow-sm">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3">
             <img src={logo} alt="BKT Advisory" className="h-8 w-auto hidden sm:block" />
             <img src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png" alt="BKT" className="h-8 w-auto sm:hidden" />
-            <span className="text-xs font-semibold text-slate-700 uppercase tracking-widest border-l border-slate-300 pl-3 hidden sm:inline">Client Portal</span>
+            <span className="hidden border-l border-slate-300 pl-3 text-xs font-semibold uppercase tracking-widest text-slate-700 sm:inline dark:border-slate-700 dark:text-slate-300">Client Portal</span>
           </Link>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg hover:bg-slate-100 text-[#1d293d] transition-colors relative cursor-pointer">
+            <button className="relative cursor-pointer rounded-lg p-2 text-[#1d293d] transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
               <BellIcon size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
             </button>
             <button
               onClick={() => openSettings('profile')}
-              className="p-2 rounded-lg hover:bg-slate-100 text-[#1d293d] transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg p-2 text-[#1d293d] transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <SettingsIcon size={18} />
             </button>
-            <div className="w-px h-6 bg-slate-200" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
             <button
               type="button"
               onClick={() => {
                 void handleSignOut();
               }}
               disabled={isSigningOut}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm text-[#1d293d] hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#1d293d] transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <LogOutIcon size={15} />
               <span className="hidden sm:inline">{isSigningOut ? 'Signing Out…' : 'Sign Out'}</span>
@@ -139,16 +139,16 @@ function PortalPageContent() {
             {/* Two-column layout: Tabbed Content (left) + Activity Sidebar (right) */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6">
               {/* Left: Tabbed Quotes/Projects Container */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
                 {/* Tab Buttons + Actions */}
-                <div className="flex items-center border-b border-slate-200">
+                <div className="flex items-center border-b border-slate-200 dark:border-slate-800">
                   <div className="flex flex-1 gap-0">
                     <button
                       onClick={() => setActiveTab('quotes')}
                       className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${
                         activeTab === 'quotes'
-                          ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                          : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          ? 'border-blue-600 bg-blue-50/50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
+                          : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-50'
                       }`}
                     >
                       Quotes
@@ -157,8 +157,8 @@ function PortalPageContent() {
                       onClick={() => setActiveTab('projects')}
                       className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${
                         activeTab === 'projects'
-                          ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                          : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          ? 'border-blue-600 bg-blue-50/50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
+                          : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-50'
                       }`}
                     >
                       Projects
@@ -224,11 +224,11 @@ function PortalPageContent() {
         <PortalModal open onClose={() => setActiveModal(null)} title="Request Scope Change">
           <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-              <textarea rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Describe the scope change…" />
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Description</label>
+              <textarea rows={3} className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400" placeholder="Describe the scope change…" />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
               <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Submit</button>
             </div>
           </form>

@@ -82,9 +82,9 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
   const effectiveStatus = isOffRail ? 'build_in_progress' : status; // default assumption
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-slate-900">Lifecycle Progress</h3>
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Lifecycle Progress</h3>
         {isOffRail && (
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${PROJECT_STATUS_CONFIG[status].bg} ${PROJECT_STATUS_CONFIG[status].color}`}>
             {status === 'blocked' && <AlertTriangleIcon size={12} />}
@@ -111,7 +111,7 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
                       : isOffRail && status === 'awaiting_client'
                       ? 'bg-orange-50 border-orange-500 text-orange-600 ring-4 ring-orange-100'
                       : 'bg-blue-50 border-blue-500 text-blue-600 ring-4 ring-blue-100'
-                    : 'bg-slate-50 border-slate-300 text-slate-400'
+                    : 'bg-slate-50 border-slate-300 text-slate-400 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-500'
                 }`}>
                   {state === 'completed' ? (
                     <CheckCircleIcon size={16} />
@@ -121,14 +121,14 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
                 </div>
                 <span className={`mt-2 text-[11px] font-medium whitespace-nowrap ${
                   state === 'completed' ? 'text-emerald-600' :
-                  state === 'current' ? 'text-slate-900' : 'text-slate-400'
+                  state === 'current' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'
                 }`}>
                   {step.label}
                 </span>
               </div>
               {i < LIFECYCLE_STEPS.length - 1 && (
                 <div className={`flex-1 h-[2px] mx-1 mt-[-20px] ${
-                  state === 'completed' ? 'bg-emerald-300' : 'bg-slate-200'
+                  state === 'completed' ? 'bg-emerald-300' : 'bg-slate-200 dark:bg-slate-800'
                 }`} />
               )}
             </div>
@@ -149,18 +149,18 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
                     ? isOffRail && status === 'blocked' ? 'bg-red-400'
                     : isOffRail && status === 'awaiting_client' ? 'bg-orange-400'
                     : 'bg-blue-400'
-                  : 'bg-slate-200'
+                  : 'bg-slate-200 dark:bg-slate-800'
                 }`} />
               </div>
             );
           })}
         </div>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-[10px] text-slate-500">Intake</span>
-          <span className="text-[10px] text-slate-700 font-medium">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">Intake</span>
+          <span className="text-[10px] font-medium text-slate-700 dark:text-slate-200">
             {PROJECT_STATUS_CONFIG[status].label}
           </span>
-          <span className="text-[10px] text-slate-500">Completed</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">Completed</span>
         </div>
       </div>
     </div>
@@ -247,7 +247,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
     return (
       <div className="space-y-6">
         <div className="flex items-center">
-          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer group">
+          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors cursor-pointer group hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
             <ArrowLeftIcon size={16} />
             <span className="group-hover:underline">Back to Dashboard</span>
           </button>
@@ -264,36 +264,36 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
           </div>
         </div>
         {/* Stepper skeleton */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
-          <div className="h-4 w-40 bg-slate-200 rounded mb-4" />
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+          <div className="mb-4 h-4 w-40 rounded bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2">
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex items-center flex-1 last:flex-none">
-                <div className="w-9 h-9 rounded-full bg-slate-200" />
-                {i < 6 && <div className="flex-1 h-[2px] bg-slate-200 mx-1" />}
+                <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800" />
+                {i < 6 && <div className="mx-1 h-[2px] flex-1 bg-slate-200 dark:bg-slate-800" />}
               </div>
             ))}
           </div>
         </div>
         {/* Grid skeleton */}
         <div className="grid lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
-            <div className="h-4 w-32 bg-slate-200 rounded mb-4" />
+          <div className="lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+            <div className="mb-4 h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 dark:bg-slate-800" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-3/4 bg-slate-200 rounded" />
-                    <div className="h-3 w-full bg-slate-100 rounded" />
+                    <div className="h-3.5 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-3 w-full rounded bg-slate-100 dark:bg-slate-950" />
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 animate-pulse">
-            <div className="h-4 w-32 bg-slate-200 rounded mb-4" />
-            <div className="h-3 w-full bg-slate-100 rounded" />
+          <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+            <div className="mb-4 h-4 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-3 w-full rounded bg-slate-100 dark:bg-slate-950" />
           </div>
         </div>
       </div>
@@ -303,14 +303,16 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
   if (error || !project) {
     return (
       <div className="space-y-6">
-        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer group">
+        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors cursor-pointer group hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
           <ArrowLeftIcon size={16} />
           <span className="group-hover:underline">Back to Dashboard</span>
         </button>
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-12 text-center">
-          <AlertCircleIcon size={32} />
-          <h3 className="text-base font-semibold text-slate-900 mt-3">Unable to load project</h3>
-          <p className="text-sm text-slate-500 mt-1">{error ?? 'Project not found'}</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+          <div className="text-slate-400 dark:text-slate-500">
+            <AlertCircleIcon size={32} />
+          </div>
+          <h3 className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-50">Unable to load project</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{error ?? 'Project not found'}</p>
         </div>
       </div>
     );
@@ -331,7 +333,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
     <div className="space-y-6">
       {/* ── Back Button ── */}
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-pointer group">
+        <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors cursor-pointer group hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
           <ArrowLeftIcon size={16} />
           <span className="group-hover:underline">Back to Dashboard</span>
         </button>
@@ -371,7 +373,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
             <div className="flex items-center gap-2 text-sm text-slate-400">
               <UserIcon size={14} />
               <span className="text-slate-300">{project.owner}</span>
-              <span className="text-slate-600">· Lead</span>
+              <span className="text-slate-600 dark:text-slate-500">· Lead</span>
             </div>
           )}
           {project.target_milestone && (
@@ -395,35 +397,35 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         {/* Left Column: Status */}
         <div className="lg:col-span-3 space-y-3">
           {project.status === 'blocked' ? (
-            <div className="bg-white border border-red-200 rounded-2xl shadow-sm p-5 flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-red-50 text-red-600">
+            <div className="flex items-start gap-4 rounded-2xl border border-red-200 bg-white p-5 shadow-sm dark:border-red-900/60 dark:bg-slate-900 dark:shadow-black/20">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300">
                 <AlertTriangleIcon size={20} />
               </div>
               <div className="min-w-0 flex-1">
                 <span className="text-xs uppercase tracking-wider font-bold text-red-600">Blocked</span>
-                <p className="text-base font-semibold text-slate-900 mt-1">This project is currently blocked</p>
-                <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">Check the activity timeline for details.</p>
+                <p className="mt-1 text-base font-semibold text-slate-900 dark:text-slate-50">This project is currently blocked</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">Check the activity timeline for details.</p>
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
                 <CheckCircleIcon size={24} />
               </div>
-              <h3 className="text-base font-semibold text-slate-900">No Blockers</h3>
-              <p className="text-sm text-slate-600 mt-1">Project is proceeding smoothly.</p>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">No Blockers</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Project is proceeding smoothly.</p>
             </div>
           )}
         </div>
 
         {/* Right Column: Overall Progress */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm p-6 relative">
+        <div className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
           <div className="absolute top-4 right-4"><EditButton /></div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-slate-900">Overall Progress</h3>
-            <span className="text-xl font-bold text-slate-900 mr-6">{progress}%</span>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Overall Progress</h3>
+            <span className="mr-6 text-xl font-bold text-slate-900 dark:text-slate-50">{progress}%</span>
           </div>
-          <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
               className={`h-full rounded-full transition-all ${
                 project.status === 'blocked'
@@ -437,24 +439,24 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
+          <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>{formatDate(project.created_at)}</span>
             <span>{formatDate(project.updated_at)}</span>
           </div>
           
           {/* Progress details */}
-          <div className="mt-6 pt-6 border-t border-slate-200 space-y-3">
+          <div className="mt-6 space-y-3 border-t border-slate-200 pt-6 dark:border-slate-800">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Completed Milestones</span>
-              <span className="font-semibold text-slate-900">{completedMilestones} / {totalMilestones}</span>
+              <span className="text-slate-600 dark:text-slate-300">Completed Milestones</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-50">{completedMilestones} / {totalMilestones}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Current Phase</span>
-              <span className="font-semibold text-slate-900">{PROJECT_STATUS_CONFIG[project.status].label}</span>
+              <span className="text-slate-600 dark:text-slate-300">Current Phase</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-50">{PROJECT_STATUS_CONFIG[project.status].label}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Started</span>
-              <span className="text-slate-900">{formatDate(project.created_at)}</span>
+              <span className="text-slate-600 dark:text-slate-300">Started</span>
+              <span className="text-slate-900 dark:text-slate-100">{formatDate(project.created_at)}</span>
             </div>
           </div>
         </div>
@@ -467,10 +469,10 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         <div className="lg:col-span-3 space-y-6">
 
           {/* Activity Timeline */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+            <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-base font-semibold text-slate-900">Activity Timeline</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Activity Timeline</h3>
                 <div className="flex items-center gap-1">
                   {(['all', 'milestones', 'blockers'] as const).map(f => (
                     <button
@@ -478,8 +480,8 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
                       onClick={() => setActivityFilter(f)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
                         activityFilter === f
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-200'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                       }`}
                     >
                       {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -491,7 +493,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
             <div className="px-6 py-4">
               {filteredActivities.length === 0 ? (
                 <div className="py-8 text-center">
-                  <p className="text-sm text-slate-500">No activity matching this filter.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No activity matching this filter.</p>
                 </div>
               ) : (
                 <div className="space-y-0">
@@ -503,17 +505,17 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${cfg.bg} ${cfg.color}`}>
                             {cfg.icon}
                           </div>
-                          {i < filteredActivities.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1" />}
+                          {i < filteredActivities.length - 1 && <div className="my-1 w-px flex-1 bg-slate-200 dark:bg-slate-800" />}
                         </div>
                         <div className="pb-6 pt-1 min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <p className="text-sm font-medium text-slate-900">{formatEventTitle(event.type)}</p>
-                            <span className="text-[11px] text-slate-500 whitespace-nowrap">{formatDate(event.created_at)} · {formatTime(event.created_at)}</span>
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{formatEventTitle(event.type)}</p>
+                            <span className="whitespace-nowrap text-[11px] text-slate-500 dark:text-slate-400">{formatDate(event.created_at)} · {formatTime(event.created_at)}</span>
                           </div>
-                          <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{event.description}</p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{event.description}</p>
                           {event.actor && (
-                            <p className="text-[11px] text-slate-500 mt-1">
-                              <span className="text-slate-600">{event.actor}</span>
+                            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                              <span className="text-slate-600 dark:text-slate-200">{event.actor}</span>
                             </p>
                           )}
                         </div>
@@ -530,14 +532,14 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         <div className="lg:col-span-2 space-y-6">
 
           {/* Milestones */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Milestones</h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Milestones</h3>
               <EditButton />
             </div>
             {milestones.length === 0 ? (
               <div className="py-10 text-center">
-                <p className="text-sm text-slate-500">No milestones yet</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">No milestones yet</p>
               </div>
             ) : (
               <div className="p-4 space-y-0">
@@ -549,20 +551,20 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
                           ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
                           : m.title === project.target_milestone
                           ? 'bg-blue-50 border-blue-500 text-blue-600 ring-2 ring-blue-100'
-                          : 'bg-slate-50 border-slate-300 text-slate-400'
+                          : 'bg-slate-50 border-slate-300 text-slate-400 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-500'
                       }`}>
                         {m.completed ? <CheckCircleIcon size={12} /> : <ClockIcon size={12} />}
                       </div>
-                      {i < milestones.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1" />}
+                      {i < milestones.length - 1 && <div className="my-1 w-px flex-1 bg-slate-200 dark:bg-slate-800" />}
                     </div>
                     <div className="pb-4 pt-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-xs font-semibold ${m.completed ? 'text-emerald-600' : m.title === project.target_milestone ? 'text-blue-700' : 'text-slate-500'}`}>{m.title}</p>
+                        <p className={`text-xs font-semibold ${m.completed ? 'text-emerald-600' : m.title === project.target_milestone ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-300'}`}>{m.title}</p>
                         {m.completed && <span className="text-[10px] text-emerald-600 font-medium">Done</span>}
-                        {m.title === project.target_milestone && !m.completed && <span className="text-[10px] text-blue-600 font-medium">Current Target</span>}
+                        {m.title === project.target_milestone && !m.completed && <span className="text-[10px] font-medium text-blue-600 dark:text-blue-300">Current Target</span>}
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{m.description}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{formatDate(m.target_date)}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{m.description}</p>
+                      <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{formatDate(m.target_date)}</p>
                     </div>
                   </div>
                 ))}
@@ -571,20 +573,20 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
           </div>
 
           {/* Documents */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Documents</h3>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Documents</h3>
             </div>
             <div className="py-10 text-center">
-              <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                 <PaperclipIcon size={20} />
               </div>
-              <p className="text-xs text-slate-600">No documents uploaded yet.</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Files will appear here as they're shared.</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">No documents uploaded yet.</p>
+              <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Files will appear here as they're shared.</p>
             </div>
             {/* Upload placeholder */}
             <div className="px-4 pb-4 pt-2">
-              <button className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-xs text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-xs text-slate-600 transition-colors cursor-pointer hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-100">
                 <UploadIcon size={14} />
                 Upload Document
               </button>
@@ -598,11 +600,11 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         <PortalModal open onClose={() => setActiveModal(null)} title="Update Project">
           <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
-              <input type="text" defaultValue={project.name} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Project Name</label>
+              <input type="text" defaultValue={project.name} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-400" />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
               <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Save Changes</button>
             </div>
           </form>
@@ -622,13 +624,13 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         <PortalModal open onClose={() => setActiveModal(null)} title="Upload Document">
           <form onSubmit={e => { e.preventDefault(); setActiveModal(null); }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">File</label>
-              <div className="w-full py-8 border-2 border-dashed border-slate-300 rounded-lg text-center text-sm text-slate-500 hover:border-slate-400 transition-colors cursor-pointer">
+              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">File</label>
+              <div className="w-full cursor-pointer rounded-lg border-2 border-dashed border-slate-300 py-8 text-center text-sm text-slate-500 transition-colors hover:border-slate-400 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600">
                 Click or drag to upload a file
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setActiveModal(null)} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">Cancel</button>
+              <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
               <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Upload</button>
             </div>
           </form>

@@ -91,18 +91,18 @@ export function ActivityTimeline() {
 
   if (loading) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+        <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+          <div className="h-4 w-32 rounded bg-slate-200 animate-pulse dark:bg-slate-800" />
         </div>
         <div className="px-6 py-4 space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex gap-4">
-              <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse shrink-0" />
+              <div className="h-8 w-8 shrink-0 rounded-full bg-slate-200 animate-pulse dark:bg-slate-800" />
               <div className="flex-1 space-y-2 pt-1">
-                <div className="h-3.5 w-3/4 bg-slate-200 rounded animate-pulse" />
-                <div className="h-3 w-full bg-slate-100 rounded animate-pulse" />
-                <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
+                <div className="h-3.5 w-3/4 rounded bg-slate-200 animate-pulse dark:bg-slate-800" />
+                <div className="h-3 w-full rounded bg-slate-100 animate-pulse dark:bg-slate-900" />
+                <div className="h-3 w-20 rounded bg-slate-100 animate-pulse dark:bg-slate-900" />
               </div>
             </div>
           ))}
@@ -113,26 +113,28 @@ export function ActivityTimeline() {
 
   if (error) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h3 className="text-sm font-semibold text-slate-700">Recent Activity</h3>
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+        <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Recent Activity</h3>
         </div>
         <div className="px-6 py-10 text-center">
-          <AlertCircleIcon size={24} />
-          <p className="text-sm text-slate-500 mt-2">Unable to load activity</p>
+          <div className="text-slate-400 dark:text-slate-500">
+            <AlertCircleIcon size={24} />
+          </div>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Unable to load activity</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-700">Recent Activity</h3>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+      <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Recent Activity</h3>
       </div>
       {activities.length === 0 ? (
         <div className="px-6 py-10 text-center">
-          <p className="text-sm text-slate-400">No recent activity</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500">No recent activity</p>
         </div>
       ) : (
         <div className="px-6 py-4 space-y-0">
@@ -146,13 +148,13 @@ export function ActivityTimeline() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${style.bg} ${style.color}`}>
                     <EventIcon type={event.type} />
                   </div>
-                  {i < activities.length - 1 && <div className="w-px flex-1 bg-slate-200 my-1" />}
+                  {i < activities.length - 1 && <div className="my-1 w-px flex-1 bg-slate-200 dark:bg-slate-800" />}
                 </div>
                 {/* Content */}
                 <div className="pb-5 min-w-0 pt-1">
-                  <p className="text-sm font-medium text-slate-900">{formatEventTitle(event.type)}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">{event.description}</p>
-                  <p className="text-xs text-slate-400 mt-1">{formatDate(event.created_at)}</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{formatEventTitle(event.type)}</p>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{event.description}</p>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{formatDate(event.created_at)}</p>
                 </div>
               </div>
             );

@@ -96,10 +96,10 @@ export function QuotesTable() {
       <div className="p-6 space-y-3">
         {[1, 2, 3].map(i => (
           <div key={i} className="animate-pulse flex items-center gap-4">
-            <div className="h-4 bg-slate-200 rounded w-20" />
-            <div className="h-4 bg-slate-200 rounded flex-1" />
-            <div className="h-4 bg-slate-200 rounded w-16" />
-            <div className="h-4 bg-slate-200 rounded w-24" />
+            <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-4 flex-1 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-4 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
           </div>
         ))}
       </div>
@@ -109,7 +109,7 @@ export function QuotesTable() {
   if (error) {
     return (
       <div className="p-12 text-center">
-        <p className="text-sm text-red-500">Failed to load quotes.</p>
+        <p className="text-sm text-red-500 dark:text-red-400">Failed to load quotes.</p>
       </div>
     );
   }
@@ -117,11 +117,11 @@ export function QuotesTable() {
   if (quotes.length === 0) {
     return (
       <div className="p-12 text-center">
-        <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-100 flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-400"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-400 dark:text-slate-500"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
         </div>
-        <h3 className="text-base font-semibold text-slate-700">No quotes yet</h3>
-        <p className="text-sm text-slate-500 mt-1">Your quotes will appear here once generated.</p>
+        <h3 className="text-base font-semibold text-slate-700 dark:text-slate-100">No quotes yet</h3>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Your quotes will appear here once generated.</p>
       </div>
     );
   }
@@ -129,16 +129,16 @@ export function QuotesTable() {
   return (
     <div>
       {/* Header inside tab content */}
-      <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">All Quotes</h3>
-        <span className="text-xs text-slate-500">{quotes.length} total</span>
+      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">All Quotes</h3>
+        <span className="text-xs text-slate-500 dark:text-slate-400">{quotes.length} total</span>
       </div>
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs text-slate-600 uppercase tracking-wider">
+            <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:text-slate-400">
               <th className="px-6 py-3 font-medium">Reference</th>
               <th className="px-6 py-3 font-medium">Title</th>
               <th className="px-6 py-3 font-medium">Status</th>
@@ -149,16 +149,16 @@ export function QuotesTable() {
           </thead>
           <tbody>
             {quotes.map((q) => (
-              <tr key={q.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-slate-600 font-mono text-xs">{q.id.slice(0, 8).toUpperCase()}</td>
-                <td className="px-6 py-4 text-slate-900 font-medium">{q.form_data?.description || q.form_data?.company_name || '—'}</td>
+              <tr key={q.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60">
+                <td className="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-400">{q.id.slice(0, 8).toUpperCase()}</td>
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{q.form_data?.description || q.form_data?.company_name || '—'}</td>
                 <td className="px-6 py-4"><QuoteStatusBadge status={q.status} /></td>
-                <td className="px-6 py-4 text-slate-900 text-right font-semibold">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</td>
-                <td className="px-6 py-4 text-slate-600">{formatDate(q.created_at)}</td>
+                <td className="px-6 py-4 text-right font-semibold text-slate-900 dark:text-slate-100">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</td>
+                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{formatDate(q.created_at)}</td>
                 <td className="px-6 py-4 text-right">
                   <div className="inline-flex items-center gap-1">
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors" title="View"><EyeIcon size={15} /></button>
-                    <button className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors" title="Download"><DownloadIcon size={15} /></button>
+                    <button className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200" title="View"><EyeIcon size={15} /></button>
+                    <button className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200" title="Download"><DownloadIcon size={15} /></button>
                   </div>
                 </td>
               </tr>
@@ -168,19 +168,19 @@ export function QuotesTable() {
       </div>
 
       {/* Mobile cards */}
-      <div className="md:hidden divide-y divide-slate-200">
+      <div className="divide-y divide-slate-200 md:hidden dark:divide-slate-800">
         {quotes.map((q) => (
           <div key={q.id} className="px-5 py-4 space-y-2">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-900">{q.form_data?.description || q.form_data?.company_name || '—'}</p>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">{q.id.slice(0, 8).toUpperCase()}</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{q.form_data?.description || q.form_data?.company_name || '—'}</p>
+                <p className="mt-0.5 font-mono text-xs text-slate-500 dark:text-slate-400">{q.id.slice(0, 8).toUpperCase()}</p>
               </div>
               <QuoteStatusBadge status={q.status} />
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">{formatDate(q.created_at)}</span>
-              <span className="font-semibold text-slate-900">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</span>
+              <span className="text-slate-600 dark:text-slate-400">{formatDate(q.created_at)}</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100">{formatBudgetRange(q.estimated_budget_min, q.estimated_budget_max)}</span>
             </div>
           </div>
         ))}

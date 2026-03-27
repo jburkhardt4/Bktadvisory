@@ -49,15 +49,15 @@ export function ActionDropdown({ label, items, userRole = 'client' }: ActionDrop
         <ChevronDownIcon size={14} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150" role="menu">
+        <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-150 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30" role="menu">
           {visibleItems.map((item) => (
             <button
               key={item.label}
               onClick={() => { item.onClick?.(); setOpen(false); }}
               role="menuitem"
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#1d293d] hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#1d293d] transition-colors cursor-pointer hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              <span className="text-slate-500">{item.icon}</span>
+              <span className="text-slate-500 dark:text-slate-400">{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -71,7 +71,7 @@ export function EditButton({ onClick }: { onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="p-1.5 rounded-lg text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition-all cursor-pointer"
+      className="cursor-pointer rounded-lg p-1.5 text-slate-300 transition-all hover:bg-slate-100 hover:text-slate-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
       title="Edit"
     >
       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

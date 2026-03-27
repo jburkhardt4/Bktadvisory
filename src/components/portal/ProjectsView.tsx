@@ -65,8 +65,8 @@ export function ProjectsView({ onSelectProject }: { onSelectProject: (id: string
     return (
       <div className="p-8 text-center">
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto" />
-          <div className="h-3 bg-slate-200 rounded w-1/2 mx-auto" />
+          <div className="mx-auto h-4 w-1/3 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="mx-auto h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-800" />
         </div>
       </div>
     );
@@ -75,26 +75,26 @@ export function ProjectsView({ onSelectProject }: { onSelectProject: (id: string
   return (
     <div>
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-700">All Projects</h3>
+      <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">All Projects</h3>
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-0 border-b border-slate-200 overflow-x-auto bg-slate-50">
+      <div className="flex gap-0 overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
             className={`px-5 py-3 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${
               activeTab === t.key
-                ? 'border-blue-600 text-blue-700 bg-white'
-                : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                ? 'border-blue-600 bg-white text-blue-700 dark:border-blue-500 dark:bg-slate-900 dark:text-blue-200'
+                : 'border-transparent text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/80 dark:hover:text-slate-50'
             }`}
           >
             {t.label}
             {t.count > 0 && (
               <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full ${
-                activeTab === t.key ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'
+                activeTab === t.key ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-200' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}>
                 {t.count}
               </span>
@@ -106,37 +106,39 @@ export function ProjectsView({ onSelectProject }: { onSelectProject: (id: string
       {/* Content */}
       {filtered.length === 0 ? (
         <div className="py-12 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
             <InboxIcon size={24} />
           </div>
-          <p className="text-sm text-slate-500">No projects in this category</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No projects in this category</p>
         </div>
       ) : (
-        <div className="divide-y divide-slate-200">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
           {filtered.map(p => (
             <button
               key={p.id}
               onClick={() => onSelectProject(p.id)}
-              className="w-full px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors text-left cursor-pointer"
+              className="flex w-full items-center gap-4 px-6 py-4 text-left transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-sm font-semibold text-slate-900">{p.name}</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{p.name}</span>
                   <ProjectStatusBadge status={p.status} />
                 </div>
-                <p className="text-xs text-slate-500 mt-1 truncate">{p.description}</p>
+                <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{p.description}</p>
                 {/* Progress bar */}
                 <div className="mt-2.5 flex items-center gap-3">
-                  <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all"
                       style={{ width: `${p.progress}%` }}
                     />
                   </div>
-                  <span className="text-xs text-slate-600 font-medium w-8 text-right">{p.progress}%</span>
+                  <span className="w-8 text-right text-xs font-medium text-slate-600 dark:text-slate-300">{p.progress}%</span>
                 </div>
               </div>
-              <ChevronRightIcon size={16} />
+              <span className="text-slate-400 dark:text-slate-500">
+                <ChevronRightIcon size={16} />
+              </span>
             </button>
           ))}
         </div>

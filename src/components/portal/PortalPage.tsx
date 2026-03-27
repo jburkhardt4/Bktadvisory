@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { PortalProfileProvider, usePortalProfile } from '../../contexts/PortalProfileContext';
@@ -19,6 +20,31 @@ import { AddActivityForm } from './forms/AddActivityForm';
 
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 
+const PORTAL_ICON_LOGO =
+  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png';
+  
+const logoDark = {
+  src: logo,
+  className: '',
+};
+
+const logoLight = {
+  src: logo,
+  className:
+    'brightness-[1.28] contrast-[1.18] saturate-[1.08] drop-shadow-[0_0_16px_rgba(248,250,252,0.18)]',
+};
+
+const iconDark = {
+  src: PORTAL_ICON_LOGO,
+  className: '',
+};
+
+const iconLight = {
+  src: PORTAL_ICON_LOGO,
+  className:
+    'brightness-[1.14] contrast-[1.08] drop-shadow-[0_0_14px_rgba(248,250,252,0.18)]',
+};
+
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good Morning';
@@ -36,6 +62,7 @@ export function PortalPage() {
 
 function PortalPageContent() {
   const { role } = useAuth();
+  const { resolvedTheme } = useTheme();
   const { profile } = usePortalProfile();
   const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -43,7 +70,15 @@ function PortalPageContent() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('profile');
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [themeReady, setThemeReady] = useState(false);
   const firstName = profile?.firstName || null;
+  const isDarkTheme = themeReady && resolvedTheme === 'dark';
+  const headerLogo = isDarkTheme ? logoLight : logoDark;
+  const headerIcon = isDarkTheme ? iconLight : iconDark;
+
+  useEffect(() => {
+    setThemeReady(true);
+  }, []);
 
   async function handleSignOut() {
     if (isSigningOut) return;
@@ -70,8 +105,16 @@ function PortalPageContent() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="BKT Advisory" className="h-8 w-auto hidden sm:block" />
-            <img src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png" alt="BKT" className="h-8 w-auto sm:hidden" />
+            <img
+              src={headerLogo.src}
+              alt="BKT Advisory"
+              className={`hidden h-8 w-auto transition-[filter] duration-200 sm:block ${headerLogo.className}`}
+            />
+            <img
+              src={headerIcon.src}
+              alt="BKT"
+              className={`h-8 w-auto transition-[filter] duration-200 sm:hidden ${headerIcon.className}`}
+            />
             <span className="hidden border-l border-slate-300 pl-3 text-xs font-semibold uppercase tracking-widest text-slate-700 sm:inline dark:border-slate-700 dark:text-slate-300">Client Portal</span>
           </Link>
           <div className="flex items-center gap-2">

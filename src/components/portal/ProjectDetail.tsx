@@ -8,10 +8,9 @@ import type { Database } from '../../types/supabase';
 import {
   ArrowLeftIcon, CheckCircleIcon, ClockIcon, UserIcon, BuildingIcon,
   TargetIcon, AlertTriangleIcon, FileTextIcon, FolderIcon,
-  KeyIcon, UploadIcon, PaperclipIcon, MessageSquareIcon,
+  UploadIcon, PaperclipIcon, MessageSquareIcon,
   ZapIcon, SendIcon, UnlockIcon, CalendarCheckIcon,
-  DownloadIcon, ExternalLinkIcon, ShieldIcon, AlertCircleIcon,
-  LayersIcon, SearchIcon, PenIcon, PlayIcon, ArchiveIcon,
+  ShieldIcon, AlertCircleIcon, SearchIcon, PenIcon, PlayIcon, ArchiveIcon,
 } from './PortalIcons';
 
 import { ActionDropdown, EditButton } from './ActionDropdown';
@@ -140,7 +139,7 @@ function StatusStepper({ status }: { status: ProjectStatus }) {
       {/* Mobile stepper - compact */}
       <div className="md:hidden">
         <div className="flex items-center gap-1">
-          {LIFECYCLE_STEPS.map((step, i) => {
+          {LIFECYCLE_STEPS.map((step) => {
             const state = getStepState(step.key, effectiveStatus);
             return (
               <div key={step.key} className="flex items-center flex-1 last:flex-none">

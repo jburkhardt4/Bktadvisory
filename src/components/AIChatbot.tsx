@@ -51,7 +51,7 @@ const Loader2Icon = ({ size, className }: { size?: number; className?: string })
   </svg>
 );
 
-import { projectId, publicAnonKey } from "../utils/supabase/info";
+import { getSupabaseFunctionUrl, supabaseAnonKey } from "../supabase/client";
 
 interface Message {
   id: string;
@@ -248,12 +248,12 @@ export function AIChatbot() {
       };
 
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/chat`,
+        getSupabaseFunctionUrl("make-server-07a007e1/chat"),
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
+            Authorization: `Bearer ${supabaseAnonKey}`,
           },
           body: JSON.stringify(payload),
         }

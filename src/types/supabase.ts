@@ -51,6 +51,7 @@ export type Database = {
       quotes: {
         Row: {
           id: string;
+          client_id: string | null;
           status: Database['public']['Enums']['quote_status'];
           estimated_budget_min: number | null;
           estimated_budget_max: number | null;
@@ -60,6 +61,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          client_id?: string | null;
           status?: Database['public']['Enums']['quote_status'];
           estimated_budget_min?: number | null;
           estimated_budget_max?: number | null;
@@ -69,6 +71,7 @@ export type Database = {
         };
         Update: {
           id?: string;
+          client_id?: string | null;
           status?: Database['public']['Enums']['quote_status'];
           estimated_budget_min?: number | null;
           estimated_budget_max?: number | null;
@@ -76,13 +79,23 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'quotes_client_id_fkey';
+            columns: ['client_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       projects: {
         Row: {
           id: string;
+          client_id: string | null;
           name: string;
           company_name: string;
+          description: string | null;
           status: Database['public']['Enums']['project_status'];
           owner: string;
           target_milestone: string;
@@ -91,8 +104,10 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          client_id?: string | null;
           name: string;
           company_name: string;
+          description?: string | null;
           status?: Database['public']['Enums']['project_status'];
           owner: string;
           target_milestone?: string;
@@ -101,15 +116,25 @@ export type Database = {
         };
         Update: {
           id?: string;
+          client_id?: string | null;
           name?: string;
           company_name?: string;
+          description?: string | null;
           status?: Database['public']['Enums']['project_status'];
           owner?: string;
           target_milestone?: string;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'projects_client_id_fkey';
+            columns: ['client_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       opportunities: {
         Row: {
@@ -171,6 +196,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: 'activity_events_client_id_fkey';
+            columns: ['client_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'activity_events_record_id_fkey';
             columns: ['record_id'];
             isOneToOne: false;
@@ -225,7 +257,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      current_user_role: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
     };
     Enums: {
       quote_status:

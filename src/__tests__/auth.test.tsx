@@ -11,26 +11,41 @@ const {
   mockGetSession,
   mockOnAuthStateChange,
   mockSignInWithPassword,
+  mockSignInWithOAuth,
   mockSignUp,
   mockSignOut,
+  mockFrom,
+  mockProfileSelect,
+  mockProfileEq,
+  mockProfileMaybeSingle,
+  mockClearStoredSupabaseSession,
 } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   mockOnAuthStateChange: vi.fn(),
   mockSignInWithPassword: vi.fn(),
+  mockSignInWithOAuth: vi.fn(),
   mockSignUp: vi.fn(),
   mockSignOut: vi.fn(),
+  mockFrom: vi.fn(),
+  mockProfileSelect: vi.fn(),
+  mockProfileEq: vi.fn(),
+  mockProfileMaybeSingle: vi.fn(),
+  mockClearStoredSupabaseSession: vi.fn(),
 }));
 
-vi.mock('../lib/supabaseClient', () => ({
+vi.mock('../supabase/client', () => ({
   supabase: {
     auth: {
       getSession: mockGetSession,
       onAuthStateChange: mockOnAuthStateChange,
       signInWithPassword: mockSignInWithPassword,
+      signInWithOAuth: mockSignInWithOAuth,
       signUp: mockSignUp,
       signOut: mockSignOut,
     },
+    from: mockFrom,
   },
+  clearStoredSupabaseSession: mockClearStoredSupabaseSession,
 }));
 
 // Import components AFTER setting up the mock so they pick up the mock module
@@ -62,6 +77,10 @@ const makeSession = (email = 'user@example.com') => ({
 describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockProfileMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockProfileEq.mockReturnValue({ maybeSingle: mockProfileMaybeSingle });
+    mockProfileSelect.mockReturnValue({ eq: mockProfileEq });
+    mockFrom.mockReturnValue({ select: mockProfileSelect });
     // Default: no active session, listener fires immediately with null
     mockGetSession.mockResolvedValue({ data: { session: null } });
     mockOnAuthStateChange.mockImplementation((cb) => {
@@ -123,6 +142,38 @@ describe('AuthContext', () => {
     );
     expect(screen.getByTestId('email').textContent).toBe('user@example.com');
   });
+
+  it('hydrates the admin role from the profiles table when present', async () => {
+    const session = makeSession('admin@example.com');
+    mockGetSession.mockResolvedValue({ data: { session } });
+    mockProfileMaybeSingle.mockResolvedValue({ data: { role: 'admin' }, error: null });
+    mockOnAuthStateChange.mockImplementation((cb) => {
+      setTimeout(() => cb('SIGNED_IN', session), 0);
+      return makeSubscription();
+    });
+
+    function TestConsumer() {
+      const { loading, role } = useAuth();
+      return (
+        <div>
+          <span data-testid="loading">{String(loading)}</span>
+          <span data-testid="role">{role}</span>
+        </div>
+      );
+    }
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('loading').textContent).toBe('false'),
+    );
+    expect(screen.getByTestId('role').textContent).toBe('admin');
+    expect(mockFrom).toHaveBeenCalledWith('profiles');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -132,6 +183,10 @@ describe('AuthContext', () => {
 describe('RequireAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockProfileMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockProfileEq.mockReturnValue({ maybeSingle: mockProfileMaybeSingle });
+    mockProfileSelect.mockReturnValue({ eq: mockProfileEq });
+    mockFrom.mockReturnValue({ select: mockProfileSelect });
     mockOnAuthStateChange.mockReturnValue(makeSubscription());
   });
 
@@ -204,7 +259,13 @@ describe('RequireAuth', () => {
 // ---------------------------------------------------------------------------
 
 describe('authSession helpers', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockProfileMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockProfileEq.mockReturnValue({ maybeSingle: mockProfileMaybeSingle });
+    mockProfileSelect.mockReturnValue({ eq: mockProfileEq });
+    mockFrom.mockReturnValue({ select: mockProfileSelect });
+  });
 
   it('getSession calls supabase.auth.getSession and returns the session', async () => {
     const session = makeSession();
@@ -221,6 +282,7 @@ describe('authSession helpers', () => {
     const { clearSession } = await import('../utils/authSession');
     await clearSession();
     expect(mockSignOut).toHaveBeenCalledOnce();
+    expect(mockClearStoredSupabaseSession).toHaveBeenCalledOnce();
   });
 
   it('onAuthChange subscribes and returns the subscription', async () => {
@@ -242,6 +304,10 @@ describe('authSession helpers', () => {
 describe('AuthPage Supabase integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockProfileMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockProfileEq.mockReturnValue({ maybeSingle: mockProfileMaybeSingle });
+    mockProfileSelect.mockReturnValue({ eq: mockProfileEq });
+    mockFrom.mockReturnValue({ select: mockProfileSelect });
     mockGetSession.mockResolvedValue({ data: { session: null } });
     mockOnAuthStateChange.mockImplementation((cb) => {
       setTimeout(() => cb('SIGNED_OUT', null), 0);
@@ -264,8 +330,7 @@ describe('AuthPage Supabase integration', () => {
     );
 
     // Switch to sign-in mode
-    await waitFor(() => screen.getByText('Sign In'));
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     // Fill credentials
     await user.type(screen.getByPlaceholderText('brandon@acme.com'), 'test@example.com');

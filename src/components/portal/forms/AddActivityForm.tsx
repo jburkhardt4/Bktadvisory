@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from '../../../supabase/client';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { Database } from '../../../types/supabase';
 

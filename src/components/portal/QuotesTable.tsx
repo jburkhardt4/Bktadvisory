@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabase/client';
+import type { Database } from '../../types/supabase';
 import type { QuoteStatus } from './portalData';
 import { QuoteStatusBadge } from './StatusBadge';
 import { EyeIcon, DownloadIcon } from './PortalIcons';
@@ -34,6 +35,22 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function parseQuoteFormData(
+  value: Database['public']['Tables']['quotes']['Row']['form_data'],
+): QuoteFormData | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return {
+    client_name: typeof record.client_name === 'string' ? record.client_name : undefined,
+    company_name: typeof record.company_name === 'string' ? record.company_name : undefined,
+    description: typeof record.description === 'string' ? record.description : undefined,
+  };
+}
+
 export function QuotesTable() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +71,16 @@ export function QuotesTable() {
           .order('created_at', { ascending: false });
 
         if (queryError) throw queryError;
-        setQuotes(data ?? []);
+        setQuotes(
+          (data ?? []).map((quote) => ({
+            id: quote.id,
+            status: quote.status,
+            estimated_budget_min: quote.estimated_budget_min,
+            estimated_budget_max: quote.estimated_budget_max,
+            form_data: parseQuoteFormData(quote.form_data),
+            created_at: quote.created_at,
+          })),
+        );
       } catch (err: any) {
         console.error('Error fetching quotes:', err.message);
         setError(err.message);

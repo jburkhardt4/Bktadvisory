@@ -1,4 +1,4 @@
-import { projectId, publicAnonKey } from './supabase/info';
+import { getSupabaseFunctionUrl, supabaseAnonKey } from '../supabase/client';
 
 export interface CaseStudyRequest {
   caseStudyLabel: string;
@@ -10,7 +10,7 @@ export interface CaseStudyRequest {
 export async function requestCaseStudy(
   payload: CaseStudyRequest
 ): Promise<{ success: boolean; message: string }> {
-  const endpoint = `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/request-case-study`;
+  const endpoint = getSupabaseFunctionUrl('make-server-07a007e1/request-case-study');
 
   let response: Response;
   try {
@@ -18,7 +18,7 @@ export async function requestCaseStudy(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${publicAnonKey}`,
+        Authorization: `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify(payload),
     });

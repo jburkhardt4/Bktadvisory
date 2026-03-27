@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from '../../../supabase/client';
 
 interface AddMilestoneFormProps {
   onClose: () => void;

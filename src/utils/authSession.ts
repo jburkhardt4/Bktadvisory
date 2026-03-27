@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabaseClient';
-import type { AuthChangeEvent, Session } from '@jsr/supabase__supabase-js';
+import { clearStoredSupabaseSession, supabase } from '../supabase/client';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 /** Retrieves the current Supabase session (null when signed out). */
 export async function getSession(): Promise<Session | null> {
@@ -20,5 +20,12 @@ export function onAuthChange(
 
 /** Signs the current user out. */
 export async function clearSession(): Promise<void> {
-  await supabase.auth.signOut();
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
+    }
+  } finally {
+    clearStoredSupabaseSession();
+  }
 }

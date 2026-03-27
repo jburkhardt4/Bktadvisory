@@ -59,7 +59,6 @@ interface EstimatorProps {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   onGenerateQuote: (data: QuoteData) => void;
-  onBackToHome: () => void;
   onTriggerAIAction: (type: 'generate' | 'autofill') => void;
   aiUsageCount: { generate: number; autofill: number };
 }
@@ -70,7 +69,6 @@ export function Estimator({
   currentStep, 
   setCurrentStep, 
   onGenerateQuote, 
-  onBackToHome,
   onTriggerAIAction,
   aiUsageCount
 }: EstimatorProps) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from '../../../supabase/client';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface CreateQuoteFormProps {
@@ -21,11 +21,19 @@ export function CreateQuoteForm({ onClose }: CreateQuoteFormProps) {
     setError(null);
     setIsSubmitting(true);
 
+    const parsedAmount = Number.parseFloat(amount);
+    const trimmedDescription = description.trim();
+
     const { error: insertError } = await supabase.from('quotes').insert({
-      client_name: clientName.trim(),
-      company_name: companyName.trim(),
-      amount: parseFloat(amount),
-      description: description.trim() || undefined,
+      client_id: session?.user.id ?? null,
+      status: 'draft',
+      estimated_budget_min: Number.isFinite(parsedAmount) ? parsedAmount : null,
+      estimated_budget_max: Number.isFinite(parsedAmount) ? parsedAmount : null,
+      form_data: {
+        client_name: clientName.trim(),
+        company_name: companyName.trim(),
+        ...(trimmedDescription ? { description: trimmedDescription } : {}),
+      },
     });
 
     setIsSubmitting(false);

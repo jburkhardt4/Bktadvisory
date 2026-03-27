@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../supabase/client';
+import { clearSession } from '../../utils/authSession';
 import { UserProfile } from './UserProfile';
 import { QuotesTable } from './QuotesTable';
 import { ProjectsView } from './ProjectsView';
@@ -27,22 +28,51 @@ function getGreeting(): string {
 
 export function PortalPage() {
   const { session, role } = useAuth();
+  const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-    supabase
+    let isCancelled = false;
+
+    if (!session?.user?.id) {
+      setFirstName(null);
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    void supabase
       .from('profiles')
       .select('first_name')
-      .eq('id', session.user.id)
-      .single()
-      .then(({ data }) => {
-        if (data?.first_name) setFirstName(data.first_name);
+      .eq('id', session.user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (isCancelled || error) return;
+        setFirstName(data?.first_name ?? null);
       });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [session?.user?.id]);
+
+  async function handleSignOut() {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    try {
+      await clearSession();
+    } catch (error) {
+      console.error('Failed to sign out cleanly.', error);
+    }
+
+    navigate('/auth', { replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -66,10 +96,17 @@ export function PortalPage() {
               <SettingsIcon size={18} />
             </button>
             <div className="w-px h-6 bg-slate-200" />
-            <Link to="/auth" className="inline-flex items-center gap-2 px-3 py-2 text-sm text-[#1d293d] hover:bg-slate-100 rounded-lg transition-colors">
+            <button
+              type="button"
+              onClick={() => {
+                void handleSignOut();
+              }}
+              disabled={isSigningOut}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm text-[#1d293d] hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               <LogOutIcon size={15} />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Link>
+              <span className="hidden sm:inline">{isSigningOut ? 'Signing Out…' : 'Sign Out'}</span>
+            </button>
           </div>
         </div>
       </header>

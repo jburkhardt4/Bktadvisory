@@ -133,7 +133,7 @@ export function AdminDashboardPage() {
                       <AdminDataTableCell>
                         {formatCurrency(quote.estimated_budget_min)} to {formatCurrency(quote.estimated_budget_max)}
                       </AdminDataTableCell>
-                      <AdminDataTableCell>{formatDate(quote.updated_at)}</AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(quote.updated_at)}</AdminDataTableCell>
                     </AdminDataTableRow>
                   ))}
                 </AdminDataTableBody>

@@ -180,13 +180,10 @@ export function formatDate(value: string): string {
 }
 
 export function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const d = new Date(value);
+  const datePart = d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+  const timePart = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return `${datePart} | ${timePart}`;
 }
 
 export function formatActivityType(type: ActivityEventType): string {

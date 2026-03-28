@@ -209,8 +209,8 @@ export function AdminQuotesPage() {
                       {quote.metadata.description || 'No description'}
                     </p>
                   </AdminDataTableCell>
-                  <AdminDataTableCell className="text-right">{formatDate(quote.updated_at)}</AdminDataTableCell>
-                  <AdminDataTableCell className="text-right">{formatDate(quote.created_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDateTime(quote.updated_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDateTime(quote.created_at)}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingQuote(quote)} />
@@ -347,7 +347,9 @@ export function AdminProjectsPage() {
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
                 <AdminDataTableHead>Progress</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+                <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
+                <AdminDataTableHead align="right">Created</AdminDataTableHead>
+                <AdminDataTableHead align="center">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -382,6 +384,8 @@ export function AdminProjectsPage() {
                       {project.activityCount} activities logged
                     </p>
                   </AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDateTime(project.updated_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDateTime(project.created_at)}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingProject(project)} />

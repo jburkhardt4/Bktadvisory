@@ -4,6 +4,7 @@ import {
   ACTIVITY_TYPE_OPTIONS,
   PROJECT_STATUS_OPTIONS,
   QUOTE_STATUS_OPTIONS,
+  formatDateTime,
   getProfileDisplayName,
   getProfileSummary,
   type ActivityMutationValues,
@@ -593,6 +594,13 @@ export function AdminProjectForm({
           disabled={isSaving}
         />
       </div>
+
+      {initialRecord?.updated_at && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Last Updated</p>
+          <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{formatDateTime(initialRecord.updated_at)}</p>
+        </div>
+      )}
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>

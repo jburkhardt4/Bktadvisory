@@ -36,7 +36,7 @@ export function QuoteStatusBadge({
     <BaseStatusBadge
       label={config.label}
       className={cn(config.bg, config.color, className)}
-      dotClassName={config.color.replace('text-', 'bg-')}
+      dotClassName={config.dot}
     />
   );
 }
@@ -53,7 +53,7 @@ export function ProjectStatusBadge({
     <BaseStatusBadge
       label={config.label}
       className={cn('capitalize', config.bg, config.color, className)}
-      dotClassName={config.color.replace('text-', 'bg-')}
+      dotClassName={config.dot}
     />
   );
 }

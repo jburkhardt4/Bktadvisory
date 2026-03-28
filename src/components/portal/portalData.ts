@@ -91,28 +91,28 @@ export interface ActivityEvent {
   status?: QuoteStatus | ProjectStatus;
 }
 
-export const QUOTE_STATUS_CONFIG: Record<QuoteStatus, { label: string; color: string; bg: string }> = {
-  draft: { label: 'Draft', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20' },
-  scoping: { label: 'Scoping', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20' },
-  quoted: { label: 'Quoted', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20' },
-  sent: { label: 'Sent', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20' },
-  revision_requested: { label: 'Revision Requested', color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20' },
-  accepted: { label: 'Accepted', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20' },
-  declined: { label: 'Declined', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20' },
-  expired: { label: 'Expired', color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20' },
+export const QUOTE_STATUS_CONFIG: Record<QuoteStatus, { label: string; color: string; bg: string; dot: string }> = {
+  draft: { label: 'Draft', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', dot: 'bg-slate-400' },
+  scoping: { label: 'Scoping', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },
+  quoted: { label: 'Quoted', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', dot: 'bg-blue-400' },
+  sent: { label: 'Sent', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', dot: 'bg-indigo-400' },
+  revision_requested: { label: 'Revision Requested', color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', dot: 'bg-orange-400' },
+  accepted: { label: 'Accepted', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
+  declined: { label: 'Declined', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', dot: 'bg-red-400' },
+  expired: { label: 'Expired', color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500' },
 };
 
-export const PROJECT_STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string }> = {
-  intake: { label: 'Intake', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20' },
-  discovery: { label: 'Discovery', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20' },
-  scoping: { label: 'Scoping', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20' },
-  design_in_progress: { label: 'Design in Progress', color: 'text-cyan-400', bg: 'bg-cyan-400/10 border-cyan-400/20' },
-  build_in_progress: { label: 'Build in Progress', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20' },
-  awaiting_client: { label: 'Awaiting Client', color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20' },
-  blocked: { label: 'Blocked', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20' },
-  uat: { label: 'UAT', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20' },
-  completed: { label: 'Completed', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20' },
-  archived: { label: 'Archived', color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20' },
+export const PROJECT_STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string; dot: string }> = {
+  intake: { label: 'Intake', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', dot: 'bg-slate-400' },
+  discovery: { label: 'Discovery', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', dot: 'bg-purple-400' },
+  scoping: { label: 'Scoping', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },
+  design_in_progress: { label: 'Design in Progress', color: 'text-cyan-400', bg: 'bg-cyan-400/10 border-cyan-400/20', dot: 'bg-cyan-400' },
+  build_in_progress: { label: 'Build in Progress', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', dot: 'bg-blue-400' },
+  awaiting_client: { label: 'Awaiting Client', color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/20', dot: 'bg-orange-400' },
+  blocked: { label: 'Blocked', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', dot: 'bg-red-400' },
+  uat: { label: 'UAT', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', dot: 'bg-indigo-400' },
+  completed: { label: 'Completed', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
+  archived: { label: 'Archived', color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500' },
 };
 
 export const mockUser = {

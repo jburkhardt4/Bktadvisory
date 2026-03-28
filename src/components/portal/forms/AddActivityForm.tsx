@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../../supabase/client';
 import { useAuth } from '../../../contexts/AuthContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
 import type { Database } from '../../../types/supabase';
 
 type ActivityEventType = Database['public']['Enums']['activity_event_type'];
@@ -68,17 +69,20 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
       )}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Activity Type</label>
-        <select
-          required
+        <Select
           value={type}
-          onChange={e => setType(e.target.value as ActivityEventType)}
-          className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50 text-slate-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-100 dark:focus:border-blue-400 dark:focus:ring-blue-400 appearance-none cursor-pointer"
+          onValueChange={v => setType(v as ActivityEventType)}
           disabled={isSubmitting}
         >
-          {EVENT_TYPES.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full rounded-xl border-blue-200 bg-blue-50 text-slate-800 font-medium dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-100">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EVENT_TYPES.map(t => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {!initialProjectId && (
         <div>

@@ -53,38 +53,40 @@ export function AdminDashboardPage() {
   const completedMilestones = milestones.filter((milestone) => milestone.completed).length;
 
   return (
-    <div className="space-y-6">
+    <>
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <AdminMetricCard
-          label="Quotes"
-          value={String(quotes.length)}
-          helper={`${acceptedQuotes} accepted`}
-          accentClassName="text-blue-600 dark:text-blue-300"
-        />
-        <AdminMetricCard
-          label="Projects"
-          value={String(projects.length)}
-          helper={`${activeProjects} active engagements`}
-          accentClassName="text-indigo-600 dark:text-indigo-300"
-        />
-        <AdminMetricCard
-          label="Activities"
-          value={String(activities.length)}
-          helper={`${blockedProjects} blocked project states`}
-          accentClassName="text-cyan-600 dark:text-cyan-300"
-        />
-        <AdminMetricCard
-          label="Milestones"
-          value={String(milestones.length)}
-          helper={`${completedMilestones} completed`}
-          accentClassName="text-emerald-600 dark:text-emerald-300"
-        />
+      <div className="rounded-t-2xl bg-[#0F172B] px-6 py-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <AdminMetricCard
+            label="Quotes"
+            value={String(quotes.length)}
+            helper={`${acceptedQuotes} accepted`}
+            accentClassName="text-blue-600 dark:text-blue-300"
+          />
+          <AdminMetricCard
+            label="Projects"
+            value={String(projects.length)}
+            helper={`${activeProjects} active engagements`}
+            accentClassName="text-indigo-600 dark:text-indigo-300"
+          />
+          <AdminMetricCard
+            label="Activities"
+            value={String(activities.length)}
+            helper={`${activities.length} activities logged`}
+            accentClassName="text-cyan-600 dark:text-cyan-300"
+          />
+          <AdminMetricCard
+            label="Milestones"
+            value={String(milestones.length)}
+            helper={`${completedMilestones} completed`}
+            accentClassName="text-emerald-600 dark:text-emerald-300"
+          />
+        </div>
       </div>
 
       <AdminSectionCard>
@@ -97,11 +99,11 @@ export function AdminDashboardPage() {
 
         <div className="p-6">
           <Tabs defaultValue="quotes" className="gap-4">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/70 md:grid-cols-4">
-              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Quotes</TabsTrigger>
-              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Projects</TabsTrigger>
-              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Activities</TabsTrigger>
-              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Milestones</TabsTrigger>
+            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/70 md:grid-cols-4">
+              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Quotes</TabsTrigger>
+              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Projects</TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Activities</TabsTrigger>
+              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Milestones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="quotes">
@@ -273,6 +275,6 @@ export function AdminDashboardPage() {
           </Tabs>
         </div>
       </AdminSectionCard>
-    </div>
+    </>
   );
 }

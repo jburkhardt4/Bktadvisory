@@ -2,9 +2,23 @@
 
 This is a code bundle for BKT Advisory. The original project is available at `https://www.figma.com/design/AEr09h1F0G6yCUhAm3c5N7/BKT-Advisory`.
 
-## Running the code
+————————————————————————————————————————————————————————————————
+
+## Start-up Commands:
+
+  Run `git pull --ff-only`
+  Run `node -v && npm -v`
+  Run `npm run`
+  Run `[ -f .env.example ] && cp -n .env.example .env`
+  Run `npm run lint --if-present`
+  Run `npm test --if-present`
+  Run `npm run build --if-present`
+  Run `npm run dev --if-present`
+  
+————————————————————————————————
+
+## Running the Code:
 
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
-  

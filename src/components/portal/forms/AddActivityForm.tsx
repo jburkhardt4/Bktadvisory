@@ -72,7 +72,7 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
           required
           value={type}
           onChange={e => setType(e.target.value as ActivityEventType)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+          className="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50 text-slate-800 dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-100 dark:focus:border-blue-400 dark:focus:ring-blue-400 appearance-none cursor-pointer"
           disabled={isSubmitting}
         >
           {EVENT_TYPES.map(t => (

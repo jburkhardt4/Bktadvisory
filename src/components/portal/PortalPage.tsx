@@ -9,7 +9,7 @@ import { QuotesTable } from './QuotesTable';
 import { ProjectsView } from './ProjectsView';
 import { ActivityTimeline } from './ActivityTimeline';
 import { ProjectDetail } from './ProjectDetail';
-import { LogOutIcon, BellIcon } from './PortalIcons';
+import { LogOutIcon, BellIcon, ShieldIcon } from './PortalIcons';
 import { SettingsIcon } from './PortalIcons';
 import { ActionDropdown } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
@@ -120,6 +120,15 @@ function PortalPageContent() {
             <span className="hidden border-l border-slate-300 pl-3 text-xs font-semibold uppercase tracking-widest text-slate-700 sm:inline dark:border-slate-700 dark:text-slate-300">Client Portal</span>
           </Link>
           <div className="flex items-center gap-2">
+            {role === 'admin' && (
+              <Link
+                to="/portal/admin/quotes"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#1d293d] transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <ShieldIcon size={15} />
+                <span className="hidden sm:inline">Admin Panel</span>
+              </Link>
+            )}
             <button className="relative cursor-pointer rounded-lg p-2 text-[#1d293d] transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
               <BellIcon size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />

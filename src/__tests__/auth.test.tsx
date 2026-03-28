@@ -380,23 +380,20 @@ describe('AuthPage Supabase integration', () => {
 // Approach A route map constraints
 // ---------------------------------------------------------------------------
 describe('Approach A route map constraints', () => {
-  it('the router module does not export quote-related routes', async () => {
+  it('quote-related routes only exist inside the protected admin branch', async () => {
     const routerModule = await import('../routes');
     const routerConfig = routerModule.router;
 
-    const paths: string[] = [];
-    const collectPaths = (routes: Array<{ path?: string; children?: Array<{ path?: string }> }>) => {
-      for (const route of routes) {
-        if (route.path) paths.push(route.path);
-        if (route.children) collectPaths(route.children);
-      }
-    };
-    collectPaths(routerConfig.routes);
+    const portalRoute = routerConfig.routes.find((route) => route.path === '/portal');
+    expect(portalRoute).toBeDefined();
 
-    const quotePaths = paths.filter(
-      (p) => p.includes('quote') || p.includes('showQuote'),
-    );
-    expect(quotePaths).toHaveLength(0);
+    const portalChildren = portalRoute?.children ?? [];
+    const adminRoute = portalChildren.find((route) => route.path === 'admin');
+
+    expect(portalChildren.some((route) => route.path === 'quotes')).toBe(false);
+    expect(adminRoute).toBeDefined();
+    expect(adminRoute?.children?.some((route) => route.path === 'quotes')).toBe(true);
+    expect(routerConfig.routes.some((route) => route.path === '/quotes')).toBe(false);
   });
 
   it('/estimator route exists as a boundary entry', async () => {

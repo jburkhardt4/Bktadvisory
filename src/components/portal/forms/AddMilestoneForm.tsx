@@ -4,9 +4,10 @@ import { supabase } from '../../../supabase/client';
 interface AddMilestoneFormProps {
   onClose: () => void;
   projectId?: string;
+  onSuccess?: () => void | Promise<void>;
 }
 
-export function AddMilestoneForm({ onClose, projectId }: AddMilestoneFormProps) {
+export function AddMilestoneForm({ onClose, projectId, onSuccess }: AddMilestoneFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export function AddMilestoneForm({ onClose, projectId }: AddMilestoneFormProps) 
       return;
     }
 
+    await onSuccess?.();
     onClose();
   }
 

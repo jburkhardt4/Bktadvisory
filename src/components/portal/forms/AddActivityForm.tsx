@@ -28,9 +28,14 @@ const EVENT_TYPES: { value: ActivityEventType; label: string }[] = [
 interface AddActivityFormProps {
   onClose: () => void;
   projectId?: string;
+  onSuccess?: () => void | Promise<void>;
 }
 
-export function AddActivityForm({ onClose, projectId: initialProjectId }: AddActivityFormProps) {
+export function AddActivityForm({
+  onClose,
+  projectId: initialProjectId,
+  onSuccess,
+}: AddActivityFormProps) {
   const { session } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +54,6 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
       record_id: projectId.trim(),
       description: description.trim() || undefined,
       actor: session?.user?.email ?? 'unknown',
-      client_id: session?.user?.id ?? null,
     });
 
     setIsSubmitting(false);
@@ -59,6 +63,7 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
       return;
     }
 
+    await onSuccess?.();
     onClose();
   }
 

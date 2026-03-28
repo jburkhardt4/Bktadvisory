@@ -1,60 +1,75 @@
-import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminCrmProvider, useAdminCrm } from './AdminCrmContext';
 import {
   ActivityIcon,
   ArrowLeftIcon,
   FileTextIcon,
   FolderIcon,
+  LayersIcon,
   ShieldIcon,
   TargetIcon,
 } from '../portal/PortalIcons';
 
-interface AdminSectionDefinition {
-  slug: 'quotes' | 'projects' | 'activities' | 'milestones';
+interface AdminNavigationItem {
+  path: string;
   label: string;
   description: string;
-  icon: ReactNode;
-}
-
-export const adminSections: AdminSectionDefinition[] = [
-  {
-    slug: 'quotes',
-    label: 'Quotes',
-    description: 'Review and manage quote requests, assignment, and pricing details.',
-    icon: <FileTextIcon size={16} />,
-  },
-  {
-    slug: 'projects',
-    label: 'Projects',
-    description: 'Control active delivery work, ownership, and project metadata.',
-    icon: <FolderIcon size={16} />,
-  },
-  {
-    slug: 'activities',
-    label: 'Activities',
-    description: 'Manage the client-facing activity stream and supporting updates.',
-    icon: <ActivityIcon size={16} />,
-  },
-  {
-    slug: 'milestones',
-    label: 'Milestones',
-    description: 'Track delivery checkpoints and prepare milestone CRUD workflows.',
-    icon: <TargetIcon size={16} />,
-  },
-];
-
-export const DEFAULT_ADMIN_SECTION = adminSections[0].slug;
-
-interface AdminSectionPlaceholderProps {
-  title: string;
-  description: string;
-  nextStep: string;
+  icon: React.ReactNode;
+  count?: number;
+  end?: boolean;
 }
 
 export function AdminPortalLayout() {
+  return (
+    <AdminCrmProvider>
+      <AdminPortalScaffold />
+    </AdminCrmProvider>
+  );
+}
+
+function AdminPortalScaffold() {
   const { session } = useAuth();
+  const { quotes, projects, activities, milestones, loading } = useAdminCrm();
   const adminEmail = session?.user?.email ?? 'Admin account';
+
+  const navigationItems: AdminNavigationItem[] = [
+    {
+      path: '/portal/admin',
+      label: 'Overview',
+      description: 'Master CRM dashboard',
+      icon: <LayersIcon size={16} />,
+      end: true,
+    },
+    {
+      path: '/portal/admin/quotes',
+      label: 'Quotes',
+      description: 'Pricing and assignments',
+      icon: <FileTextIcon size={16} />,
+      count: quotes.length,
+    },
+    {
+      path: '/portal/admin/projects',
+      label: 'Projects',
+      description: 'Delivery management',
+      icon: <FolderIcon size={16} />,
+      count: projects.length,
+    },
+    {
+      path: '/portal/admin/activities',
+      label: 'Activities',
+      description: 'Timeline control',
+      icon: <ActivityIcon size={16} />,
+      count: activities.length,
+    },
+    {
+      path: '/portal/admin/milestones',
+      label: 'Milestones',
+      description: 'Delivery checkpoints',
+      icon: <TargetIcon size={16} />,
+      count: milestones.length,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -83,23 +98,24 @@ export function AdminPortalLayout() {
 
       <main className="max-w-[1440px] mx-auto space-y-6 px-4 py-8 sm:px-6 xl:px-8">
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 shadow-lg dark:border-slate-800">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
               Protected Workspace
             </p>
-            <h1 className="mt-3 text-3xl font-bold text-white">BKT Advisory Admin Control Center</h1>
+            <h1 className="mt-3 text-3xl font-bold text-white">BKT Advisory CRM Control Center</h1>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              This route branch is now protected by role-based access control. Step 7 will turn these sections
-              into full CRUD workspaces for quotes, projects, activities, and milestones.
+              Review every record across the portal, manage client ownership, and keep projects, activities,
+              and milestones aligned from one protected admin workspace.
             </p>
           </div>
         </section>
 
-        <nav className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Admin sections">
-          {adminSections.map((section) => (
+        <nav className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Admin sections">
+          {navigationItems.map((item) => (
             <NavLink
-              key={section.slug}
-              to={`/portal/admin/${section.slug}`}
+              key={item.path}
+              to={item.path}
+              end={item.end}
               className={({ isActive }) =>
                 `rounded-2xl border p-4 transition-all ${
                   isActive
@@ -110,11 +126,18 @@ export function AdminPortalLayout() {
             >
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                  {section.icon}
+                  {item.icon}
                 </span>
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{section.label}</p>
-                  <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{section.description}</p>
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{item.label}</p>
+                    {typeof item.count === 'number' && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {loading ? '…' : item.count}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
                 </div>
               </div>
             </NavLink>
@@ -126,28 +149,5 @@ export function AdminPortalLayout() {
         </div>
       </main>
     </div>
-  );
-}
-
-export function AdminSectionPlaceholder({
-  title,
-  description,
-  nextStep,
-}: AdminSectionPlaceholderProps) {
-  return (
-    <section className="p-6 sm:p-8">
-      <div className="max-w-3xl space-y-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-300">
-            Admin Section
-          </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-50">{title}</h2>
-        </div>
-        <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{description}</p>
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-300">
-          {nextStep}
-        </div>
-      </div>
-    </section>
   );
 }

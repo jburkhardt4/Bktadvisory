@@ -216,6 +216,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
   const [error, setError] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<'all' | 'milestones' | 'blockers'>('all');
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -241,7 +242,11 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
     }
 
     fetchData();
-  }, [projectId]);
+  }, [projectId, refreshKey]);
+
+  function handleProjectTimelineRefresh() {
+    setRefreshKey((currentValue) => currentValue + 1);
+  }
 
   if (loading) {
     return (
@@ -608,12 +613,20 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
       )}
       {activeModal === 'add-milestone' && (
         <PortalModal open onClose={() => setActiveModal(null)} title="Add Milestone">
-          <AddMilestoneForm onClose={() => setActiveModal(null)} projectId={project.id} />
+          <AddMilestoneForm
+            onClose={() => setActiveModal(null)}
+            projectId={project.id}
+            onSuccess={handleProjectTimelineRefresh}
+          />
         </PortalModal>
       )}
       {activeModal === 'add-activity' && (
         <PortalModal open onClose={() => setActiveModal(null)} title="Add Activity">
-          <AddActivityForm onClose={() => setActiveModal(null)} projectId={project.id} />
+          <AddActivityForm
+            onClose={() => setActiveModal(null)}
+            projectId={project.id}
+            onSuccess={handleProjectTimelineRefresh}
+          />
         </PortalModal>
       )}
       {activeModal === 'upload-document' && (

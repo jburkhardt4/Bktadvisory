@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
-import { QuoteStatusBadge, ProjectStatusBadge } from '../portal/StatusBadge';
+import {
+  MilestoneStatusBadge,
+  ProjectStatusBadge,
+  QuoteStatusBadge,
+} from '../portal/StatusBadge';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -10,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { useAdminCrm } from './AdminCrmContext';
 import {
   AdminActivityForm,
@@ -19,6 +22,14 @@ import {
   AdminQuoteForm,
 } from './AdminEntityForms';
 import {
+  AdminCenteredBadgeCell,
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableHeader,
+  AdminDataTableHeaderRow,
+  AdminDataTableRow,
   AdminDeleteDialog,
   AdminEmptyState,
   AdminLoadingState,
@@ -159,24 +170,24 @@ export function AdminQuotesPage() {
             onAction={() => setIsCreateOpen(true)}
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Reference</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <AdminDataTable>
+            <AdminDataTableHeader>
+              <AdminDataTableHeaderRow>
+                <AdminDataTableHead>Reference</AdminDataTableHead>
+                <AdminDataTableHead>Client</AdminDataTableHead>
+                <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                <AdminDataTableHead>Budget</AdminDataTableHead>
+                <AdminDataTableHead>Updated</AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+              </AdminDataTableHeaderRow>
+            </AdminDataTableHeader>
+            <AdminDataTableBody>
               {quotes.map((quote) => (
-                <TableRow key={quote.id}>
-                  <TableCell className="font-mono text-xs uppercase text-slate-500 dark:text-slate-400">
+                <AdminDataTableRow key={quote.id}>
+                  <AdminDataTableCell className="font-mono text-xs uppercase text-slate-500 dark:text-slate-400">
                     {quote.id.slice(0, 8)}
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell className="whitespace-normal">
                     <div>
                       <p className="font-medium text-slate-900 dark:text-slate-50">
                         {quote.metadata.company_name || quote.client?.company_name || 'Unnamed quote'}
@@ -185,20 +196,20 @@ export function AdminQuotesPage() {
                         {quote.metadata.client_name || getProfileDisplayName(quote.client)}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell>
+                  </AdminDataTableCell>
+                  <AdminCenteredBadgeCell>
                     <QuoteStatusBadge status={quote.status} />
-                  </TableCell>
-                  <TableCell>
+                  </AdminCenteredBadgeCell>
+                  <AdminDataTableCell>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
                       {formatCurrency(quote.estimated_budget_min)} to {formatCurrency(quote.estimated_budget_max)}
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {quote.metadata.description || 'No description'}
                     </p>
-                  </TableCell>
-                  <TableCell>{formatDate(quote.updated_at)}</TableCell>
-                  <TableCell className="text-right">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell>{formatDate(quote.updated_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingQuote(quote)} />
                       {role === 'admin' && (
@@ -209,11 +220,11 @@ export function AdminQuotesPage() {
                         />
                       )}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </AdminDataTableCell>
+                </AdminDataTableRow>
               ))}
-            </TableBody>
-          </Table>
+            </AdminDataTableBody>
+          </AdminDataTable>
         )}
       </AdminSectionCard>
 
@@ -327,29 +338,29 @@ export function AdminProjectsPage() {
             onAction={() => setIsCreateOpen(true)}
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Owner</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <AdminDataTable>
+            <AdminDataTableHeader>
+              <AdminDataTableHeaderRow>
+                <AdminDataTableHead>Project</AdminDataTableHead>
+                <AdminDataTableHead>Client</AdminDataTableHead>
+                <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                <AdminDataTableHead>Owner</AdminDataTableHead>
+                <AdminDataTableHead>Progress</AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+              </AdminDataTableHeaderRow>
+            </AdminDataTableHeader>
+            <AdminDataTableBody>
               {projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="whitespace-normal">
+                <AdminDataTableRow key={project.id}>
+                  <AdminDataTableCell className="whitespace-normal">
                     <div>
                       <p className="font-medium text-slate-900 dark:text-slate-50">{project.name}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {project.description || project.target_milestone}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell className="whitespace-normal">
                     <div>
                       <p className="font-medium text-slate-900 dark:text-slate-50">
                         {project.client?.company_name || project.company_name}
@@ -358,20 +369,20 @@ export function AdminProjectsPage() {
                         {getProfileDisplayName(project.client)}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell>
+                  </AdminDataTableCell>
+                  <AdminCenteredBadgeCell>
                     <ProjectStatusBadge status={project.status} />
-                  </TableCell>
-                  <TableCell>{project.owner}</TableCell>
-                  <TableCell>
+                  </AdminCenteredBadgeCell>
+                  <AdminDataTableCell>{project.owner}</AdminDataTableCell>
+                  <AdminDataTableCell>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
                       {project.completedMilestoneCount}/{project.milestoneCount} milestones
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {project.activityCount} activities logged
                     </p>
-                  </TableCell>
-                  <TableCell className="text-right">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingProject(project)} />
                       {role === 'admin' && (
@@ -382,11 +393,11 @@ export function AdminProjectsPage() {
                         />
                       )}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </AdminDataTableCell>
+                </AdminDataTableRow>
               ))}
-            </TableBody>
-          </Table>
+            </AdminDataTableBody>
+          </AdminDataTable>
         )}
       </AdminSectionCard>
 
@@ -505,21 +516,21 @@ export function AdminActivitiesPage() {
             onAction={() => setIsCreateOpen(true)}
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <AdminDataTable>
+            <AdminDataTableHeader>
+              <AdminDataTableHeaderRow>
+                <AdminDataTableHead>Type</AdminDataTableHead>
+                <AdminDataTableHead>Project</AdminDataTableHead>
+                <AdminDataTableHead>Client</AdminDataTableHead>
+                <AdminDataTableHead>Actor</AdminDataTableHead>
+                <AdminDataTableHead>Created</AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+              </AdminDataTableHeaderRow>
+            </AdminDataTableHeader>
+            <AdminDataTableBody>
               {activities.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="whitespace-normal">
+                <AdminDataTableRow key={activity.id}>
+                  <AdminDataTableCell className="whitespace-normal">
                     <div>
                       <p className="font-medium text-slate-900 dark:text-slate-50">
                         {formatActivityType(activity.type)}
@@ -528,8 +539,8 @@ export function AdminActivitiesPage() {
                         {activity.description}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell className="whitespace-normal">
                     <div>
                       <p className="font-medium text-slate-900 dark:text-slate-50">
                         {activity.project?.name || activity.record_id}
@@ -538,11 +549,11 @@ export function AdminActivitiesPage() {
                         {activity.project?.company_name || 'Unknown project'}
                       </p>
                     </div>
-                  </TableCell>
-                  <TableCell>{getProfileDisplayName(activity.client)}</TableCell>
-                  <TableCell>{activity.actor || 'System'}</TableCell>
-                  <TableCell>{formatDateTime(activity.created_at)}</TableCell>
-                  <TableCell className="text-right">
+                  </AdminDataTableCell>
+                  <AdminDataTableCell>{getProfileDisplayName(activity.client)}</AdminDataTableCell>
+                  <AdminDataTableCell>{activity.actor || 'System'}</AdminDataTableCell>
+                  <AdminDataTableCell>{formatDateTime(activity.created_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingActivity(activity)} />
                       {role === 'admin' && (
@@ -553,11 +564,11 @@ export function AdminActivitiesPage() {
                         />
                       )}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </AdminDataTableCell>
+                </AdminDataTableRow>
               ))}
-            </TableBody>
-          </Table>
+            </AdminDataTableBody>
+          </AdminDataTable>
         )}
       </AdminSectionCard>
 
@@ -674,25 +685,25 @@ export function AdminMilestonesPage() {
             onAction={() => setIsCreateOpen(true)}
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Milestone</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Due</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <AdminDataTable>
+            <AdminDataTableHeader>
+              <AdminDataTableHeaderRow>
+                <AdminDataTableHead>Milestone</AdminDataTableHead>
+                <AdminDataTableHead>Project</AdminDataTableHead>
+                <AdminDataTableHead>Client</AdminDataTableHead>
+                <AdminDataTableHead>Due</AdminDataTableHead>
+                <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+              </AdminDataTableHeaderRow>
+            </AdminDataTableHeader>
+            <AdminDataTableBody>
               {milestones.map((milestone) => {
                 const isCurrentTarget =
                   milestone.project?.target_milestone === milestone.title;
 
                 return (
-                  <TableRow key={milestone.id}>
-                    <TableCell className="whitespace-normal">
+                  <AdminDataTableRow key={milestone.id}>
+                    <AdminDataTableCell className="whitespace-normal">
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-slate-900 dark:text-slate-50">{milestone.title}</p>
@@ -706,22 +717,14 @@ export function AdminMilestonesPage() {
                           {milestone.description || 'No description'}
                         </p>
                       </div>
-                    </TableCell>
-                    <TableCell>{milestone.project?.name || milestone.project_id}</TableCell>
-                    <TableCell>{getProfileDisplayName(milestone.client)}</TableCell>
-                    <TableCell>{formatDate(milestone.target_date)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          milestone.completed
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
-                        }`}
-                      >
-                        {milestone.completed ? 'Completed' : 'Open'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
+                    </AdminDataTableCell>
+                    <AdminDataTableCell>{milestone.project?.name || milestone.project_id}</AdminDataTableCell>
+                    <AdminDataTableCell>{getProfileDisplayName(milestone.client)}</AdminDataTableCell>
+                    <AdminDataTableCell>{formatDate(milestone.target_date)}</AdminDataTableCell>
+                    <AdminCenteredBadgeCell>
+                      <MilestoneStatusBadge completed={milestone.completed} />
+                    </AdminCenteredBadgeCell>
+                    <AdminDataTableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <RowActionButton label="Edit" onClick={() => setEditingMilestone(milestone)} />
                         {role === 'admin' && (
@@ -732,12 +735,12 @@ export function AdminMilestonesPage() {
                           />
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </AdminDataTableCell>
+                  </AdminDataTableRow>
                 );
               })}
-            </TableBody>
-          </Table>
+            </AdminDataTableBody>
+          </AdminDataTable>
         )}
       </AdminSectionCard>
 

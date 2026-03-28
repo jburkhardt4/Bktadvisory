@@ -7,9 +7,13 @@ import {
   FileTextIcon,
   FolderIcon,
   LayersIcon,
-  ShieldIcon,
   TargetIcon,
 } from '../portal/PortalIcons';
+import {
+  PORTAL_APP_URL,
+  PORTAL_HERO_SURFACE_CLASS,
+  PORTAL_ICON_LOGO,
+} from '../portal/portalBranding';
 
 interface AdminNavigationItem {
   path: string;
@@ -76,9 +80,16 @@ function AdminPortalScaffold() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/20">
         <div className="max-w-[1440px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 xl:px-8">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-              <ShieldIcon size={18} />
-            </span>
+            <a
+              href={PORTAL_APP_URL}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
+            >
+              <img
+                src={PORTAL_ICON_LOGO}
+                alt="BKT Advisory Portal"
+                className="h-6 w-6 object-contain"
+              />
+            </a>
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Admin Panel</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">{adminEmail}</p>
@@ -97,7 +108,7 @@ function AdminPortalScaffold() {
       </header>
 
       <main className="max-w-[1440px] mx-auto space-y-6 px-4 py-8 sm:px-6 xl:px-8">
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 shadow-lg dark:border-slate-800">
+        <section className={`${PORTAL_HERO_SURFACE_CLASS} p-8`}>
           <div className="max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
               Protected Workspace

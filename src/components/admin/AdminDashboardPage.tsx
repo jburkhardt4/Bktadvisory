@@ -1,9 +1,16 @@
 import { Link } from 'react-router';
-import { QuoteStatusBadge, ProjectStatusBadge } from '../portal/StatusBadge';
+import { MilestoneStatusBadge, ProjectStatusBadge, QuoteStatusBadge } from '../portal/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { useAdminCrm } from './AdminCrmContext';
 import {
+  AdminCenteredBadgeCell,
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableHeader,
+  AdminDataTableHeaderRow,
+  AdminDataTableRow,
   AdminLoadingState,
   AdminMetricCard,
   AdminPreviewLink,
@@ -98,19 +105,19 @@ export function AdminDashboardPage() {
             </TabsList>
 
             <TabsContent value="quotes">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Budget</TableHead>
-                    <TableHead>Updated</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <AdminDataTable>
+                <AdminDataTableHeader>
+                  <AdminDataTableHeaderRow>
+                    <AdminDataTableHead>Client</AdminDataTableHead>
+                    <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                    <AdminDataTableHead>Budget</AdminDataTableHead>
+                    <AdminDataTableHead>Updated</AdminDataTableHead>
+                  </AdminDataTableHeaderRow>
+                </AdminDataTableHeader>
+                <AdminDataTableBody>
                   {quotes.slice(0, 5).map((quote) => (
-                    <TableRow key={quote.id}>
-                      <TableCell className="whitespace-normal">
+                    <AdminDataTableRow key={quote.id}>
+                      <AdminDataTableCell className="whitespace-normal">
                         <div>
                           <p className="font-medium text-slate-900 dark:text-slate-50">
                             {quote.metadata.company_name || quote.client?.company_name || 'Unnamed quote'}
@@ -119,73 +126,73 @@ export function AdminDashboardPage() {
                             {quote.metadata.client_name || getProfileDisplayName(quote.client)}
                           </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </AdminDataTableCell>
+                      <AdminCenteredBadgeCell>
                         <QuoteStatusBadge status={quote.status} />
-                      </TableCell>
-                      <TableCell>
+                      </AdminCenteredBadgeCell>
+                      <AdminDataTableCell>
                         {formatCurrency(quote.estimated_budget_min)} to {formatCurrency(quote.estimated_budget_max)}
-                      </TableCell>
-                      <TableCell>{formatDate(quote.updated_at)}</TableCell>
-                    </TableRow>
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>{formatDate(quote.updated_at)}</AdminDataTableCell>
+                    </AdminDataTableRow>
                   ))}
-                </TableBody>
-              </Table>
+                </AdminDataTableBody>
+              </AdminDataTable>
               <div className="mt-4 flex justify-end">
                 <AdminPreviewLink to="/portal/admin/quotes" label="Open quotes workspace" />
               </div>
             </TabsContent>
 
             <TabsContent value="projects">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Progress</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <AdminDataTable>
+                <AdminDataTableHeader>
+                  <AdminDataTableHeaderRow>
+                    <AdminDataTableHead>Project</AdminDataTableHead>
+                    <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                    <AdminDataTableHead>Owner</AdminDataTableHead>
+                    <AdminDataTableHead>Progress</AdminDataTableHead>
+                  </AdminDataTableHeaderRow>
+                </AdminDataTableHeader>
+                <AdminDataTableBody>
                   {projects.slice(0, 5).map((project) => (
-                    <TableRow key={project.id}>
-                      <TableCell className="whitespace-normal">
+                    <AdminDataTableRow key={project.id}>
+                      <AdminDataTableCell className="whitespace-normal">
                         <div>
                           <p className="font-medium text-slate-900 dark:text-slate-50">{project.name}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">{project.company_name}</p>
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </AdminDataTableCell>
+                      <AdminCenteredBadgeCell>
                         <ProjectStatusBadge status={project.status} />
-                      </TableCell>
-                      <TableCell>{project.owner}</TableCell>
-                      <TableCell>
+                      </AdminCenteredBadgeCell>
+                      <AdminDataTableCell>{project.owner}</AdminDataTableCell>
+                      <AdminDataTableCell>
                         {project.completedMilestoneCount}/{project.milestoneCount} milestones
-                      </TableCell>
-                    </TableRow>
+                      </AdminDataTableCell>
+                    </AdminDataTableRow>
                   ))}
-                </TableBody>
-              </Table>
+                </AdminDataTableBody>
+              </AdminDataTable>
               <div className="mt-4 flex justify-end">
                 <AdminPreviewLink to="/portal/admin/projects" label="Open projects workspace" />
               </div>
             </TabsContent>
 
             <TabsContent value="activities">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Actor</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <AdminDataTable>
+                <AdminDataTableHeader>
+                  <AdminDataTableHeaderRow>
+                    <AdminDataTableHead>Type</AdminDataTableHead>
+                    <AdminDataTableHead>Project</AdminDataTableHead>
+                    <AdminDataTableHead>Actor</AdminDataTableHead>
+                    <AdminDataTableHead>Created</AdminDataTableHead>
+                  </AdminDataTableHeaderRow>
+                </AdminDataTableHeader>
+                <AdminDataTableBody>
                   {activities.slice(0, 5).map((activity) => (
-                    <TableRow key={activity.id}>
-                      <TableCell>{formatActivityType(activity.type)}</TableCell>
-                      <TableCell className="whitespace-normal">
+                    <AdminDataTableRow key={activity.id}>
+                      <AdminDataTableCell>{formatActivityType(activity.type)}</AdminDataTableCell>
+                      <AdminDataTableCell className="whitespace-normal">
                         {activity.project ? (
                           <div>
                             <p className="font-medium text-slate-900 dark:text-slate-50">{activity.project.name}</p>
@@ -194,40 +201,40 @@ export function AdminDashboardPage() {
                         ) : (
                           <span className="text-slate-500 dark:text-slate-400">{activity.record_id}</span>
                         )}
-                      </TableCell>
-                      <TableCell>{activity.actor || 'System'}</TableCell>
-                      <TableCell>{formatDateTime(activity.created_at)}</TableCell>
-                    </TableRow>
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>{activity.actor || 'System'}</AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(activity.created_at)}</AdminDataTableCell>
+                    </AdminDataTableRow>
                   ))}
-                </TableBody>
-              </Table>
+                </AdminDataTableBody>
+              </AdminDataTable>
               <div className="mt-4 flex justify-end">
                 <AdminPreviewLink to="/portal/admin/activities" label="Open activities workspace" />
               </div>
             </TabsContent>
 
             <TabsContent value="milestones">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Milestone</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Due</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <AdminDataTable>
+                <AdminDataTableHeader>
+                  <AdminDataTableHeaderRow>
+                    <AdminDataTableHead>Milestone</AdminDataTableHead>
+                    <AdminDataTableHead>Project</AdminDataTableHead>
+                    <AdminDataTableHead>Due</AdminDataTableHead>
+                    <AdminDataTableHead align="center">Status</AdminDataTableHead>
+                  </AdminDataTableHeaderRow>
+                </AdminDataTableHeader>
+                <AdminDataTableBody>
                   {milestones.slice(0, 5).map((milestone) => (
-                    <TableRow key={milestone.id}>
-                      <TableCell className="whitespace-normal">
+                    <AdminDataTableRow key={milestone.id}>
+                      <AdminDataTableCell className="whitespace-normal">
                         <div>
                           <p className="font-medium text-slate-900 dark:text-slate-50">{milestone.title}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             {milestone.description || 'No description'}
                           </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>
                         {milestone.project ? (
                           <Link
                             to="/portal/admin/projects"
@@ -238,23 +245,15 @@ export function AdminDashboardPage() {
                         ) : (
                           'Unknown project'
                         )}
-                      </TableCell>
-                      <TableCell>{formatDate(milestone.target_date)}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            milestone.completed
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                              : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
-                          }`}
-                        >
-                          {milestone.completed ? 'Completed' : 'Open'}
-                        </span>
-                      </TableCell>
-                    </TableRow>
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>{formatDate(milestone.target_date)}</AdminDataTableCell>
+                      <AdminCenteredBadgeCell>
+                        <MilestoneStatusBadge completed={milestone.completed} />
+                      </AdminCenteredBadgeCell>
+                    </AdminDataTableRow>
                   ))}
-                </TableBody>
-              </Table>
+                </AdminDataTableBody>
+              </AdminDataTable>
               <div className="mt-4 flex justify-end">
                 <AdminPreviewLink to="/portal/admin/milestones" label="Open milestones workspace" />
               </div>

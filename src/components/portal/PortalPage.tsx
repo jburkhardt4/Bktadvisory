@@ -17,17 +17,15 @@ import { SettingsModal, type SettingsCategory } from './SettingsModal';
 import { CreateQuoteForm } from './forms/CreateQuoteForm';
 import { CreateProjectForm } from './forms/CreateProjectForm';
 import { AddActivityForm } from './forms/AddActivityForm';
-
-import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
-
-const PORTAL_ICON_LOGO =
-  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png';
-
-const PORTAL_LOGO_WHITE =
-  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Portal%20Horizontal_White%20(Dark%20Theme)%20-%20HD.png';
+import {
+  PORTAL_HERO_SURFACE_CLASS,
+  PORTAL_ICON_LOGO,
+  PORTAL_LOGO_DARK,
+  PORTAL_LOGO_WHITE,
+} from './portalBranding';
   
 const logoDark = {
-  src: logo,
+  src: PORTAL_LOGO_DARK,
   className: '',
 };
 
@@ -162,7 +160,7 @@ function PortalPageContent() {
         ) : (
           <div className="space-y-6">
             {/* Hero Section with Dark Gradient - Welcome + User Profile */}
-            <div className="bg-gradient-to-br from-[#0F172B] via-slate-800 to-purple-950 rounded-2xl p-8 shadow-lg border border-slate-700/50">
+            <div className={`${PORTAL_HERO_SURFACE_CLASS} p-8`}>
               <div className="space-y-6">
                 {/* Welcome header */}
                 <div>

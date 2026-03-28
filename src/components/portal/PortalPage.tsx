@@ -10,7 +10,7 @@ import { ProjectsView } from './ProjectsView';
 import { ActivityTimeline } from './ActivityTimeline';
 import { ProjectDetail } from './ProjectDetail';
 import { LogOutIcon, BellIcon } from './PortalIcons';
-import { SettingsIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon } from './PortalIcons';
+import { SettingsIcon } from './PortalIcons';
 import { ActionDropdown } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
 import { SettingsModal, type SettingsCategory } from './SettingsModal';
@@ -213,12 +213,8 @@ function PortalPageContent() {
                     <ActionDropdown
                       label="Actions"
                       userRole={role}
-                      items={[
-                        { label: 'Create Quote', icon: <FileTextIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('create-quote') },
-                        { label: 'Create Project', icon: <FolderIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('create-project') },
-                        { label: 'Add Activity', icon: <ActivityIcon size={15} />, onClick: () => setActiveModal('add-activity') },
-                        { label: 'Request Scope Change', icon: <PenIcon size={15} />, onClick: () => setActiveModal('request-scope-change') },
-                      ]}
+                      context="dashboard"
+                      onAction={setActiveModal}
                     />
                   </div>
                 </div>

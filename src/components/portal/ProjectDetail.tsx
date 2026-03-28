@@ -340,12 +340,8 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
         <ActionDropdown
           label="Actions"
           userRole={role}
-          items={[
-            { label: 'Update Project', icon: <FolderIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('update-project') },
-            { label: 'Add Milestone', icon: <TargetIcon size={15} />, adminOnly: true, onClick: () => setActiveModal('add-milestone') },
-            { label: 'Add Activity', icon: <ZapIcon size={15} />, onClick: () => setActiveModal('add-activity') },
-            { label: 'Upload Document', icon: <UploadIcon size={15} />, onClick: () => setActiveModal('upload-document') },
-          ]}
+          context="project"
+          onAction={setActiveModal}
         />
       </div>
 

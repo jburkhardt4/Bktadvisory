@@ -1,21 +1,51 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDownIcon } from './PortalIcons';
+import {
+  ChevronDownIcon, FileTextIcon, FolderIcon, ActivityIcon, PenIcon,
+  TargetIcon, ZapIcon, UploadIcon,
+} from './PortalIcons';
+
+type ActionContext = 'dashboard' | 'project';
 
 interface ActionItem {
+  key: string;
   label: string;
   icon: React.ReactNode;
   onClick?: () => void;
   adminOnly?: boolean;
 }
 
+const DASHBOARD_ITEMS: Omit<ActionItem, 'onClick'>[] = [
+  { key: 'create-quote', label: 'Create Quote', icon: <FileTextIcon size={15} />, adminOnly: true },
+  { key: 'create-project', label: 'Create Project', icon: <FolderIcon size={15} />, adminOnly: true },
+  { key: 'add-activity', label: 'Add Activity', icon: <ActivityIcon size={15} /> },
+  { key: 'request-scope-change', label: 'Request Scope Change', icon: <PenIcon size={15} /> },
+];
+
+const PROJECT_ITEMS: Omit<ActionItem, 'onClick'>[] = [
+  { key: 'update-project', label: 'Update Project', icon: <FolderIcon size={15} />, adminOnly: true },
+  { key: 'add-milestone', label: 'Add Milestone', icon: <TargetIcon size={15} />, adminOnly: true },
+  { key: 'add-activity', label: 'Add Activity', icon: <ZapIcon size={15} /> },
+  { key: 'upload-document', label: 'Upload Document', icon: <UploadIcon size={15} /> },
+];
+
+const CONTEXT_ITEMS: Record<ActionContext, Omit<ActionItem, 'onClick'>[]> = {
+  dashboard: DASHBOARD_ITEMS,
+  project: PROJECT_ITEMS,
+};
+
 interface ActionDropdownProps {
   label: string;
-  items: ActionItem[];
+  context?: ActionContext;
+  items?: ActionItem[];
+  onAction?: (action: string) => void;
   userRole?: 'admin' | 'client';
 }
 
-export function ActionDropdown({ label, items, userRole = 'client' }: ActionDropdownProps) {
-  const visibleItems = items.filter(item => !item.adminOnly || userRole === 'admin');
+export function ActionDropdown({ label, context, items, onAction, userRole = 'client' }: ActionDropdownProps) {
+  const resolvedItems: ActionItem[] = context
+    ? CONTEXT_ITEMS[context].map(item => ({ ...item, onClick: () => onAction?.(item.key) }))
+    : items ?? [];
+  const visibleItems = resolvedItems.filter(item => !item.adminOnly || userRole === 'admin');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

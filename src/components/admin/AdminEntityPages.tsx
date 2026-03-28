@@ -691,9 +691,9 @@ export function AdminMilestonesPage() {
                 <AdminDataTableHead>Milestone</AdminDataTableHead>
                 <AdminDataTableHead>Project</AdminDataTableHead>
                 <AdminDataTableHead>Client</AdminDataTableHead>
-                <AdminDataTableHead>Due</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+                <AdminDataTableHead align="center">Due</AdminDataTableHead>
+                <AdminDataTableHead align="center">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -720,11 +720,11 @@ export function AdminMilestonesPage() {
                     </AdminDataTableCell>
                     <AdminDataTableCell>{milestone.project?.name || milestone.project_id}</AdminDataTableCell>
                     <AdminDataTableCell>{getProfileDisplayName(milestone.client)}</AdminDataTableCell>
-                    <AdminDataTableCell>{formatDate(milestone.target_date)}</AdminDataTableCell>
+                    <AdminDataTableCell className="text-center">{formatDate(milestone.target_date)}</AdminDataTableCell>
                     <AdminCenteredBadgeCell>
                       <MilestoneStatusBadge completed={milestone.completed} />
                     </AdminCenteredBadgeCell>
-                    <AdminDataTableCell className="text-right">
+                    <AdminDataTableCell className="text-center">
                       <div className="flex justify-end gap-1">
                         <RowActionButton label="Edit" onClick={() => setEditingMilestone(milestone)} />
                         {role === 'admin' && (

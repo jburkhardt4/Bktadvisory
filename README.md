@@ -9,7 +9,6 @@ This is a code bundle for BKT Advisory. The original project is available at `ht
   Run `git pull --ff-only`
   Run `node -v && npm -v`
   Run `npm run`
-  Run `[ -f .env.example ] && cp -n .env.example .env`
   Run `npm run lint --if-present`
   Run `npm test --if-present`
   Run `npm run build --if-present`

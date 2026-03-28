@@ -344,9 +344,9 @@ export function AdminProjectsPage() {
                 <AdminDataTableHead>Project</AdminDataTableHead>
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
-                <AdminDataTableHead>Owner</AdminDataTableHead>
                 <AdminDataTableHead>Progress</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
+                <AdminDataTableHead>Owner</AdminDataTableHead>
+                <AdminDataTableHead align="center">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -373,7 +373,6 @@ export function AdminProjectsPage() {
                   <AdminCenteredBadgeCell>
                     <ProjectStatusBadge status={project.status} />
                   </AdminCenteredBadgeCell>
-                  <AdminDataTableCell>{project.owner}</AdminDataTableCell>
                   <AdminDataTableCell>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-50">
                       {project.completedMilestoneCount}/{project.milestoneCount} milestones
@@ -382,7 +381,8 @@ export function AdminProjectsPage() {
                       {project.activityCount} activities logged
                     </p>
                   </AdminDataTableCell>
-                  <AdminDataTableCell className="text-right">
+                  <AdminDataTableCell>{project.owner}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-center">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingProject(project)} />
                       {role === 'admin' && (

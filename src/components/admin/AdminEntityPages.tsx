@@ -179,7 +179,7 @@ export function AdminQuotesPage() {
                 <AdminDataTableHead>Budget</AdminDataTableHead>
                 <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
                 <AdminDataTableHead align="right">Created</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -349,7 +349,7 @@ export function AdminProjectsPage() {
                 <AdminDataTableHead>Progress</AdminDataTableHead>
                 <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
                 <AdminDataTableHead align="right">Created</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -528,7 +528,7 @@ export function AdminActivitiesPage() {
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead>Actor</AdminDataTableHead>
                 <AdminDataTableHead align="right">Created</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -697,7 +697,7 @@ export function AdminMilestonesPage() {
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
                 <AdminDataTableHead align="right">Due Date</AdminDataTableHead>
-                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions </AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>

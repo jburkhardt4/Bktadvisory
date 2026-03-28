@@ -140,10 +140,25 @@ interface FormState {
 }
 
 interface FormErrors {
-  [key: string]: string;
+  [key: string]: string | undefined;
 }
 
-type AuthMode = "signup" | "signin";
+interface RecoveryFormState {
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface NoticeState {
+  variant: "info" | "success";
+  message: string;
+}
+
+type AuthMode = "signup" | "signin" | "recovery";
+
+const INITIAL_RECOVERY_FORM: RecoveryFormState = {
+  newPassword: "",
+  confirmPassword: "",
+};
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -168,11 +183,59 @@ export function AuthPage() {
     null,
   );
   const [showPassword, setShowPassword] = useState(false);
+  const [isSendingResetEmail, setIsSendingResetEmail] =
+    useState(false);
+  const [isUpdatingRecoveryPassword, setIsUpdatingRecoveryPassword] =
+    useState(false);
+  const [recoveryForm, setRecoveryForm] =
+    useState<RecoveryFormState>(INITIAL_RECOVERY_FORM);
+  const [recoveryErrors, setRecoveryErrors] = useState<FormErrors>(
+    {},
+  );
+  const [notice, setNotice] = useState<NoticeState | null>(
+    null,
+  );
   const firstNameRef = useRef<HTMLInputElement>(null);
+  const recoveryPasswordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (mode === "recovery") {
+      recoveryPasswordRef.current?.focus();
+      return;
+    }
     firstNameRef.current?.focus();
   }, [mode]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event !== "PASSWORD_RECOVERY") return;
+
+        setMode("recovery");
+        setServerError(null);
+        setNotice({
+          variant: "info",
+          message:
+            "Your reset link is confirmed. Choose a new password below.",
+        });
+        setErrors({});
+        setTouched({});
+        setShowPassword(false);
+        setRecoveryErrors({});
+        setRecoveryForm(INITIAL_RECOVERY_FORM);
+        setForm((prev) => ({
+          ...prev,
+          workEmail:
+            session?.user.email ?? prev.workEmail,
+          password: "",
+        }));
+      },
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const validateField = (
     name: string,
@@ -218,6 +281,40 @@ export function AuthPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateRecoveryField = (
+    name: string,
+    value: string,
+  ): string => {
+    switch (name) {
+      case "newPassword":
+        if (!value) return "New password is required";
+        if (value.length < 8)
+          return "Minimum 8 characters";
+        return "";
+      case "confirmPassword":
+        if (!value) return "Please confirm your new password";
+        if (value !== recoveryForm.newPassword)
+          return "Passwords must match";
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  const validateRecoveryForm = (): boolean => {
+    const nextErrors: FormErrors = {};
+
+    ["newPassword", "confirmPassword"].forEach((field) => {
+      const value =
+        recoveryForm[field as keyof RecoveryFormState];
+      const error = validateRecoveryField(field, value);
+      if (error) nextErrors[field] = error;
+    });
+
+    setRecoveryErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleChange = (name: string, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
@@ -235,11 +332,29 @@ export function AuthPage() {
     setErrors((prev) => ({ ...prev, [name]: err }));
   };
 
+  const handleRecoveryChange = (
+    name: keyof RecoveryFormState,
+    value: string,
+  ) => {
+    setRecoveryForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setRecoveryErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+      ...(name === "newPassword"
+        ? { confirmPassword: undefined }
+        : {}),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateAll()) return;
     setIsLoading(true);
     setServerError(null);
+    setNotice(null);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -278,9 +393,104 @@ export function AuthPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const emailError = validateField(
+      "workEmail",
+      form.workEmail,
+    );
+
+    if (emailError) {
+      setErrors((prev) => ({
+        ...prev,
+        workEmail: emailError,
+      }));
+      setTouched((prev) => ({
+        ...prev,
+        workEmail: true,
+      }));
+      return;
+    }
+
+    setIsSendingResetEmail(true);
+    setServerError(null);
+    setNotice(null);
+
+    try {
+      const { error } =
+        await supabase.auth.resetPasswordForEmail(
+          form.workEmail,
+          {
+            redirectTo: `${window.location.origin}/auth?flow=recovery`,
+          },
+        );
+
+      if (error) {
+        setServerError(error.message);
+        return;
+      }
+
+      setNotice({
+        variant: "success",
+        message: `Check ${form.workEmail} for your password reset link.`,
+      });
+    } catch {
+      setServerError(
+        "We could not send a reset email. Please try again.",
+      );
+    } finally {
+      setIsSendingResetEmail(false);
+    }
+  };
+
+  const handleRecoverySubmit = async (
+    e: React.FormEvent,
+  ) => {
+    e.preventDefault();
+
+    if (!validateRecoveryForm()) return;
+
+    setIsUpdatingRecoveryPassword(true);
+    setServerError(null);
+    setNotice(null);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: recoveryForm.newPassword,
+      });
+
+      if (error) {
+        setServerError(error.message);
+        return;
+      }
+
+      await supabase.auth.signOut();
+
+      setRecoveryForm(INITIAL_RECOVERY_FORM);
+      setRecoveryErrors({});
+      setShowPassword(false);
+      setMode("signin");
+      setForm((prev) => ({
+        ...prev,
+        password: "",
+      }));
+      setNotice({
+        variant: "success",
+        message:
+          "Password updated. Sign in with your new password.",
+      });
+    } catch {
+      setServerError(
+        "We could not update your password. Please try again.",
+      );
+    } finally {
+      setIsUpdatingRecoveryPassword(false);
+    }
+  };
+
   const handleSSO = async (providerId: string) => {
     setSsoLoading(providerId);
     setServerError(null);
+    setNotice(null);
     const providerMap: Record<string, string> = {
       google: "google",
       microsoft: "azure",
@@ -302,6 +512,13 @@ export function AuthPage() {
   const inputClass = (field: string) =>
     `w-full px-4 py-2.5 bg-white border ${
       errors[field] && touched[field]
+        ? "border-red-500 focus:ring-red-500/20"
+        : "border-slate-300 focus:border-blue-600 focus:ring-blue-600/20"
+    } rounded-lg text-slate-900 placeholder-slate-400 text-sm outline-none focus:ring-4 transition-all duration-200 shadow-sm`;
+
+  const recoveryInputClass = (field: string) =>
+    `w-full px-4 py-2.5 bg-white border ${
+      recoveryErrors[field]
         ? "border-red-500 focus:ring-red-500/20"
         : "border-slate-300 focus:border-blue-600 focus:ring-blue-600/20"
     } rounded-lg text-slate-900 placeholder-slate-400 text-sm outline-none focus:ring-4 transition-all duration-200 shadow-sm`;
@@ -416,14 +633,30 @@ export function AuthPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight text-center mx-[0px] mt-[0px] mb-[12px]">
               {mode === "signup"
                 ? "Create an account"
-                : "Welcome back"}
+                : mode === "recovery"
+                  ? "Reset your password"
+                  : "Welcome back"}
             </h2>
             <p className="text-slate-500 text-sm text-center">
               {mode === "signup"
                 ? "Enter your details below to create your account and get started."
-                : "Enter your details below to sign in to your account."}
+                : mode === "recovery"
+                  ? "Create a new password for your account."
+                  : "Enter your details below to sign in to your account."}
             </p>
           </div>
+
+          {notice && (
+            <div
+              className={`mb-4 rounded-lg border p-3 text-sm ${
+                notice.variant === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-blue-200 bg-blue-50 text-blue-700"
+              }`}
+            >
+              {notice.message}
+            </div>
+          )}
 
           {/* Server Error */}
           {serverError && (
@@ -433,184 +666,258 @@ export function AuthPage() {
           )}
 
           {/* SSO Buttons */}
-          <div className="space-y-3 mb-6">
-            {ssoProviders.map((provider) => (
-              <button
-                key={provider.id}
-                onClick={() => handleSSO(provider.id)}
-                disabled={!!ssoLoading}
-                className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-sm rounded-lg text-slate-700 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {ssoLoading === provider.id ? (
-                  <SpinnerIcon />
-                ) : (
-                  <span className={provider.color}>
-                    {provider.icon}
-                  </span>
-                )}
-                <span>{provider.label}</span>
-              </button>
-            ))}
-          </div>
+          {mode !== "recovery" && (
+            <>
+              <div className="space-y-3 mb-6">
+                {ssoProviders.map((provider) => (
+                  <button
+                    key={provider.id}
+                    onClick={() => handleSSO(provider.id)}
+                    disabled={!!ssoLoading}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-sm rounded-lg text-slate-700 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {ssoLoading === provider.id ? (
+                      <SpinnerIcon />
+                    ) : (
+                      <span className={provider.color}>
+                        {provider.icon}
+                      </span>
+                    )}
+                    <span>{provider.label}</span>
+                  </button>
+                ))}
+              </div>
 
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">
-              or continue with email
-            </span>
-            <div className="flex-1 h-px bg-slate-200" />
-          </div>
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-slate-200" />
+                <span className="text-xs text-slate-400 uppercase tracking-widest font-medium">
+                  or continue with email
+                </span>
+                <div className="flex-1 h-px bg-slate-200" />
+              </div>
+            </>
+          )}
 
           {/* Manual Form */}
           <form
-            onSubmit={handleSubmit}
+            onSubmit={
+              mode === "recovery"
+                ? handleRecoverySubmit
+                : handleSubmit
+            }
             className="space-y-4"
             noValidate
           >
-            {mode === "signup" && (
-              <div className="grid grid-cols-2 gap-3">
+            {mode === "recovery" ? (
+              <>
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                    First Name
+                    New Password
                   </label>
                   <input
-                    ref={firstNameRef}
-                    type="text"
-                    value={form.firstName}
+                    ref={recoveryPasswordRef}
+                    type="password"
+                    value={recoveryForm.newPassword}
                     onChange={(e) =>
-                      handleChange("firstName", e.target.value)
+                      handleRecoveryChange(
+                        "newPassword",
+                        e.target.value,
+                      )
                     }
-                    onBlur={() => handleBlur("firstName")}
-                    placeholder="Brandon"
-                    className={inputClass("firstName")}
-                    disabled={isLoading}
+                    placeholder="Min. 8 characters"
+                    className={recoveryInputClass("newPassword")}
+                    disabled={isUpdatingRecoveryPassword}
                   />
-                  {errors.firstName && touched.firstName && (
+                  {recoveryErrors.newPassword && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.firstName}
+                      {recoveryErrors.newPassword}
                     </p>
                   )}
                 </div>
+
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                    Last Name
+                    Confirm New Password
                   </label>
                   <input
-                    type="text"
-                    value={form.lastName}
+                    type="password"
+                    value={recoveryForm.confirmPassword}
                     onChange={(e) =>
-                      handleChange("lastName", e.target.value)
+                      handleRecoveryChange(
+                        "confirmPassword",
+                        e.target.value,
+                      )
                     }
-                    onBlur={() => handleBlur("lastName")}
-                    placeholder="Thompson"
-                    className={inputClass("lastName")}
-                    disabled={isLoading}
+                    placeholder="Repeat your new password"
+                    className={recoveryInputClass(
+                      "confirmPassword",
+                    )}
+                    disabled={isUpdatingRecoveryPassword}
                   />
-                  {errors.lastName && touched.lastName && (
+                  {recoveryErrors.confirmPassword && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.lastName}
+                      {recoveryErrors.confirmPassword}
                     </p>
                   )}
                 </div>
-              </div>
-            )}
-
-            {mode === "signin" && (
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                  Work Email
-                </label>
-                <input
-                  ref={firstNameRef}
-                  type="email"
-                  value={form.workEmail}
-                  onChange={(e) =>
-                    handleChange("workEmail", e.target.value)
-                  }
-                  onBlur={() => handleBlur("workEmail")}
-                  placeholder="brandon@acme.com"
-                  className={inputClass("workEmail")}
-                  disabled={isLoading}
-                />
-                {errors.workEmail && touched.workEmail && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.workEmail}
-                  </p>
+              </>
+            ) : (
+              <>
+                {mode === "signup" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        First Name
+                      </label>
+                      <input
+                        ref={firstNameRef}
+                        type="text"
+                        value={form.firstName}
+                        onChange={(e) =>
+                          handleChange(
+                            "firstName",
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() => handleBlur("firstName")}
+                        placeholder="Brandon"
+                        className={inputClass("firstName")}
+                        disabled={isLoading}
+                      />
+                      {errors.firstName &&
+                        touched.firstName && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.firstName}
+                          </p>
+                        )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={form.lastName}
+                        onChange={(e) =>
+                          handleChange(
+                            "lastName",
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() => handleBlur("lastName")}
+                        placeholder="Thompson"
+                        className={inputClass("lastName")}
+                        disabled={isLoading}
+                      />
+                      {errors.lastName &&
+                        touched.lastName && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.lastName}
+                          </p>
+                        )}
+                    </div>
+                  </div>
                 )}
-              </div>
-            )}
 
-            {mode === "signup" && (
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                  Work Email
-                </label>
-                <input
-                  type="email"
-                  value={form.workEmail}
-                  onChange={(e) =>
-                    handleChange("workEmail", e.target.value)
-                  }
-                  onBlur={() => handleBlur("workEmail")}
-                  placeholder="brandon@acme.com"
-                  className={inputClass("workEmail")}
-                  disabled={isLoading}
-                />
-                {errors.workEmail && touched.workEmail && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.workEmail}
-                  </p>
-                )}
-              </div>
-            )}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                    Work Email
+                  </label>
+                  <input
+                    ref={mode === "signin" ? firstNameRef : undefined}
+                    type="email"
+                    value={form.workEmail}
+                    onChange={(e) =>
+                      handleChange("workEmail", e.target.value)
+                    }
+                    onBlur={() => handleBlur("workEmail")}
+                    placeholder="brandon@acme.com"
+                    className={inputClass("workEmail")}
+                    disabled={isLoading || isSendingResetEmail}
+                  />
+                  {errors.workEmail && touched.workEmail && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.workEmail}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-slate-600">
-                  Password
-                </label>
-                {mode === "signin" && (
-                  <button
-                    type="button"
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) =>
-                    handleChange("password", e.target.value)
-                  }
-                  onBlur={() => handleBlur("password")}
-                  placeholder="Min. 8 characters"
-                  className={inputClass("password") + " pr-11"}
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-              {errors.password && touched.password && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.password}
-                </p>
-              )}
-            </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-medium text-slate-600">
+                      Password
+                    </label>
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={
+                          isSendingResetEmail || isLoading
+                        }
+                        className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isSendingResetEmail
+                          ? "Sending…"
+                          : "Forgot password?"}
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) =>
+                        handleChange("password", e.target.value)
+                      }
+                      onBlur={() => handleBlur("password")}
+                      placeholder="Min. 8 characters"
+                      className={
+                        inputClass("password") + " pr-11"
+                      }
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowPassword(!showPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOffIcon />
+                      ) : (
+                        <EyeIcon />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && touched.password && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={
+                mode === "recovery"
+                  ? isUpdatingRecoveryPassword
+                  : isLoading
+              }
               className="w-full py-2.5 mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none transition-all duration-200 flex items-center justify-center gap-2"
             >
-              {isLoading ? (
+              {mode === "recovery" ? (
+                isUpdatingRecoveryPassword ? (
+                  <>
+                    <SpinnerIcon />
+                    <span>Updating Password…</span>
+                  </>
+                ) : (
+                  "Update Password"
+                )
+              ) : isLoading ? (
                 <>
                   <SpinnerIcon />
                   <span>
@@ -637,10 +944,29 @@ export function AuthPage() {
                     setErrors({});
                     setTouched({});
                     setServerError(null);
+                    setNotice(null);
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                 >
                   Sign in
+                </button>
+              </>
+            ) : mode === "recovery" ? (
+              <>
+                Back to{" "}
+                <button
+                  onClick={() => {
+                    setMode("signin");
+                    setServerError(null);
+                    setRecoveryErrors({});
+                    setRecoveryForm(
+                      INITIAL_RECOVERY_FORM,
+                    );
+                    setNotice(null);
+                  }}
+                  className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                >
+                  sign in
                 </button>
               </>
             ) : (
@@ -652,6 +978,7 @@ export function AuthPage() {
                     setErrors({});
                     setTouched({});
                     setServerError(null);
+                    setNotice(null);
                   }}
                   className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                 >

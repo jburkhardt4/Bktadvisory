@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useTheme } from 'next-themes';
 import { UserIcon, BellIcon, ShieldIcon } from './PortalIcons';
 import { EditProfilePanel } from './EditProfilePanel';
+import { AccountSecurityPanel } from './AccountSecurityPanel';
 
 export type SettingsCategory = 'profile' | 'appearance' | 'notifications' | 'security';
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -168,34 +169,13 @@ function NotificationsPanel() {
   );
 }
 
-function SecurityPanel() {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Security</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage your account security settings.</p>
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3 dark:border-slate-800 dark:bg-slate-950/60">
-        <p className="text-sm text-slate-700 dark:text-slate-100">Password</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Update your password periodically to keep your account secure.</p>
-        <button
-          type="button"
-          className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
-        >
-          Change Password
-        </button>
-      </div>
-    </div>
-  );
-}
-
 /* ── Panel renderer ──────────────────────────────────────────────────── */
 
 const panels: Record<SettingsCategory, () => ReactNode> = {
   profile: EditProfilePanel,
   appearance: AppearancePanel,
   notifications: NotificationsPanel,
-  security: SecurityPanel,
+  security: AccountSecurityPanel,
 };
 
 /* ── Main modal ──────────────────────────────────────────────────────── */

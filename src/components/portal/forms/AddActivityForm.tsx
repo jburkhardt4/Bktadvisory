@@ -64,15 +64,15 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg">{error}</div>
+        <div className="px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">{error}</div>
       )}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Activity Type</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Activity Type</label>
         <select
           required
           value={type}
           onChange={e => setType(e.target.value as ActivityEventType)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-400"
           disabled={isSubmitting}
         >
           {EVENT_TYPES.map(t => (
@@ -82,31 +82,31 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
       </div>
       {!initialProjectId && (
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Project ID</label>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Project ID</label>
           <input
             type="text"
             required
             value={projectId}
             onChange={e => setProjectId(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
             placeholder="e.g. PRJ-001"
             disabled={isSubmitting}
           />
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
           placeholder="Describe the activity…"
           disabled={isSubmitting}
         />
       </div>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+        <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors dark:text-slate-200 dark:hover:bg-slate-800">
           Cancel
         </button>
         <button

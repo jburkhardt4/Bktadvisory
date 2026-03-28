@@ -82,7 +82,7 @@ function AdminPortalScaffold() {
           <div className="flex items-center gap-3">
             <a
               href={PORTAL_APP_URL}
-              className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white p-1 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
+              className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white p-1 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-white/65 dark:hover:border-slate-600 dark:hover:bg-white/85 dark:focus-visible:ring-offset-slate-950"
             >
               <img
                 src={PORTAL_ICON_LOGO}

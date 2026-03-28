@@ -98,10 +98,10 @@ export function AdminDashboardPage() {
         <div className="p-6">
           <Tabs defaultValue="quotes" className="gap-4">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/70 md:grid-cols-4">
-              <TabsTrigger value="quotes">Quotes</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="activities">Activities</TabsTrigger>
-              <TabsTrigger value="milestones">Milestones</TabsTrigger>
+              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Quotes</TabsTrigger>
+              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Projects</TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Activities</TabsTrigger>
+              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)]">Milestones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="quotes">
@@ -111,7 +111,8 @@ export function AdminDashboardPage() {
                     <AdminDataTableHead>Client</AdminDataTableHead>
                     <AdminDataTableHead align="center">Status</AdminDataTableHead>
                     <AdminDataTableHead>Budget</AdminDataTableHead>
-                    <AdminDataTableHead>Updated</AdminDataTableHead>
+                    <AdminDataTableHead>Last Updated</AdminDataTableHead>
+                    <AdminDataTableHead>Created</AdminDataTableHead>
                   </AdminDataTableHeaderRow>
                 </AdminDataTableHeader>
                 <AdminDataTableBody>
@@ -134,6 +135,7 @@ export function AdminDashboardPage() {
                         {formatCurrency(quote.estimated_budget_min)} to {formatCurrency(quote.estimated_budget_max)}
                       </AdminDataTableCell>
                       <AdminDataTableCell>{formatDateTime(quote.updated_at)}</AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(quote.created_at)}</AdminDataTableCell>
                     </AdminDataTableRow>
                   ))}
                 </AdminDataTableBody>
@@ -148,9 +150,12 @@ export function AdminDashboardPage() {
                 <AdminDataTableHeader>
                   <AdminDataTableHeaderRow>
                     <AdminDataTableHead>Project</AdminDataTableHead>
+                    <AdminDataTableHead>Client</AdminDataTableHead>
                     <AdminDataTableHead align="center">Status</AdminDataTableHead>
                     <AdminDataTableHead>Owner</AdminDataTableHead>
                     <AdminDataTableHead>Progress</AdminDataTableHead>
+                    <AdminDataTableHead>Last Updated</AdminDataTableHead>
+                    <AdminDataTableHead>Created</AdminDataTableHead>
                   </AdminDataTableHeaderRow>
                 </AdminDataTableHeader>
                 <AdminDataTableBody>
@@ -162,6 +167,7 @@ export function AdminDashboardPage() {
                           <p className="text-xs text-slate-500 dark:text-slate-400">{project.company_name}</p>
                         </div>
                       </AdminDataTableCell>
+                      <AdminDataTableCell>{getProfileDisplayName(project.client)}</AdminDataTableCell>
                       <AdminCenteredBadgeCell>
                         <ProjectStatusBadge status={project.status} />
                       </AdminCenteredBadgeCell>
@@ -169,6 +175,8 @@ export function AdminDashboardPage() {
                       <AdminDataTableCell>
                         {project.completedMilestoneCount}/{project.milestoneCount} milestones
                       </AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(project.updated_at)}</AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(project.created_at)}</AdminDataTableCell>
                     </AdminDataTableRow>
                   ))}
                 </AdminDataTableBody>
@@ -183,6 +191,7 @@ export function AdminDashboardPage() {
                 <AdminDataTableHeader>
                   <AdminDataTableHeaderRow>
                     <AdminDataTableHead>Type</AdminDataTableHead>
+                    <AdminDataTableHead>Client</AdminDataTableHead>
                     <AdminDataTableHead>Project</AdminDataTableHead>
                     <AdminDataTableHead>Actor</AdminDataTableHead>
                     <AdminDataTableHead>Created</AdminDataTableHead>
@@ -192,6 +201,7 @@ export function AdminDashboardPage() {
                   {activities.slice(0, 5).map((activity) => (
                     <AdminDataTableRow key={activity.id}>
                       <AdminDataTableCell>{formatActivityType(activity.type)}</AdminDataTableCell>
+                      <AdminDataTableCell>{getProfileDisplayName(activity.client)}</AdminDataTableCell>
                       <AdminDataTableCell className="whitespace-normal">
                         {activity.project ? (
                           <div>
@@ -218,6 +228,7 @@ export function AdminDashboardPage() {
                 <AdminDataTableHeader>
                   <AdminDataTableHeaderRow>
                     <AdminDataTableHead>Milestone</AdminDataTableHead>
+                    <AdminDataTableHead>Client</AdminDataTableHead>
                     <AdminDataTableHead>Project</AdminDataTableHead>
                     <AdminDataTableHead>Due</AdminDataTableHead>
                     <AdminDataTableHead align="center">Status</AdminDataTableHead>
@@ -234,6 +245,7 @@ export function AdminDashboardPage() {
                           </p>
                         </div>
                       </AdminDataTableCell>
+                      <AdminDataTableCell>{getProfileDisplayName(milestone.client)}</AdminDataTableCell>
                       <AdminDataTableCell>
                         {milestone.project ? (
                           <Link

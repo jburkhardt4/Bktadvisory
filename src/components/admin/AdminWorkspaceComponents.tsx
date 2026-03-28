@@ -104,7 +104,7 @@ export function AdminMetricCard({
   accentClassName,
 }: AdminMetricCardProps) {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:shadow-black/20">
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
         {label}
       </p>

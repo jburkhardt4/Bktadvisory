@@ -177,7 +177,8 @@ export function AdminQuotesPage() {
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
                 <AdminDataTableHead>Budget</AdminDataTableHead>
-                <AdminDataTableHead>Updated</AdminDataTableHead>
+                <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
+                <AdminDataTableHead align="right">Created</AdminDataTableHead>
                 <AdminDataTableHead align="right">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
@@ -208,7 +209,8 @@ export function AdminQuotesPage() {
                       {quote.metadata.description || 'No description'}
                     </p>
                   </AdminDataTableCell>
-                  <AdminDataTableCell>{formatDate(quote.updated_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDate(quote.updated_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDate(quote.created_at)}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingQuote(quote)} />
@@ -345,8 +347,7 @@ export function AdminProjectsPage() {
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
                 <AdminDataTableHead>Progress</AdminDataTableHead>
-                <AdminDataTableHead>Owner</AdminDataTableHead>
-                <AdminDataTableHead align="center">Actions</AdminDataTableHead>
+                <AdminDataTableHead align="right">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
             <AdminDataTableBody>
@@ -381,8 +382,7 @@ export function AdminProjectsPage() {
                       {project.activityCount} activities logged
                     </p>
                   </AdminDataTableCell>
-                  <AdminDataTableCell>{project.owner}</AdminDataTableCell>
-                  <AdminDataTableCell className="text-center">
+                  <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingProject(project)} />
                       {role === 'admin' && (
@@ -523,7 +523,7 @@ export function AdminActivitiesPage() {
                 <AdminDataTableHead>Project</AdminDataTableHead>
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead>Actor</AdminDataTableHead>
-                <AdminDataTableHead>Created</AdminDataTableHead>
+                <AdminDataTableHead align="right">Created</AdminDataTableHead>
                 <AdminDataTableHead align="right">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
@@ -552,7 +552,7 @@ export function AdminActivitiesPage() {
                   </AdminDataTableCell>
                   <AdminDataTableCell>{getProfileDisplayName(activity.client)}</AdminDataTableCell>
                   <AdminDataTableCell>{activity.actor || 'System'}</AdminDataTableCell>
-                  <AdminDataTableCell>{formatDateTime(activity.created_at)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right">{formatDateTime(activity.created_at)}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <RowActionButton label="Edit" onClick={() => setEditingActivity(activity)} />
@@ -692,7 +692,7 @@ export function AdminMilestonesPage() {
                 <AdminDataTableHead>Project</AdminDataTableHead>
                 <AdminDataTableHead>Client</AdminDataTableHead>
                 <AdminDataTableHead align="center">Status</AdminDataTableHead>
-                <AdminDataTableHead align="center">Due</AdminDataTableHead>
+                <AdminDataTableHead align="right">Due Date</AdminDataTableHead>
                 <AdminDataTableHead align="center">Actions</AdminDataTableHead>
               </AdminDataTableHeaderRow>
             </AdminDataTableHeader>
@@ -723,8 +723,8 @@ export function AdminMilestonesPage() {
                     <AdminCenteredBadgeCell>
                       <MilestoneStatusBadge completed={milestone.completed} />
                     </AdminCenteredBadgeCell>
-                    <AdminDataTableCell className="text-center">{formatDate(milestone.target_date)}</AdminDataTableCell>
-                    <AdminDataTableCell className="text-center">
+                    <AdminDataTableCell className="text-right">{formatDate(milestone.target_date)}</AdminDataTableCell>
+                    <AdminDataTableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <RowActionButton label="Edit" onClick={() => setEditingMilestone(milestone)} />
                         {role === 'admin' && (

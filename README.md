@@ -4,7 +4,7 @@ This is a code bundle for BKT Advisory. The original project is available at `ht
 
 ————————————————————————————————————————————————————————————————
 
-## Start-up Commands:
+## Start-up Commands
 
   Run `git pull --ff-only`
   Run `node -v && npm -v`
@@ -17,7 +17,7 @@ This is a code bundle for BKT Advisory. The original project is available at `ht
   
 ————————————————————————————————
 
-## Running the Code:
+## Running the Code
 
   Run `npm i` to install the dependencies.
 

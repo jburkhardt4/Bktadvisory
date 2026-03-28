@@ -74,7 +74,7 @@ export function AddActivityForm({ onClose, projectId: initialProjectId }: AddAct
           onValueChange={v => setType(v as ActivityEventType)}
           disabled={isSubmitting}
         >
-          <SelectTrigger className="w-full rounded-xl border-blue-200 bg-blue-50 text-slate-800 font-medium dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-100">
+          <SelectTrigger className="w-full rounded-lg border-blue-200 bg-blue-50 text-slate-800 font-medium dark:border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-100">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

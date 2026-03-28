@@ -720,10 +720,10 @@ export function AdminMilestonesPage() {
                     </AdminDataTableCell>
                     <AdminDataTableCell>{milestone.project?.name || milestone.project_id}</AdminDataTableCell>
                     <AdminDataTableCell>{getProfileDisplayName(milestone.client)}</AdminDataTableCell>
-                    <AdminDataTableCell className="text-center">{formatDate(milestone.target_date)}</AdminDataTableCell>
                     <AdminCenteredBadgeCell>
                       <MilestoneStatusBadge completed={milestone.completed} />
                     </AdminCenteredBadgeCell>
+                    <AdminDataTableCell className="text-center">{formatDate(milestone.target_date)}</AdminDataTableCell>
                     <AdminDataTableCell className="text-center">
                       <div className="flex justify-end gap-1">
                         <RowActionButton label="Edit" onClick={() => setEditingMilestone(milestone)} />

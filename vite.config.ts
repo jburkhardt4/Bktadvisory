@@ -3,9 +3,10 @@
   import react from '@vitejs/plugin-react';
   import tailwindcss from '@tailwindcss/vite';
   import path from 'path';
+  import { mcpPlugin } from './mcp-plugin';
 
   export default defineConfig({
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), mcpPlugin()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -60,8 +61,9 @@
       outDir: 'build',
     },
     server: {
-      port: 3000,
-      open: true,
+      port: 5000,
+      host: '0.0.0.0',
+      allowedHosts: true,
     },
     test: {
       globals: true,

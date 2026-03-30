@@ -120,7 +120,7 @@ function PortalPageContent() {
           <div className="flex items-center gap-2">
             {role === 'admin' && (
               <Link
-                to="/portal/admin/quotes"
+                to="/portal/admin"
                 className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#1d293d] transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <ShieldIcon size={15} />

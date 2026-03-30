@@ -48,7 +48,7 @@ Expected outputs:
 - Explicit visual verification notes
 - Explicit functional verification notes
 - Clear statement of what remains unverified
-```
+```text
 
 ## Prompt 2 — Codex / Copilot / GitHub execution prompt
 ```text

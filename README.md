@@ -1,6 +1,6 @@
 # BKT Advisory
 
-This is a code bundle for BKT Advisory. The original project is available at `https://www.figma.com/design/AEr09h1F0G6yCUhAm3c5N7/BKT-Advisory`.
+This is a code bundle for BKT Advisory. The original project is ava`.ilable at `https://www.figma.com/design/AEr09h1F0G6yCUhAm3c5N7/BKT-Advisory
 
 ————————————————————————————————————————————————————————————————
 
@@ -21,3 +21,8 @@ This is a code bundle for BKT Advisory. The original project is available at `ht
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
+
+Before doing any work, read and follow:
+
+- docs/orchestration/agentic-release-plan.md
+- docs/orchestration/prompt-library.md

@@ -1,0 +1,3 @@
+{
+  "postAttachCommand": "npm run startup:all"
+}

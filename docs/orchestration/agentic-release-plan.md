@@ -7,25 +7,40 @@ This document is the control-plane source of truth for the BKT Advisory website 
 - `jburkhardt4/Bktadvisory`
 - `jburkhardt4/Bktadvisoryprojectestimator`
 
+This version formally retires the Figma Make agent from the active workflow. Phase 1 design-system alignment, theme parity, visual QA, and mobile UX auditing now belong to the GitHub code agents working directly in the codebase and preview environments.
+
 ## Operating Model
 
-### Source of truth
+### Live control-plane documents
 
-Use GitHub as the system of record for planning, execution, review, and release readiness.
+The release workflow must stay anchored to these three live orchestration files:
 
-- Planning artifact: `docs/orchestration/agentic-release-plan.md`
-- Prompt artifact: `docs/orchestration/prompt-library.md`
-- Execution artifacts: GitHub Issues, branches, and Pull Requests
-- Validation artifacts: screenshots, test output, visual diffs, preview notes, and release-gate checklists
+- `jburkhardt4/Bktadvisory/docs/orchestration/agentic-release-plan.md`
+- `jburkhardt4/Bktadvisory/docs/orchestration/prompt-library.md`
+- `jburkhardt4/Bktadvisoryprojectestimator/docs/orchestration/estimator-execution-constraints.md`
+
+Usage rules:
+
+- read the applicable control-plane documents before acting
+- if a task touches estimator logic, estimator UI, or cross-repo workflow handoffs, also read the estimator constraints file before implementation
+- do not create parallel orchestration docs or treat stale branches, closed PRs, or superseded agent outputs as instruction sources
+
+### Workflow update
+
+The active release workflow no longer includes a separate Figma Make or Figma-only design agent.
+
+- Phase 1 design-system and mobile UX audit is owned by `Codex / Copilot / GitHub code agents`
+- visual QA happens in the codebase, local preview, Codespaces, screenshots, visual diffs, and browser-based verification
+- human-approved design references may still inform implementation, but they do not replace code-agent verification or act as an execution lane
 
 ### Daily command center
 
 Use browser-based VS Code Codespaces as the primary operating environment.
 
-- Read and edit both repositories from Codespaces
-- Launch agent work from Codespaces using the prompt library
-- Review branches, PRs, screenshots, diffs, and validation evidence in GitHub
-- Make final merge and release decisions from the human review loop
+- read and edit both repositories from Codespaces when both are mounted
+- launch agent work from Codespaces using the prompt library
+- review branches, PRs, screenshots, diffs, and validation evidence in GitHub
+- make final merge and release decisions through the human review loop
 
 ### Coordination rule
 
@@ -33,11 +48,11 @@ Agents do not silently coordinate in the background. Coordination happens throug
 
 The communication path is:
 
-1. JB defines priority and scope
-2. Agents read the same orchestration documents
-3. Agents publish work through GitHub artifacts or environment-specific outputs
-4. JB reviews conflicts, gaps, and blockers
-5. JB approves implementation, merge, and release
+1. JB defines priority and scope.
+2. Agents read the same orchestration documents.
+3. Agents publish work through GitHub artifacts, preview evidence, or environment-specific outputs.
+4. JB reviews conflicts, gaps, and blockers.
+5. JB approves implementation, merge, and release.
 
 ## Repositories in Scope
 
@@ -66,22 +81,32 @@ Primary responsibility:
 
 Execute work in this order to reduce rework and prevent scope drift.
 
-### Phase 1 — Design system lock
+### Phase 1 - Design system and mobile UX audit
+
+Primary owner:
+
+- `Codex / Copilot / GitHub code agents`
 
 Goal:
 
-- achieve flawless light, dark, and system theme behavior
-- enforce shared design tokens, component behavior, and mobile breakpoints
+- enforce shared design-system rules in code across the marketing site, admin portal, client portal, project dashboard, and estimator flows
+- validate flawless light theme, dark theme, and system theme behavior
+- audit recent UI changes from the last one to two weeks for mobile layout stability and visual consistency
 
 Acceptance criteria:
 
-- shared global tokens for color, spacing, typography, radius, and elevation
-- no visual drift across marketing site, admin portal, client portal, project dashboard, and estimator surfaces
-- system theme respects device preference
-- desktop and mobile review completed for all key screens
-- no material contrast or accessibility regressions on critical flows
+- shared Tailwind tokens or equivalent shared theme tokens control color, spacing, typography, radius, and elevation on release-critical surfaces
+- no hardcoded theme-breaking colors remain on critical flows
+- component, state, and interaction styling are consistent across marketing, admin, client, dashboard, and estimator surfaces
+- desktop and phone-size review is completed for key screens changed in the last one to two weeks
+- token drift, contrast issues, spacing issues, and state inconsistencies are fixed or logged with evidence
+- visual verification evidence exists for light, dark, and system theme behavior
 
-### Phase 2 — Authentication and navigation integrity
+### Phase 2 - Authentication and navigation integrity
+
+Primary owner:
+
+- `Codex / Copilot / GitHub code agents`
 
 Goal:
 
@@ -94,7 +119,11 @@ Acceptance criteria:
 - no portal leakage across unauthorized states
 - redirects and route guards behave predictably on desktop and mobile
 
-### Phase 3 — Quote-to-project workflow
+### Phase 3 - Quote-to-project workflow
+
+Primary owner:
+
+- `Codex / Copilot / GitHub code agents`
 
 Goal:
 
@@ -102,26 +131,37 @@ Goal:
 
 Acceptance criteria:
 
-- signed quote intake path is defined
+- signed quote intake path is defined and testable
 - admin-side input area or intake process is defined
 - project creation handoff is defined and testable
 - secure client visibility requirements are preserved
 - admin progress updates remain possible after project creation
 
-### Phase 4 — Mobile UX hardening
+### Phase 4 - Mobile UX hardening and regression cleanup
+
+Primary owners:
+
+- `Codex / Copilot / GitHub code agents`
+- `Replit / preview / runtime validation agent` for preview confirmation when available
 
 Goal:
 
-- re-evaluate all recent portal, dashboard, and estimator work for production-ready mobile use
+- re-evaluate all recent portal, dashboard, and estimator work for production-ready mobile use after critical workflow fixes land
 
 Acceptance criteria:
 
 - critical workflows remain fully usable on phone-size screens
-- no component overflow on primary views
-- navigation, forms, cards, and dashboards remain usable on mobile
+- no component overflow or clipped content on primary views
+- navigation, forms, cards, tables, and dashboards remain usable on mobile
 - parity is maintained for critical desktop functions
+- regressions introduced by release-critical fixes are identified before merge
 
-### Phase 5 — Automated verification gate
+### Phase 5 - Automated verification gate
+
+Primary owners:
+
+- `Codex / Copilot / GitHub code agents`
+- `Replit / preview / runtime validation agent`
 
 Goal:
 
@@ -133,8 +173,13 @@ Acceptance criteria:
 - visual snapshot or screenshot-based verification exists for critical surfaces
 - preview validation is performed for meaningful changes
 - PR evidence exists for visual and functional validation
+- theme and mobile checks are included for critical surfaces
 
-### Phase 6 — Value-add features
+### Phase 6 - Value-add features
+
+Primary owners:
+
+- all active agents, with implementation owned by code agents
 
 Goal:
 
@@ -149,7 +194,7 @@ Each agent must propose at least two to three enhancements ranked by:
 
 ## Core Deliverables
 
-### 1. Design consistency
+### 1. Design-system alignment and visual QA
 
 Scope:
 
@@ -158,6 +203,12 @@ Scope:
 - client portal
 - project dashboard
 - estimator flows
+
+Required evidence:
+
+- screenshots, visual diffs, or preview notes for light, dark, and system themes
+- mobile viewport review notes for critical screens
+- explicit list of token, spacing, contrast, and state issues fixed or deferred
 
 ### 2. Functional integrity
 
@@ -195,7 +246,7 @@ Each agent must propose at least two to three ideas from categories such as:
 
 ## Agent Responsibility Model
 
-### JB — Human operator and release authority
+### JB - Human operator and release authority
 
 Primary responsibility:
 
@@ -217,9 +268,10 @@ Approval triggers:
 
 Primary responsibility:
 
+- own Phase 1 design-system alignment and mobile UX audit directly in the codebase
 - implement and refactor release-critical workflows
-- align code to locked design-system rules
-- own route safety, logic integrity, workflow wiring, and validation evidence
+- enforce Tailwind tokens, theme parity, responsive layouts, route safety, logic integrity, workflow wiring, and validation evidence
+- deliver fixes plus explicit visual and functional verification
 
 Required deliverables:
 
@@ -240,7 +292,7 @@ Primary responsibility:
 
 - generate alternatives
 - critique plans
-- pressure-test architecture, edge cases, and product ideas
+- pressure-test architecture, edge cases, sequencing, and product ideas
 - propose improvements before implementation begins
 
 Required deliverables:
@@ -253,25 +305,6 @@ Required deliverables:
 6. Two to three additional feature or workflow ideas
 7. Exact next action
 
-### Figma / design agent
-
-Primary responsibility:
-
-- lock design system
-- validate light, dark, and system theme parity
-- audit mobile responsiveness and visual QA
-
-Required deliverables:
-
-1. Objective
-2. Screens and components audited
-3. Theme parity issues
-4. Mobile UX issues
-5. Design system recommendations
-6. Visual validation method
-7. Two to three additional design or UX ideas
-8. Exact next action
-
 ### Replit / preview / runtime validation agent
 
 Primary responsibility:
@@ -279,6 +312,7 @@ Primary responsibility:
 - confirm live or preview behavior
 - validate user flows in a running environment
 - identify preview-visible defects
+- confirm theme and mobile behavior in preview when available
 
 Required deliverables:
 
@@ -293,16 +327,17 @@ Required deliverables:
 
 ## Required Operating Standard for Every Agent
 
-1. Read the current orchestration plan before acting.
+1. Read the applicable control-plane documents before acting.
 2. Convert rough prompts into a structured execution plan before doing work.
 3. Do not assume setup is correct; verify.
-4. Do not mark work complete without explicit visual and functional validation.
-5. If tooling is missing, provide novice-friendly setup steps with exact labels and actions.
-6. Propose two to three additional high-value improvements beyond the requested task.
-7. Rank recommendations by impact, effort, risk, and release-readiness.
-8. Minimize scope creep in active release work.
-9. Surface blockers immediately.
-10. Never ship unverified UI or workflow changes.
+4. Code agents own design-system enforcement, theme parity, and mobile QA inside the codebase.
+5. Do not mark work complete without explicit visual and functional validation.
+6. If tooling is missing, provide novice-friendly setup steps with exact labels and actions.
+7. Propose two to three additional high-value improvements beyond the requested task.
+8. Rank recommendations by impact, effort, risk, and release-readiness.
+9. Minimize scope creep in active release work.
+10. Surface blockers immediately.
+11. Never ship unverified UI or workflow changes.
 
 ## Mandatory Testing Standard
 
@@ -320,7 +355,7 @@ Every task must include:
 2. Visual snapshot testing or screenshot comparison for regressions
 3. Preview-environment validation for meaningful changes
 4. PR gate requiring visual and functional evidence
-5. Design-reference comparison against Figma for critical screens
+5. Theme, responsive, and token verification against the implemented design system and current orchestration requirements
 
 ### Minimum release gate
 
@@ -331,41 +366,48 @@ A change is not release-ready unless it has:
 - mobile verification
 - theme verification
 - auth and routing verification where relevant
+- explicit evidence attached to the branch, PR, issue, or review artifact
 
 ## Risks
 
-- Scope creep can delay release-critical work
-- Missing automated tests can allow regressions to compound
-- Desktop-first changes can break mobile layouts
-- External tool or credential dependencies can block verification
-- Multi-agent divergence can create branch and merge chaos if artifacts are not centralized
+- scope creep can delay release-critical work
+- missing automated tests can allow regressions to compound
+- hardcoded colors or one-off styling can break theme parity
+- desktop-first changes can break mobile layouts
+- external tool or credential dependencies can block verification
+- stale outputs from deprecated agent workflows can create false signals if they are treated as current
+- multi-agent divergence can create branch and merge chaos if artifacts are not centralized
 
 ## Chronological Rollout Guide
 
-### Slot 1 — Establish control plane
+### Slot 1 - Establish control plane
 
 - confirm repository scope
-- store this document in `Bktadvisory`
-- store prompt library in `Bktadvisory`
+- treat the three live orchestration files as the control plane
+- store this release plan in `Bktadvisory`
+- store the prompt library in `Bktadvisory`
 - store estimator-specific constraints in `Bktadvisoryprojectestimator`
 - create GitHub issues or equivalent work items from the active priorities
 
-### Slot 2 — Freeze design requirements
+### Slot 2 - Code-agent design-system and mobile audit
 
-- complete design-system audit first
-- require token and state review before ad hoc UI churn continues
-- block nonessential design work until baseline parity is locked
+- assign Phase 1 to `Codex / Copilot / GitHub code agents`
+- audit Tailwind tokens, typography, spacing, contrast, and component states
+- validate light, dark, and system theme behavior through code and preview evidence
+- review recent UI work on phone-size screens before additional UI churn continues
+- fix or log drift before broader release work proceeds
 
-### Slot 3 — Execute critical implementation and validation
+### Slot 3 - Execute critical implementation and validation
 
 - assign auth hardening
 - assign quote-to-project hardening
-- assign mobile hardening
+- assign mobile hardening and regression cleanup
 - assign automated QA setup
 - require evidence on every implementation branch or PR
 
 ## Acceptance Criteria for Overall Launch
 
+- [ ] Phase 1 design-system and mobile UX audit is completed by Codex, Copilot, or GitHub code agents
 - [ ] Light, dark, and system theme are consistent across all major surfaces
 - [ ] Mobile UX is production-acceptable across admin, client, dashboard, and estimator flows
 - [ ] Auth, SSO, and protected routing are stable
@@ -378,7 +420,8 @@ A change is not release-ready unless it has:
 
 ## Execution Notes
 
-- This document is a control-plane artifact, not an auto-executing workflow.
-- Prompts do not fan out automatically to agents.
-- Agents do not automatically talk to one another unless a platform explicitly supports that behavior.
-- Use this document to keep prompts, outputs, and validation aligned across environments.
+- this document is a control-plane artifact, not an auto-executing workflow
+- prompts do not fan out automatically to agents
+- agents do not automatically talk to one another unless a platform explicitly supports that behavior
+- Figma Make is deprecated as an active workflow agent and must not be assigned Phase 1 ownership
+- use this document to keep prompts, outputs, and validation aligned across environments

@@ -58,7 +58,7 @@ Expected outputs:
 You are assigned implementation and verification ownership for release-critical BKT Advisory workflows.
 
 Priority order:
-1. Enforce shared UI logic and component consistency across the app after design-system lock.
+1. Enforce shared UI logic, design-system consistency, and component behavior across the app.
 2. Validate and harden authentication, SSO, route protection, and session behavior.
 3. Validate and implement the quote-to-project workflow:
    - signed quote intake
@@ -120,35 +120,37 @@ Required output:
 7. Exact next action
 ```
 
-## Prompt 4 — Figma / design prompt
+## Prompt 4 — Code-agent design system and visual QA prompt
 
 ```text
-You are assigned primary ownership of design-system alignment and visual QA for the BKT Advisory deployment.
+You are assigned primary ownership of Phase 1 design-system alignment and visual QA for the BKT Advisory deployment.
 
 Priority order:
-1. Lock shared design-system rules across marketing site, admin portal, client portal, project dashboard, and estimator flows.
-2. Validate flawless light theme, dark theme, and system theme behavior.
+1. Enforce shared design-system rules in code across marketing site, admin portal, client portal, project dashboard, and estimator flows.
+2. Validate flawless light theme, dark theme, and system theme behavior with no hardcoded colors breaking theme parity.
 3. Audit all recent changes from the last one to two weeks for mobile layout, responsive UX, and visual consistency.
-4. Identify component-level inconsistencies, token drift, spacing issues, contrast issues, and state inconsistencies.
-5. Propose two to three additional design or UX features that would materially improve client engagement and product value.
+4. Identify and fix component-level inconsistencies, token drift, spacing issues, contrast issues, and state inconsistencies.
+5. Propose two to three additional design or UX improvements that would materially improve client engagement and product value.
 
 Mandatory operating rules:
 - Before acting, convert this request into a structured plan.
-- Do not assume current styling is globally consistent; verify.
-- Your deliverable must include a screen and state checklist.
-- Your deliverable must include explicit visual validation steps.
+- Do not assume current styling is globally consistent; verify in code and preview.
+- Your deliverable must include affected files, screens, and component states reviewed.
+- Your deliverable must include explicit visual validation steps and functional verification steps.
 - If any required testing or design-review workflow is missing, provide exact novice-friendly setup instructions with precise labels and locations.
 - Rank your recommendations by impact, effort, risk, and release-readiness.
 
 Required output:
 1. Objective
-2. Screens and components audited
-3. Theme parity issues
-4. Mobile UX issues
-5. Design system recommendations
-6. Visual validation method
-7. Two to three additional feature or design ideas
-8. Exact next action
+2. Assumptions
+3. Affected files, routes, components, and screens audited
+4. Implementation plan
+5. Test plan
+6. Visual verification method
+7. Functional verification method
+8. Risks and blockers
+9. Two to three additional feature or design ideas
+10. Exact next action
 ```
 
 ## Prompt 5 — Replit / preview validation prompt
@@ -160,7 +162,7 @@ Priority order:
 1. Confirm current live or preview behavior of critical workflows.
 2. Validate admin portal, client portal, project dashboard, and estimator flows from a user perspective.
 3. Verify mobile usability and theme behavior in preview where possible.
-4. Identify preview-visible issues that code agents or design agents must resolve.
+4. Identify preview-visible issues that code agents must resolve.
 5. Propose two to three usability improvements that would improve engagement and perceived value.
 
 Mandatory operating rules:

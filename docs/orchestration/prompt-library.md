@@ -1,9 +1,11 @@
 # BKT Advisory Prompt Library
 
 ## How to use this file
+
 Use this file as the reusable prompt bank for the BKT Advisory launch.
 
 ### Rules
+
 - Store the canonical versions here
 - Paste the relevant prompt into the correct agent at the start of a new task
 - Add the specific task below the reusable prompt
@@ -11,6 +13,7 @@ Use this file as the reusable prompt bank for the BKT Advisory launch.
 - Use GitHub artifacts and Codespaces as the coordination layer
 
 ## Prompt 1 — Master orchestration prompt
+
 ```text
 Purpose:
 Coordinate all active agents working on the BKT Advisory deployment so they execute with shared standards, clear ownership, minimal rework, and mandatory visual plus functional verification.
@@ -89,6 +92,7 @@ Required output:
 ```
 
 ## Prompt 3 — Gemini strategy prompt
+
 ```text
 You are assigned strategy, critique, and option-ranking ownership for the BKT Advisory deployment.
 
@@ -117,6 +121,7 @@ Required output:
 ```
 
 ## Prompt 4 — Figma / design prompt
+
 ```text
 You are assigned primary ownership of design-system alignment and visual QA for the BKT Advisory deployment.
 
@@ -147,6 +152,7 @@ Required output:
 ```
 
 ## Prompt 5 — Replit / preview validation prompt
+
 ```text
 You are assigned preview-environment and live-behavior validation ownership for the BKT Advisory deployment.
 
@@ -176,6 +182,7 @@ Required output:
 ```
 
 ## Prompt 6 — Task launch template
+
 ```text
 [Paste Master orchestration prompt]
 
@@ -196,6 +203,7 @@ Constraints:
 ```
 
 ## Prompt 7 — Auth hardening task starter
+
 ```text
 Task:
 Audit and harden authentication, protected routing, and session behavior for the BKT Advisory launch.
@@ -204,6 +212,7 @@ Return a structured plan first, then implementation guidance or changes, followe
 ```
 
 ## Prompt 8 — Mobile hardening task starter
+
 ```text
 Task:
 Audit and refine all recent admin portal, client portal, dashboard, and estimator changes for mobile responsiveness and usability.
@@ -212,6 +221,7 @@ Return a structured plan first and include a mobile verification checklist.
 ```
 
 ## Prompt 9 — Quote-to-project workflow task starter
+
 ```text
 Task:
 Define and harden the quote-to-project workflow for launch readiness.
@@ -220,6 +230,7 @@ Return a structured plan first and identify gaps that still require manual inter
 ```
 
 ## Prompt 10 — Approval phrases
+
 Use these exact phrases when giving final authorization.
 
 - `Approve: implement`
@@ -229,6 +240,7 @@ Use these exact phrases when giving final authorization.
 - `Approve: schedule`
 
 ## Prompt 11 — Human review checklist prompt
+
 ```text
 Before considering this work complete, provide:
 1. What changed

@@ -19,7 +19,7 @@ import { ReviewCard, reviews } from './Reviews';
 
 export function FinalCTA() {
   return (
-    <section id="contact" className="bg-[#f8f9fb] py-20 lg:py-32">
+    <section id="contact" className="bkt-soft-section py-20 lg:py-32">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
         {/* 3-column layout: Review | CTA | Review on desktop, stacked on mobile */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr_1fr] gap-8 items-start">
@@ -30,7 +30,7 @@ export function FinalCTA() {
           </div>
 
           {/* Center Blue CTA Container */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-8 py-16 lg:px-12 lg:py-20 text-center">
+          <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 px-8 py-16 text-center lg:px-12 lg:py-20 shadow-[0_18px_48px_rgba(29,78,216,0.22)]">
             <div className="space-y-8">
               {/* Headline */}
               <div className="space-y-4">

@@ -18,10 +18,19 @@ import { CreateQuoteForm } from './forms/CreateQuoteForm';
 import { CreateProjectForm } from './forms/CreateProjectForm';
 import { AddActivityForm } from './forms/AddActivityForm';
 import {
+  PORTAL_APP_SHELL_CLASS,
   PORTAL_HERO_SURFACE_CLASS,
   PORTAL_ICON_LOGO,
+  PORTAL_ICON_BUTTON_CLASS,
   PORTAL_LOGO_DARK,
   PORTAL_LOGO_WHITE,
+  PORTAL_PANEL_SURFACE_CLASS,
+  PORTAL_SECONDARY_ACTION_CLASS,
+  PORTAL_TAB_BAR_CLASS,
+  PORTAL_TAB_BUTTON_ACTIVE_CLASS,
+  PORTAL_TAB_BUTTON_BASE_CLASS,
+  PORTAL_TAB_BUTTON_INACTIVE_CLASS,
+  PORTAL_TOPBAR_CLASS,
 } from './portalBranding';
   
 const logoDark = {
@@ -100,9 +109,9 @@ function PortalPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className={PORTAL_APP_SHELL_CLASS}>
       {/* Portal Nav */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/20">
+      <header className={PORTAL_TOPBAR_CLASS}>
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3">
             <img
@@ -121,19 +130,19 @@ function PortalPageContent() {
             {role === 'admin' && (
               <Link
                 to="/portal/admin"
-                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-[#1d293d] transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                className={PORTAL_SECONDARY_ACTION_CLASS}
               >
                 <ShieldIcon size={15} />
                 <span className="hidden sm:inline">Admin Panel</span>
               </Link>
             )}
-            <button className="relative cursor-pointer rounded-lg p-2 text-[#1d293d] transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            <button className={`${PORTAL_ICON_BUTTON_CLASS} relative`}>
               <BellIcon size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
             </button>
             <button
               onClick={() => openSettings('profile')}
-              className="cursor-pointer rounded-lg p-2 text-[#1d293d] transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className={PORTAL_ICON_BUTTON_CLASS}
             >
               <SettingsIcon size={18} />
             </button>
@@ -144,7 +153,7 @@ function PortalPageContent() {
                 void handleSignOut();
               }}
               disabled={isSigningOut}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#1d293d] transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-800"
+              className={`${PORTAL_SECONDARY_ACTION_CLASS} disabled:cursor-not-allowed disabled:opacity-60`}
             >
               <LogOutIcon size={15} />
               <span className="hidden sm:inline">{isSigningOut ? 'Signing Out…' : 'Sign Out'}</span>
@@ -159,64 +168,54 @@ function PortalPageContent() {
           <ProjectDetail projectId={selectedProject} onBack={() => setSelectedProject(null)} />
         ) : (
           <div className="space-y-6">
-            {/* Hero Section with Dark Gradient - Welcome + User Profile */}
-            <div className={`${PORTAL_HERO_SURFACE_CLASS} p-8`}>
-              <div className="space-y-6">
-                {/* Welcome header */}
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-50">{getGreeting()}{firstName ? `, ${firstName}` : ''}</h1>
-                  <p className="text-sm text-slate-400 mt-1">Here's a summary of your account and active engagements.</p>
-                </div>
+            <div className={`${PORTAL_HERO_SURFACE_CLASS} space-y-6 p-8`}>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-50">{getGreeting()}{firstName ? `, ${firstName}` : ''}</h1>
+                <p className="mt-1 text-sm text-slate-200">Here's a summary of your account and active engagements.</p>
+              </div>
 
-                {/* User Profile */}
-                <UserProfile onEditProfile={() => openSettings('profile')} />
+              <UserProfile onEditProfile={() => openSettings('profile')} />
 
-                {/* Stat cards - Reduced height by ~30% */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { label: 'Active Projects', value: '2', accent: 'from-blue-500 to-indigo-500' },
-                    { label: 'Pending Quotes', value: '3', accent: 'from-amber-500 to-orange-500' },
-                    { label: 'Items Awaiting You', value: '1', accent: 'from-cyan-500 to-blue-500' },
-                    { label: 'Completed', value: '1', accent: 'from-emerald-500 to-teal-500' },
-                  ].map(s => (
-                    <div key={s.label} className="bg-white/[0.05] border border-white/[0.08] rounded-xl p-4">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{s.label}</p>
-                      <p className={`text-2xl font-bold mt-1.5 bg-gradient-to-r ${s.accent} bg-clip-text text-transparent`}>{s.value}</p>
-                    </div>
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {[
+                  { label: 'Active Projects', value: '2', accent: 'from-blue-500 to-indigo-500' },
+                  { label: 'Pending Quotes', value: '3', accent: 'from-amber-500 to-orange-500' },
+                  { label: 'Items Awaiting You', value: '1', accent: 'from-cyan-500 to-blue-500' },
+                  { label: 'Completed', value: '1', accent: 'from-emerald-500 to-teal-500' },
+                ].map(s => (
+                  <div key={s.label} className="rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-slate-200">{s.label}</p>
+                    <p className={`mt-1.5 text-2xl font-bold bg-gradient-to-r ${s.accent} bg-clip-text text-transparent`}>{s.value}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Two-column layout: Tabbed Content (left) + Activity Sidebar (right) */}
             <div className="grid lg:grid-cols-[1fr_360px] gap-6">
               {/* Left: Tabbed Quotes/Projects Container */}
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+              <div className={`${PORTAL_PANEL_SURFACE_CLASS} overflow-visible`}>
                 {/* Tab Buttons + Actions */}
-                <div className="flex items-center border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex flex-1 gap-0">
+                <div className={`${PORTAL_TAB_BAR_CLASS} flex-wrap items-center gap-3 overflow-visible px-4 py-4 sm:flex-nowrap`}>
+                  <div className="flex min-w-0 flex-1 gap-0">
                     <button
                       onClick={() => setActiveTab('quotes')}
-                      className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${
-                        activeTab === 'quotes'
-                          ? 'border-blue-600 bg-blue-50/50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
-                          : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-50'
+                      className={`${PORTAL_TAB_BUTTON_BASE_CLASS} flex-1 px-6 py-4 text-sm ${
+                        activeTab === 'quotes' ? PORTAL_TAB_BUTTON_ACTIVE_CLASS : PORTAL_TAB_BUTTON_INACTIVE_CLASS
                       }`}
                     >
                       Quotes
                     </button>
                     <button
                       onClick={() => setActiveTab('projects')}
-                      className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${
-                        activeTab === 'projects'
-                          ? 'border-blue-600 bg-blue-50/50 text-blue-700 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-200'
-                          : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-50'
+                      className={`${PORTAL_TAB_BUTTON_BASE_CLASS} flex-1 px-6 py-4 text-sm ${
+                        activeTab === 'projects' ? PORTAL_TAB_BUTTON_ACTIVE_CLASS : PORTAL_TAB_BUTTON_INACTIVE_CLASS
                       }`}
                     >
                       Projects
                     </button>
                   </div>
-                  <div className="px-4">
+                  <div className="relative z-20 flex shrink-0 justify-end">
                     <ActionDropdown
                       label="Actions"
                       userRole={role}
@@ -227,7 +226,7 @@ function PortalPageContent() {
                 </div>
 
                 {/* Tab Content */}
-                <div>
+                <div className="overflow-hidden rounded-b-2xl">
                   {activeTab === 'quotes' ? (
                     <QuotesTable />
                   ) : (
@@ -277,7 +276,7 @@ function PortalPageContent() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Submit</button>
+              <button type="submit" className="bkt-primary-button">Submit</button>
             </div>
           </form>
         </PortalModal>

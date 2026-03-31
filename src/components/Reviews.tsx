@@ -56,9 +56,9 @@ export function ReviewCard({ review }: { review: Review }) {
   const isLong = review.reviewText.length > 200;
 
   return (
-    <div className="group bg-white border border-[#0F172B]/15 rounded-2xl overflow-hidden shadow-sm hover:border-[#0F172B]/30 hover:shadow-xl transition-all duration-300">
+    <div className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:border-blue-200 hover:shadow-xl dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500/30">
       {/* Header */}
-      <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50/30 border-b border-slate-200">
+      <div className="border-b border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50/30 p-6 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/60">
         <h3 className="text-lg font-bold text-slate-900 mb-3 leading-snug">{review.title}</h3>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {/* Stars */}
@@ -71,11 +71,11 @@ export function ReviewCard({ review }: { review: Review }) {
             <span className="font-bold text-slate-900 text-xs ml-1">{review.rating.toFixed(1)}</span>
           </div>
           <span className="w-px h-4 bg-slate-300" aria-hidden="true" />
-          <span className="text-slate-500">
-            {review.startDate} – {review.endDate}
-          </span>
+            <span className="text-slate-500 dark:text-slate-400">
+              {review.startDate} – {review.endDate}
+            </span>
+          </div>
         </div>
-      </div>
 
       {/* Body */}
       <div className="p-6 space-y-5">
@@ -83,7 +83,7 @@ export function ReviewCard({ review }: { review: Review }) {
         <div className="relative">
           <QuoteIcon size={20} className="text-blue-200 absolute -top-1 -left-1" />
           <p
-            className={`text-slate-700 leading-relaxed italic pl-6 ${
+            className={`pl-6 leading-relaxed italic text-slate-700 dark:text-slate-300 ${
               !expanded && isLong ? 'line-clamp-3' : ''
             }`}
           >
@@ -92,7 +92,7 @@ export function ReviewCard({ review }: { review: Review }) {
           {isLong && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium pl-6 transition-colors"
+              className="mt-2 pl-6 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
             >
               {expanded ? 'See less' : 'See more'}
             </button>
@@ -104,7 +104,7 @@ export function ReviewCard({ review }: { review: Review }) {
           {review.tags.map((tag) => (
             <span
               key={tag}
-              className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100"
+              className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200"
             >
               {tag}
             </span>
@@ -112,18 +112,18 @@ export function ReviewCard({ review }: { review: Review }) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+        <div className="grid grid-cols-3 gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
           <div>
-            <p className="text-xs text-slate-500 mb-1">Total Earned</p>
-            <p className="font-semibold text-slate-700 text-sm">{review.earned}</p>
+            <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Total Earned</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{review.earned}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">Hourly Rate</p>
-            <p className="font-semibold text-slate-700 text-sm">{review.rate}</p>
+            <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Hourly Rate</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{review.rate}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">Hours</p>
-            <p className="font-semibold text-slate-700 text-sm">{review.hours}</p>
+            <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Hours</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{review.hours}</p>
           </div>
         </div>
       </div>
@@ -133,7 +133,7 @@ export function ReviewCard({ review }: { review: Review }) {
 
 export function Reviews({ compact = false }: { compact?: boolean }) {
   return (
-    <section className="py-20 lg:py-28 shadow-[0_4px_6px_-1px_rgba(15,23,43,0.30)] bg-[#eff6ff69]">
+    <section className="bkt-soft-section py-20 lg:py-28 shadow-[0_4px_6px_-1px_rgba(15,23,43,0.30)]">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
@@ -143,12 +143,12 @@ export function Reviews({ compact = false }: { compact?: boolean }) {
                 <StarIcon key={s} />
               ))}
             </div>
-            <span className="text-sm font-semibold text-slate-700">5.0 / 5.0</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">5.0 / 5.0</span>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-[#0f172b]">
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
             Client Reviews
           </h2>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-slate-300">
             Verified reviews from enterprise Salesforce and AI engagements.
           </p>
         </div>
@@ -166,7 +166,7 @@ export function Reviews({ compact = false }: { compact?: boolean }) {
             href="https://www.upwork.com/freelancers/~01b06b3ac60cf2f30c"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300"
           >
             <span>Verified on Upwork</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

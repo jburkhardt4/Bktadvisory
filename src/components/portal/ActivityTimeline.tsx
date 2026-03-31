@@ -91,7 +91,7 @@ export function ActivityTimeline() {
 
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+      <div className="bkt-shell-surface">
         <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
           <div className="h-4 w-32 rounded bg-slate-200 animate-pulse dark:bg-slate-800" />
         </div>
@@ -113,7 +113,7 @@ export function ActivityTimeline() {
 
   if (error) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+      <div className="bkt-shell-surface">
         <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Recent Activity</h3>
         </div>
@@ -128,7 +128,7 @@ export function ActivityTimeline() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+    <div className="bkt-shell-surface">
       <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Recent Activity</h3>
       </div>

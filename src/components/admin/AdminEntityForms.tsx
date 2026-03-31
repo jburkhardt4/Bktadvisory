@@ -410,7 +410,7 @@ export function AdminQuoteForm({
         <Button
           type="submit"
           disabled={isSaving}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+          className="bkt-primary-button rounded-xl"
         >
           {isSaving ? 'Saving…' : initialRecord ? 'Save Quote' : 'Create Quote'}
         </Button>
@@ -609,7 +609,7 @@ export function AdminProjectForm({
         <Button
           type="submit"
           disabled={isSaving}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+          className="bkt-primary-button rounded-xl"
         >
           {isSaving ? 'Saving…' : initialRecord ? 'Save Project' : 'Create Project'}
         </Button>
@@ -747,7 +747,7 @@ export function AdminActivityForm({
         <Button
           type="submit"
           disabled={isSaving}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+          className="bkt-primary-button rounded-xl"
         >
           {isSaving ? 'Saving…' : initialRecord ? 'Save Activity' : 'Create Activity'}
         </Button>
@@ -894,7 +894,7 @@ export function AdminMilestoneForm({
         <Button
           type="submit"
           disabled={isSaving}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+          className="bkt-primary-button rounded-xl"
         >
           {isSaving ? 'Saving…' : initialRecord ? 'Save Milestone' : 'Create Milestone'}
         </Button>

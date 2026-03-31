@@ -35,6 +35,7 @@ interface AdminMetricCardProps {
   value: string;
   helper: string;
   accentClassName: string;
+  variant?: 'default' | 'hero';
 }
 
 interface AdminEmptyStateProps {
@@ -88,7 +89,7 @@ export function AdminWorkspaceHeader({
         <Button
           type="button"
           onClick={onAction}
-          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+          className="bkt-primary-button rounded-xl"
         >
           {actionLabel}
         </Button>
@@ -102,15 +103,29 @@ export function AdminMetricCard({
   value,
   helper,
   accentClassName,
+  variant = 'default',
 }: AdminMetricCardProps) {
+  const isHero = variant === 'hero';
+
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 dark:shadow-black/20">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-200">
+    <div className={cn(
+      'flex h-full flex-col p-5',
+      isHero
+        ? 'rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm'
+        : 'bkt-shell-surface',
+    )}>
+      <p className={cn(
+        'text-[11px] font-semibold uppercase tracking-[0.18em]',
+        isHero ? 'text-slate-200' : 'text-slate-700 dark:text-slate-200',
+      )}>
         {label}
       </p>
       <div className="mt-5 flex flex-1 flex-col items-center justify-center text-center">
         <p className={`text-4xl font-semibold tracking-tight tabular-nums ${accentClassName}`}>{value}</p>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
+        <p className={cn(
+          'mt-2 text-sm',
+          isHero ? 'text-slate-100' : 'text-slate-500 dark:text-slate-400',
+        )}>{helper}</p>
       </div>
     </div>
   );
@@ -126,7 +141,7 @@ export function AdminDataTableHeader({ children }: { children: ReactNode }) {
 
 export function AdminDataTableHeaderRow({ children }: { children: ReactNode }) {
   return (
-    <TableRow className="border-y border-slate-200 bg-slate-100/75 hover:bg-slate-100/75 dark:border-slate-800 dark:bg-slate-800/55 dark:hover:bg-slate-800/55">
+    <TableRow className="border-y border-slate-200 bg-slate-50 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
       {children}
     </TableRow>
   );
@@ -162,7 +177,7 @@ export function AdminDataTableRow({
   return (
     <TableRow
       className={cn(
-        'border-slate-200/80 hover:bg-slate-50/80 dark:border-slate-800/80 dark:hover:bg-slate-800/45',
+        'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-950',
         className,
       )}
       {...props}
@@ -204,7 +219,7 @@ export function AdminEmptyState({
 }: AdminEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 dark:border-slate-700 dark:bg-slate-950/60">
+      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 dark:border-slate-800 dark:bg-slate-900">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
         <p className="mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">{description}</p>
         {actionLabel && onAction && (
@@ -277,7 +292,7 @@ export function AdminLoadingState({ label }: { label: string }) {
 
 export function AdminSectionCard({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+    <div className="bkt-shell-surface">
       {children}
     </div>
   );

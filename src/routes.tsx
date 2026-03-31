@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from 'react-router';
+import { createBrowserRouter } from 'react-router';
 import { Layout } from './components/Layout';
 import { HomePage } from './components/HomePage';
 import { WorkPage } from './components/WorkPage';
@@ -7,8 +7,8 @@ import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
 import { AuthPage } from './components/AuthPage';
 import { PortalPage } from './components/portal/PortalPage';
+import { PortalThemeLayout } from './components/portal/PortalThemeLayout';
 import { EstimatorBoundary } from './components/EstimatorBoundary';
-import { RequireAuth } from './components/RequireAuth';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminPortalLayout } from './components/admin/AdminPortalLayout';
 import { AdminDashboardPage } from './components/admin/AdminDashboardPage';
@@ -38,11 +38,7 @@ export const router = createBrowserRouter([
   // Portal routes — auth-guarded
   {
     path: '/portal',
-    element: (
-      <RequireAuth>
-        <Outlet />
-      </RequireAuth>
-    ),
+    element: <PortalThemeLayout />,
     children: [
       { index: true, element: <PortalPage /> },
       {

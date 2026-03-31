@@ -26,7 +26,7 @@ const SparklesIcon = ({ className, size }: { className?: string; size?: number }
 
 export function EstimatorCTA() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950 py-16 lg:py-20">
+    <section className="bkt-brand-band relative overflow-hidden py-16 lg:py-20">
       {/* Background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
@@ -52,7 +52,7 @@ export function EstimatorCTA() {
             href="https://estimator.bktadvisory.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white text-blue-700 font-semibold rounded-lg shadow-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-300 group"
+            className="inline-flex items-center justify-center gap-3 rounded-lg bg-white px-8 py-4 font-semibold text-blue-700 shadow-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] group"
           >
             <RocketIcon size={20} />
             Launch Project Estimator
@@ -60,7 +60,7 @@ export function EstimatorCTA() {
           </a>
         </div>
 
-        <p className="text-sm text-blue-200 mt-6">
+        <p className="bkt-brand-muted mt-6 text-sm">
           No sign-up required · Instant results · AI-assisted configuration
         </p>
       </div>

@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "./contexts/ThemeProvider";
-import { Toaster } from "./components/ui/sonner";
 
 // BKT icon from Supabase Storage (Logos bucket)
 const BKT_ICON_URL =
@@ -164,12 +162,9 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster richColors position="top-right" closeButton />
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
 }
 

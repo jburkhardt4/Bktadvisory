@@ -97,7 +97,7 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bkt-primary-button disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? 'Creating…' : 'Create Project'}
         </button>

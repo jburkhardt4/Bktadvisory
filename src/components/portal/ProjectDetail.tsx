@@ -17,6 +17,7 @@ import { ActionDropdown, EditButton } from './ActionDropdown';
 import { PortalModal } from './PortalModal';
 import { AddActivityForm } from './forms/AddActivityForm';
 import { AddMilestoneForm } from './forms/AddMilestoneForm';
+import { PORTAL_HERO_SURFACE_CLASS } from './portalBranding';
 
 type ActivityEventType = Database['public']['Enums']['activity_event_type'];
 
@@ -258,7 +259,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
           </button>
         </div>
         {/* Hero skeleton */}
-        <div className="bg-gradient-to-br from-[#0F172B] via-slate-800 to-purple-950 rounded-2xl p-6 lg:p-8 shadow-lg border border-slate-700/50 animate-pulse">
+        <div className={`${PORTAL_HERO_SURFACE_CLASS} animate-pulse p-6 lg:p-8`}>
           <div className="h-4 w-32 bg-white/10 rounded mb-3" />
           <div className="h-8 w-2/3 bg-white/10 rounded mb-2" />
           <div className="h-4 w-1/2 bg-white/5 rounded" />
@@ -351,7 +352,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
       </div>
 
       {/* ── Project Header (Dark Gradient Hero) ── */}
-      <div className="bg-gradient-to-br from-[#0F172B] via-slate-800 to-purple-950 rounded-2xl p-6 lg:p-8 shadow-lg border border-slate-700/50">
+      <div className={`${PORTAL_HERO_SURFACE_CLASS} p-6 lg:p-8`}>
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -606,7 +607,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Save Changes</button>
+              <button type="submit" className="bkt-primary-button">Save Changes</button>
             </div>
           </form>
         </PortalModal>
@@ -640,7 +641,7 @@ export function ProjectDetail({ projectId, onBack }: { projectId: string; onBack
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setActiveModal(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all">Upload</button>
+              <button type="submit" className="bkt-primary-button">Upload</button>
             </div>
           </form>
         </PortalModal>

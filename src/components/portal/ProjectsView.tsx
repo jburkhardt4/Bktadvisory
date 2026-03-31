@@ -3,6 +3,12 @@ import { useUserProjects } from '../../hooks/useUserProjects';
 import type { Project, ProjectStatus } from './portalData';
 import { ProjectStatusBadge } from './StatusBadge';
 import { ChevronRightIcon, InboxIcon } from './PortalIcons';
+import {
+  PORTAL_TAB_BAR_CLASS,
+  PORTAL_TAB_BUTTON_ACTIVE_CLASS,
+  PORTAL_TAB_BUTTON_BASE_CLASS,
+  PORTAL_TAB_BUTTON_INACTIVE_CLASS,
+} from './portalBranding';
 
 type Tab = 'active' | 'awaiting' | 'blocked' | 'completed';
 
@@ -80,15 +86,13 @@ export function ProjectsView({ onSelectProject }: { onSelectProject: (id: string
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex gap-0 overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50">
+      <div className={PORTAL_TAB_BAR_CLASS}>
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`px-5 py-3 text-xs font-medium whitespace-nowrap transition-colors border-b-2 ${
-              activeTab === t.key
-                ? 'border-blue-600 bg-white text-blue-700 dark:border-blue-500 dark:bg-slate-900 dark:text-blue-200'
-                : 'border-transparent text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/80 dark:hover:text-slate-50'
+            className={`${PORTAL_TAB_BUTTON_BASE_CLASS} ${
+              activeTab === t.key ? PORTAL_TAB_BUTTON_ACTIVE_CLASS : PORTAL_TAB_BUTTON_INACTIVE_CLASS
             }`}
           >
             {t.label}

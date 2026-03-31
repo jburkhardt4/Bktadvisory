@@ -206,7 +206,7 @@ export function AccountSecurityPanel() {
         <button
           type="submit"
           disabled={isSaving}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="bkt-primary-button disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSaving ? (
             <>

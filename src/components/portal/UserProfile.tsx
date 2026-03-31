@@ -10,19 +10,19 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
   const { profile, pendingEmail, isLoading, error, refreshProfile } = usePortalProfile();
 
   if (isLoading) {
-    return <div className="h-32 animate-pulse rounded-2xl border border-slate-700/50 bg-slate-800/50" />;
+    return <div className="h-32 animate-pulse rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm" />;
   }
 
   if (error || !profile) {
     return (
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-6 text-slate-200">
-        <p className="text-sm text-red-300">{error ?? 'We could not load your profile.'}</p>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 backdrop-blur-sm">
+        <p className="text-sm text-red-200">{error ?? 'We could not load your profile.'}</p>
         <button
           type="button"
           onClick={() => {
             void refreshProfile();
           }}
-          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15"
+          className="mt-3 bkt-outline-brand-button"
         >
           Retry
         </button>
@@ -38,7 +38,7 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
     .join('');
 
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-[#1e293b]/50 p-6 shadow-sm backdrop-blur-sm">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-6 shadow-[0_18px_45px_rgba(2,6,23,0.18)] backdrop-blur-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-5">
           {profile.avatarUrl ? (
@@ -53,9 +53,9 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
             </div>
           )}
 
-          <div className="min-w-0">
+            <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-slate-50">
                 {profile.fullName || profile.email}
               </h2>
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
@@ -68,20 +68,20 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
               )}
             </div>
 
-            <div className="mt-1 text-sm capitalize text-slate-400">
+            <div className="mt-1 text-sm capitalize text-slate-200">
               {profile.role}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-300">
+            <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-slate-100">
               {profile.companyName && (
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500"><BuildingIcon size={16} /></span>
+                  <span className="text-slate-300"><BuildingIcon size={16} /></span>
                   <span>{profile.companyName}</span>
                 </div>
               )}
 
               <div className="flex items-center gap-2">
-                <span className="text-slate-500"><MailIcon size={16} /></span>
+                <span className="text-slate-300"><MailIcon size={16} /></span>
                 <span>{pendingEmail ?? profile.email}</span>
                 {pendingEmail && (
                   <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
@@ -92,7 +92,7 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
 
               {profile.phone && (
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500"><PhoneIcon size={16} /></span>
+                  <span className="text-slate-300"><PhoneIcon size={16} /></span>
                   <span>{formatPhoneNumber(profile.phone)}</span>
                 </div>
               )}
@@ -109,7 +109,7 @@ export function UserProfile({ onEditProfile }: UserProfileProps) {
         <button
           type="button"
           onClick={onEditProfile}
-          className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/15"
+          className="bkt-outline-brand-button"
         >
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9" />

@@ -60,7 +60,7 @@ export function Navigation() {
   const authed = !!session;
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#EFF6FF]/90 backdrop-blur-md border-b border-blue-100">
+    <nav className="bkt-topbar">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8">
         <div className="flex items-center justify-between h-[80px] flex-nowrap">
 
@@ -94,7 +94,7 @@ export function Navigation() {
                 <Link
                   key={label}
                   to={`/${label.toLowerCase()}`}
-                  className="whitespace-nowrap px-3 py-2 text-sm font-medium text-slate-800 hover:text-blue-700 transition-colors relative group"
+                  className="relative whitespace-nowrap px-3 py-2 text-sm font-medium text-slate-800 transition-colors hover:text-blue-700 dark:text-slate-200 dark:hover:text-blue-300 group"
                 >
                   {label}
                   <span className="absolute bottom-1.5 left-3 right-3 h-[2px] bg-blue-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -103,7 +103,7 @@ export function Navigation() {
             </div>
 
             {/* Divider */}
-            <div className="w-px h-6 bg-slate-300/70 mx-1 xl:mx-2 shrink-0" />
+            <div className="w-px h-6 bg-slate-300/70 dark:bg-slate-700/70 mx-1 xl:mx-2 shrink-0" />
 
             {/* CTA cluster */}
             <div className="flex items-center flex-nowrap gap-2 xl:gap-3">
@@ -111,7 +111,7 @@ export function Navigation() {
                 href="https://estimator.bktadvisory.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                className="bkt-primary-button whitespace-nowrap px-3.5 py-2 hover:scale-[1.02] active:scale-[0.98] duration-200"
               >
                 <RocketIcon size={14} />
                 <span className="hidden xl:inline">Project Estimator</span>
@@ -127,7 +127,7 @@ export function Navigation() {
 
               <Link
                 to={authed ? "/portal" : "/auth"}
-                className="whitespace-nowrap inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-400 rounded-lg transition-all duration-200 relative group"
+                className="bkt-secondary-button relative whitespace-nowrap px-4 py-2 group"
               >
                 <UserIcon size={15} />
                 {authed ? 'My Portal' : 'Sign In'}
@@ -140,7 +140,7 @@ export function Navigation() {
           <div className="lg:hidden flex items-center ml-auto">
             <Link
                 to={authed ? "/portal" : "/auth"}
-                className="whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 border border-slate-300 hover:border-blue-400 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-700 transition-all duration-200 py-2 mx-1 relative group"
+                className="bkt-secondary-button relative whitespace-nowrap px-3.5 py-2 mx-1 group"
               >
                 <UserIcon size={15} />
                 {authed ? 'My Portal' : 'Sign In'}
@@ -148,7 +148,7 @@ export function Navigation() {
               </Link>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 text-slate-900 hover:text-slate-700"
+              className="bkt-icon-button"
             >
               {isOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
             </button>
@@ -157,26 +157,26 @@ export function Navigation() {
 
         {/* ── Mobile drawer ── */}
         {isOpen && (
-          <div className="lg:hidden py-4 border-t border-blue-100">
+          <div className="lg:hidden py-4 border-t border-slate-200 dark:border-slate-800">
             <div className="flex flex-col gap-1">
               {['Work', 'Services', 'Process', 'About'].map((label) => (
                 <Link
                   key={label}
                   to={`/${label.toLowerCase()}`}
                   onClick={() => setIsOpen(false)}
-                  className="px-3 py-2.5 text-slate-900 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors text-left text-sm font-medium"
+                  className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 hover:text-blue-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-blue-300"
                 >
                   {label}
                 </Link>
               ))}
 
-              <div className="h-px bg-slate-200 my-2" />
+              <div className="h-px bg-slate-200 dark:bg-slate-800 my-2" />
 
               <a
                 href="https://estimator.bktadvisory.com/home"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-200"
+                className="bkt-primary-button w-full px-4 py-2.5 duration-200"
               >
                 <RocketIcon size={14} />
                 Project Estimator
@@ -188,7 +188,7 @@ export function Navigation() {
               <Link
                 to={authed ? "/portal" : "/auth"}
                 onClick={() => setIsOpen(false)}
-                className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-700 hover:border-blue-400 transition-all duration-200"
+                className="bkt-secondary-button w-full justify-center px-4 py-2.5"
               >
                 <UserIcon size={15} />
                 {authed ? 'My Portal' : 'Sign In'}

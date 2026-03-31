@@ -5,13 +5,13 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950 text-white py-12">
+    <footer className="bkt-brand-band py-12">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid md:grid-cols-3 gap-12 pb-8 border-b border-neutral-800">
+        <div className="grid md:grid-cols-3 gap-12 pb-8 border-b border-slate-800/90">
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-white font-bold">BKT Advisory</h3>
-            <p className="text-neutral-400 text-sm">
+            <p className="text-slate-300 text-sm">
               Building predictable growth engines via Salesforce & AI for Startups, FinTech, and InsurTech.
             </p>
           </div>
@@ -20,23 +20,23 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-white text-sm uppercase tracking-wide font-semibold">Quick Links</h4>
             <nav className="flex flex-col gap-2">
-              <Link to="/work" className="text-neutral-400 hover:text-white transition-colors text-left text-sm">
+              <Link to="/work" className="text-slate-300 hover:text-white transition-colors text-left text-sm">
                 Work
               </Link>
-              <Link to="/services" className="text-neutral-400 hover:text-white transition-colors text-left text-sm">
+              <Link to="/services" className="text-slate-300 hover:text-white transition-colors text-left text-sm">
                 Services
               </Link>
-              <Link to="/process" className="text-neutral-400 hover:text-white transition-colors text-left text-sm">
+              <Link to="/process" className="text-slate-300 hover:text-white transition-colors text-left text-sm">
                 Process
               </Link>
-              <Link to="/about" className="text-neutral-400 hover:text-white transition-colors text-left text-sm">
+              <Link to="/about" className="text-slate-300 hover:text-white transition-colors text-left text-sm">
                 About
               </Link>
               <a
                 href="https://estimator.bktadvisory.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-neutral-400 hover:text-white transition-colors text-left text-sm inline-flex items-center gap-1"
+                className="text-slate-300 hover:text-white transition-colors text-left text-sm inline-flex items-center gap-1"
               >
                 Project Estimator
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +52,7 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-white text-sm uppercase tracking-wide font-semibold">Get In Touch</h4>
             <div className="space-y-2">
-              <p className="text-neutral-400 text-sm">Ready to transform your CRM and AI stack?</p>
+              <p className="text-slate-300 text-sm">Ready to transform your CRM and AI stack?</p>
               <ScheduleCallButton variant="footer" />
             </div>
           </div>
@@ -60,10 +60,10 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-neutral-500 text-sm">
+          <p className="text-slate-400 text-sm">
             &copy; {currentYear} BKT Advisory. All rights reserved.
           </p>
-          <p className="text-neutral-500 text-sm">
+          <p className="text-slate-400 text-sm">
             John "JB" Burkhardt &middot; Salesforce & AI Systems Architect
           </p>
         </div>

@@ -68,24 +68,24 @@ export function ActionDropdown({ label, context, items, onAction, userRole = 'cl
   if (visibleItems.length === 0) return null;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative shrink-0">
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="true"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all cursor-pointer"
+        className="bkt-primary-button px-4 py-2"
       >
         {label}
         <ChevronDownIcon size={14} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-150 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30" role="menu">
+        <div className="bkt-shell-surface absolute right-0 top-full z-50 mt-2 min-w-[15rem] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150" role="menu">
           {visibleItems.map((item) => (
             <button
               key={item.label}
               onClick={() => { item.onClick?.(); setOpen(false); }}
               role="menuitem"
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[#1d293d] transition-colors cursor-pointer hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition-colors cursor-pointer hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               <span className="text-slate-500 dark:text-slate-400">{item.icon}</span>
               {item.label}
@@ -101,7 +101,7 @@ export function EditButton({ onClick }: { onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="cursor-pointer rounded-lg p-1.5 text-slate-300 transition-all hover:bg-slate-100 hover:text-slate-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+      className="bkt-icon-button p-1.5 text-slate-400 dark:text-slate-500"
       title="Edit"
     >
       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

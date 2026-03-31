@@ -13,7 +13,7 @@ export function Layout() {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bkt-app-shell">
       <Navigation />
       <Outlet />
       <Footer />

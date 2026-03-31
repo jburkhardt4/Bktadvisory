@@ -22,6 +22,7 @@ import {
   formatDateTime,
   getProfileDisplayName,
 } from './adminCrmApi';
+import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 export function AdminDashboardPage() {
   const { quotes, projects, activities, milestones, loading, error } = useAdminCrm();
@@ -59,50 +60,60 @@ export function AdminDashboardPage() {
         </div>
       )}
 
-      <div className="GlobalMetrics border border-b-0 border-slate-200 bg-white rounded-t-2xl p-6 dark:border-2 dark:border-b-0 dark:border-slate-800 dark:bg-[#020618]">
+      <div className={`${PORTAL_HERO_SURFACE_CLASS} rounded-b-none border-b-0 p-6`}>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-slate-50">Master CRM Dashboard</h2>
+          <p className="mt-1 text-sm text-slate-200">
+            Review every quote, project, activity, and milestone across all client accounts from one place.
+          </p>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <AdminMetricCard
             label="Quotes"
             value={String(quotes.length)}
             helper={`${acceptedQuotes} accepted`}
-            accentClassName="text-blue-600 dark:text-blue-300"
+            accentClassName="text-blue-200"
+            variant="hero"
           />
           <AdminMetricCard
             label="Projects"
             value={String(projects.length)}
             helper={`${activeProjects} active engagements`}
-            accentClassName="text-indigo-600 dark:text-indigo-300"
+            accentClassName="text-indigo-200"
+            variant="hero"
           />
           <AdminMetricCard
             label="Activities"
             value={String(activities.length)}
             helper={`${blockedProjects} blocked project states`}
-            accentClassName="text-cyan-600 dark:text-cyan-300"
+            accentClassName="text-cyan-200"
+            variant="hero"
           />
           <AdminMetricCard
             label="Milestones"
             value={String(milestones.length)}
             helper={`${completedMilestones} completed`}
-            accentClassName="text-emerald-600 dark:text-emerald-300"
+            accentClassName="text-emerald-200"
+            variant="hero"
           />
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-t-none rounded-b-2xl border border-t-0 border-slate-200 bg-white shadow-sm dark:border-2 dark:border-t-0 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
+      <div className="bkt-shell-surface rounded-t-none border-t-0">
         <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Master CRM Dashboard</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Operations Overview</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Review every quote, project, activity, and milestone across all client accounts from one place.
+            Drill into quotes, projects, activities, and milestones from the shared CRM workspace.
           </p>
         </div>
 
         <div className="p-6">
           <Tabs defaultValue="quotes" className="gap-4">
-            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/70 md:grid-cols-4">
-              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Quotes</TabsTrigger>
-              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Projects</TabsTrigger>
-              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Activities</TabsTrigger>
-              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-[#51a2ff] dark:data-[state=active]:bg-[#0F172B]">Milestones</TabsTrigger>
+            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1 dark:bg-slate-950 md:grid-cols-4">
+              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Quotes</TabsTrigger>
+              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Projects</TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Activities</TabsTrigger>
+              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Milestones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="quotes">

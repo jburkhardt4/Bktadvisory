@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { ScheduleCallButton } from "./ScheduleCallButton";
 
 const SparklesIcon = ({ size, className }: { size?: number; className?: string }) => (
@@ -27,33 +26,16 @@ const ArrowRightIcon = ({ size, className }: { size?: number; className?: string
   </svg>
 );
 
-function MarqueeRow({ items, speed = 30 }: { items: string[]; speed?: number }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    const inner = innerRef.current;
-    if (!el || !inner) return;
-    let raf: number;
-    let pos = 0;
-    const halfWidth = inner.scrollWidth / 2;
-    const step = speed / 60;
-    const animate = () => {
-      pos += step;
-      if (pos >= halfWidth) pos = 0;
-      el.scrollLeft = pos;
-      raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [speed]);
-
+function TechMarqueeRow({ items, direction }: { items: string[]; direction: 'left' | 'right' }) {
   return (
-    <div ref={scrollRef} className="overflow-hidden whitespace-nowrap" style={{ scrollbarWidth: 'none' }}>
-      <div ref={innerRef} className="inline-flex gap-3">
-        {[...items, ...items].map((item, i) => (
-          <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-slate-300 backdrop-blur-sm flex-shrink-0">
+    <div className="bkt-marquee">
+      <div className={`bkt-marquee-track ${direction === 'right' ? 'bkt-marquee-track-right' : 'bkt-marquee-track-left'}`}>
+        {[...items, ...items].map((item, index) => (
+          <span
+            key={`${item}-${index}`}
+            aria-hidden={index >= items.length ? true : undefined}
+            className="bkt-tech-pill flex-shrink-0"
+          >
             {item}
           </span>
         ))}
@@ -63,19 +45,37 @@ function MarqueeRow({ items, speed = 30 }: { items: string[]; speed?: number }) 
 }
 
 export function Hero() {
-  const techStack = [
-    "Salesforce",
-    "AI Agents",
-    "n8n",
-    "APIs",
-    "RPA",
-    "FSC",
+  const salesforceStack = [
+    "Salesforce Platform",
     "Sales Cloud",
     "Service Cloud",
+    "Financial Services Cloud (FSC)",
+    "Data Cloud",
+    "Apex",
+    "LWC",
+    "Visualforce Pages",
+    "Lightning Apps",
+    "Agentforce",
+  ];
+
+  const nonSalesforceStack = [
+    "OpenAI",
+    "Claude",
+    "ChatGPT",
+    "n8n",
+    "Make.com",
+    "Zapier",
+    "APIs",
+    "RPA",
+    "GitHub",
+    "Copilot",
+    "Cursor",
+    "Replit",
+    "Figma",
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-[#0F172B] via-slate-800 to-blue-950">
+    <section className="bkt-home-hero-gradient relative overflow-hidden">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-24">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Left Column: Copy & Actions (7 columns) */}
@@ -97,16 +97,10 @@ export function Hero() {
               and operationalize AI.
             </p>
 
-            {/* Tech Stack Pills */}
-            <div className="flex flex-wrap gap-2">
-              {techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-slate-300 backdrop-blur-sm hover:bg-white/10 transition-colors"
-                >
-                  {tech}
-                </span>
-              ))}
+            {/* Tech Stack Marquee */}
+            <div className="space-y-3">
+              <TechMarqueeRow items={salesforceStack} direction="left" />
+              <TechMarqueeRow items={nonSalesforceStack} direction="right" />
             </div>
 
             {/* CTAs */}
@@ -150,7 +144,7 @@ export function Hero() {
 
                 {/* Middle Layer - CRM */}
                 <div className="flex items-center justify-center">
-                  <div className="group px-8 py-3 bg-white/10 border-2 border-blue-600/50 rounded-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/15 hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-default">
+                  <div className="bkt-hero-diagram-node cursor-default">
                     <span className="text-slate-50 font-semibold">
                       Salesforce CRM
                     </span>
@@ -166,18 +160,11 @@ export function Hero() {
 
                 {/* Bottom Layer - Data Sources */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
-                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">IT Systems</p>
-                    <MarqueeRow items={["Salesforce", "Agentforce", "Sales Cloud", "Service Cloud", "Marketing Cloud", "Financial Services Cloud (FSC)", "Insurance Cloud", "Experience Cloud", "Commerce Cloud"]} speed={25} />
-                  </div>
-                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
-                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">Cloud Apps</p>
-                    <MarqueeRow items={["Claude", "OpenAI Chat GPT 5", "Codex", "Copilot", "GitHub", "Figma", "Replit"]} speed={22} />
-                  </div>
-                  <div className="group py-2 sm:py-3 bg-white/5 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden cursor-default">
-                    <p className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider text-center mb-1.5 px-2">AI Tools</p>
-                    <MarqueeRow items={["AI Agents", "n8n", "APIs", "RPA", "FSC", "n8n", "APIs", "RPA"]} speed={20} />
-                  </div>
+                  {["IT Systems", "Cloud Apps", "AI Tools"].map((label) => (
+                    <div key={label} className="bkt-hero-diagram-node w-full px-4 text-center text-[13px] leading-tight cursor-default">
+                      <span>{label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 

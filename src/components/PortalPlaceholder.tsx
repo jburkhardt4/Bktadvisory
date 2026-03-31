@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 export function PortalPlaceholder() {
   return (
-    <div className="min-h-screen bg-[#0F172B] text-white flex flex-col items-center justify-center px-6">
+    <div className="bkt-loading-screen">
       <div className="max-w-md w-full text-center space-y-8">
         <div className="space-y-3">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/30 mb-2">
@@ -11,9 +11,9 @@ export function PortalPlaceholder() {
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white">Client Portal</h1>
-          <p className="text-slate-400 text-lg">Coming Soon</p>
-          <p className="text-slate-500 text-sm leading-relaxed">
+          <h1 className="text-3xl font-bold bkt-brand-heading">Client Portal</h1>
+          <p className="bkt-brand-muted text-lg">Coming Soon</p>
+          <p className="text-sm leading-relaxed text-slate-400">
             The BKT Advisory client portal is under development. It will provide secure access to your project status, quotes, activity feed, and documents.
           </p>
         </div>
@@ -21,7 +21,7 @@ export function PortalPlaceholder() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
+            className="bkt-primary-button px-5 py-2.5"
           >
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -30,7 +30,7 @@ export function PortalPlaceholder() {
           </Link>
           <Link
             to="/auth"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white text-sm font-medium transition-colors"
+            className="bkt-outline-brand-button px-5 py-2.5"
           >
             Sign In
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

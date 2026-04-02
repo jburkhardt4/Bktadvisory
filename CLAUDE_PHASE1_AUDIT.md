@@ -44,7 +44,7 @@ Both repositories are largely launch-ready architecturally. The **Bktadvisory** 
 
 ### 3a. Bktadvisory — Route Surface
 
-```text
+```plaintext
 Public (no auth):
   /           → HomePage
   /work       → WorkPage
@@ -67,7 +67,7 @@ Admin-only (RequireAuth + AdminRoute):
 
 ### 3b. Bktadvisory — Auth Data Flow
 
-```
+```plaintext
 App mount
   → supabase.auth.getSession()   [initializes AuthContext]
   → onAuthStateChange()           [subscribes to session changes]
@@ -98,7 +98,7 @@ Route guards:
 
 ### 3d. Estimator — Architecture
 
-```
+```plaintext
 EstimatorAppShell (state root)
   ├── showQuote=false → Estimator (9-step form, file upload)
   │     └── AIChatbot (GPT-4 chat, autofill, scope refinement)
@@ -114,7 +114,7 @@ Portal handoff layer (/src/portal/):
 
 ### 3e. Cross-Repo Data Flow
 
-```
+```plaintext
 Estimator:
   User fills 9 steps
   → calculateQuote() → QuoteData
@@ -148,7 +148,7 @@ Portal (Bktadvisory):
 **CLAUDE.md Compliance:**
 
 | Rule | Status |
-| --- |--- |
+| --- | --- |
 | Dark mode anchor: slate-950 | VERIFIED — ThemeProvider uses `#0f172a` (= slate-950) |
 | Light mode anchor: slate-50 | VERIFIED — ThemeProvider uses `#f8fafc` (= slate-50) |
 | `npm run typecheck && npm run lint` before complete | RULE ESTABLISHED — enforcement not yet runtime-verified |
@@ -173,7 +173,7 @@ Portal (Bktadvisory):
 ### 5a. Bktadvisory — Existing Test Coverage
 
 | Test File | Covers |
-|---|---|
+| --- | --- |
 | `src/__tests__/auth.test.tsx` | AuthContext init, role resolution, session hydration, redirects |
 | `src/__tests__/admin-route.test.tsx` | AdminRoute guard (admin vs client role) |
 | `src/__tests__/account-security.test.tsx` | AccountSecurityPanel component |
@@ -184,7 +184,7 @@ Portal (Bktadvisory):
 **Missing coverage:**
 
 | Gap | Risk | Required By |
-|---|---|---|
+| --- | --- | --- |
 | Playwright E2E tests (any) | HIGH | agentic-release-plan.md Phase 5 |
 | Quote flow unit tests | HIGH | Release gate |
 | Portal data persistence tests | HIGH | Release gate |
@@ -200,7 +200,7 @@ Portal (Bktadvisory):
 **Missing coverage:**
 
 | Gap | Risk |
-|---|---|
+| --- | --- |
 | Any test file at all | CRITICAL |
 | Quote calculation unit tests | CRITICAL |
 | Portal mapper unit tests | HIGH |
@@ -235,7 +235,7 @@ Portal (Bktadvisory):
 ## 6. Architecture & Testing Launch Blockers
 
 | # | Blocker | Repo | Severity | Phase |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | B1 | No Playwright E2E tests configured | Bktadvisory | CRITICAL | Phase 5 |
 | B2 | No test suite in estimator repo | Estimator | CRITICAL | Phase 5 |
 | B3 | Quote-to-project end-to-end flow unverified | Both | HIGH | Phase 3 |
@@ -308,7 +308,7 @@ Portal (Bktadvisory):
 The following areas must not be modified until their Phase is active and release gate criteria are met:
 
 | Area | Reason | Owner Phase |
-|---|---|---|
+| --- | --- | --- |
 | `src/contexts/AuthContext.tsx` | Core auth logic — any change affects all protected routes | Phase 2 |
 | `supabase/migrations/` | Schema changes require coordinated migration + RLS audit | Phase 2 / Phase 3 |
 | `src/components/EstimatorBoundary.tsx` | Cross-repo redirect — requires validating estimator deployment URL | Phase 2 |

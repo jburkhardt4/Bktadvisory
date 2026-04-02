@@ -1,4 +1,5 @@
 # CLAUDE Phase 1 Audit — BKT Advisory
+
 **Audit Date:** 2026-04-01  
 **Auditor:** Claude Code (Sonnet 4.6)  
 **Mode:** Read-only architecture audit — no code modified  
@@ -11,6 +12,7 @@
 Both repositories are largely launch-ready architecturally. The **Bktadvisory** main site has a mature auth system (admin/client role guards, retry logic, metadata fallback), 42 Vitest unit tests, and a 6-phase orchestration plan. The **estimator** is a focused single-page application with AI-driven quote generation and a clean portal mapper layer for cross-repo handoff.
 
 **Critical blockers before launch:**
+
 - Estimator has zero automated tests and no `.env.example`
 - Playwright E2E tests are required per orchestration plan but not yet configured in either repo
 - Quote-to-project handoff automation is designed but not yet verified end-to-end
@@ -21,7 +23,7 @@ Both repositories are largely launch-ready architecturally. The **Bktadvisory** 
 ## 2. Repository Inventory
 
 | Property | Bktadvisory | Bktadvisoryprojectestimator |
-|---|---|---|
+| --- | --- | --- |
 | Path | `/workspaces/Bktadvisory/` | `/workspaces/Bktadvisory/Bktadvisoryprojectestimator/` |
 | Framework | React 18 + Vite 6.4.1 | React 18 + Vite 6.3.5 |
 | Language | TypeScript (strict) | TypeScript |
@@ -42,7 +44,7 @@ Both repositories are largely launch-ready architecturally. The **Bktadvisory** 
 
 ### 3a. Bktadvisory — Route Surface
 
-```
+```text
 Public (no auth):
   /           → HomePage
   /work       → WorkPage
@@ -210,6 +212,7 @@ Portal (Bktadvisory):
 ### 5c. Minimum Practical Release Gate
 
 **Bktadvisory:**
+
 - [ ] `npm run typecheck` passes clean
 - [ ] `npm run lint` passes clean
 - [ ] `npm run build` succeeds
@@ -220,6 +223,7 @@ Portal (Bktadvisory):
 - [ ] Mobile screenshots: 375px and 768px viewports
 
 **Estimator:**
+
 - [ ] `npm run build` succeeds
 - [ ] Manual walkthrough: 9 steps → quote generated → PDF download
 - [ ] Manual walkthrough: AI chatbot → autofill → verify form fields populated
@@ -250,6 +254,7 @@ Portal (Bktadvisory):
 ## 7. Exact Next Action
 
 ### Immediate (Phase 1 completion)
+
 1. Run `npm run typecheck && npm run build` in both repos — confirm no errors
 2. Add Playwright to Bktadvisory: `npm install -D @playwright/test && npx playwright install`
 3. Write Playwright test: sign in → `/portal` happy path + admin redirect rejection
@@ -258,6 +263,7 @@ Portal (Bktadvisory):
 6. Capture visual screenshots: marketing home, portal, admin dashboard, estimator steps 1/4/7 — light + dark mode
 
 ### Then Phase 2 (Auth + Navigation)
+
 - Trace full sign-in flow: Supabase → AuthContext → RequireAuth → portal
 - Verify sign-out clears session and redirects to `/`
 - Test token refresh behavior (1-hour JWT expiry per `supabase/config.toml`)

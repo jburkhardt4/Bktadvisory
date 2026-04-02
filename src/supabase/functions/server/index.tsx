@@ -1,7 +1,14 @@
-import { Hono } from "npm:hono";
-import { cors } from "npm:hono/cors";
-import { logger } from "npm:hono/logger";
-import OpenAI from "npm:openai@4.86.0";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import OpenAI from "openai";
+
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+  serve(handler: (req: Request) => Promise<Response> | Response): void;
+};
 
 // ============================================================================
 // CONFIGURATION
@@ -585,20 +592,62 @@ app.post(`${ROUTE_PREFIX}/refine-scope`, async (c) => {
 
 app.post(`${ROUTE_PREFIX}/analyze-document`, async (c) => {
   try {
-    const body = await c.req.json();
-    const text = asString(body?.text);
-    const fileName = asString(body?.fileName, "Unnamed Document");
+    const formData = await c.req.formData();
+    const file = formData.get("file") as File | null;
+    const fileName = (formData.get("name") as string | null) ?? "Unnamed Document";
+
+    if (!file) {
+      return c.json({ error: "No file provided" }, 400);
+    }
+
+    // 25 MB ceiling — enforced server-side only
+    if (file.size > 25 * 1024 * 1024) {
+      return c.json({ error: "File exceeds 25 MB limit. Please upload a smaller document." }, 413);
+    }
+
+    const mime = file.type;
+    let text = "";
+
+    if (mime === "text/plain") {
+      text = await file.text();
+    } else if (mime === "application/pdf") {
+      // @ts-ignore — Deno npm-compat import resolved at runtime
+      const { default: pdfParse } = await import("npm:pdf-parse/lib/pdf-parse.js");
+      const buffer = await file.arrayBuffer();
+      // @ts-ignore
+      const parsed = await pdfParse(Buffer.from(buffer));
+      text = parsed.text ?? "";
+    } else if (
+      mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      // @ts-ignore — Deno npm-compat import resolved at runtime
+      const { default: mammoth } = await import("npm:mammoth");
+      const buffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+      text = result.value ?? "";
+    } else {
+      return c.json(
+        { error: `Unsupported file type: ${mime}. Please upload a PDF, DOCX, or TXT file.` },
+        415,
+      );
+    }
 
     if (!text.trim()) {
-      return c.json({ error: "Document text is required" }, 400);
+      return c.json(
+        { error: "Could not extract text from this document. It may be image-only or corrupted." },
+        422,
+      );
     }
+
+    // Single truncation point — server only
+    const truncated = text.length > 15_000 ? text.slice(0, 15_000) : text;
 
     const openai = getOpenAIClient();
 
     console.log(`Analyzing document: ${fileName}`);
 
     // Step 1: Extract raw facts.
-    const extracted = await extractDocumentFacts(openai, text);
+    const extracted = await extractDocumentFacts(openai, truncated);
 
     // Step 2: Rewrite extracted goals/problems/requirements through the same
     // canonical writer used by /refine-scope so the style stays consistent.

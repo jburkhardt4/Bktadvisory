@@ -3,14 +3,7 @@ import { FormData, QuoteData } from '../types';
 import { EstimatorStepper } from './EstimatorStepper';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import { toast } from 'sonner@2.0.3';
-// @ts-ignore
-import mammoth from 'mammoth/mammoth.browser';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Set up PDF.js worker
-const pdfjsVersion = pdfjsLib.version || '4.0.379';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+import { toast } from 'sonner';
 
 // Icon components
 const ArrowRightIcon = ({ className, size }: { className?: string; size?: number }) => (
@@ -127,6 +120,8 @@ export function Estimator({
   const [scrollOpacity, setScrollOpacity] = useState(1);
   const [refiningField, setRefiningField] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  type UploadStatus = 'idle' | 'uploading' | 'parsing' | 'analyzing' | 'complete' | 'error';
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const formContainerRef = useRef<HTMLDivElement>(null);
@@ -223,51 +218,6 @@ export function Estimator({
     'AI/ML Engineers': 6,
   };
 
-  // Helper to extract text from files
-  const extractText = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (file.type === 'text/plain') {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = (e) => reject(e);
-        reader.readAsText(file);
-      } else if (file.type === 'application/pdf') {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const typedarray = new Uint8Array(e.target?.result as ArrayBuffer);
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-              const page = await pdf.getPage(i);
-              const textContent = await page.getTextContent();
-              const pageText = textContent.items.map((item: any) => item.str).join(' ');
-              fullText += pageText + '\n';
-            }
-            resolve(fullText);
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-         const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            const arrayBuffer = e.target?.result as ArrayBuffer;
-            const result = await mammoth.extractRawText({ arrayBuffer });
-            resolve(result.value);
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      } else {
-        resolve(`[File: ${file.name} - Content analysis not supported for this type]`);
-      }
-    });
-  };
-
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -281,14 +231,14 @@ export function Estimator({
     const newFiles: { name: string; size: number; type: string; file: File }[] = [];
 
     Array.from(files).forEach(file => {
-      if (file.size > 500 * 1024 * 1024) { // 500MB
-        toast.error(`File ${file.name} exceeds 500MB limit.`);
+      if (file.size > 25 * 1024 * 1024) { // 25 MB
+        toast.error(`File ${file.name} exceeds 25 MB. Please upload a smaller document.`);
         return;
       }
-      
-      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/png', 'image/jpeg'];
+
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
       if (!validTypes.includes(file.type)) {
-        toast.error(`Invalid file type for ${file.name}. Please upload PDF, DOCX, TXT, PNG, or JPG.`);
+        toast.error(`Invalid file type for ${file.name}. Please upload PDF, DOCX, or TXT.`);
         return;
       }
 
@@ -450,8 +400,8 @@ export function Estimator({
 
   const analyzeDocuments = async () => {
     // Filter for analyzable files that have the file object stored
-    const analyzableFiles = (formData.uploadedFiles || []).filter(f => 
-      ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'].includes(f.type) && 
+    const analyzableFiles = (formData.uploadedFiles || []).filter(f =>
+      ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'].includes(f.type) &&
       // @ts-ignore: Check for file property
       f.file
     );
@@ -466,46 +416,75 @@ export function Estimator({
     }
 
     setIsAnalyzing(true);
-    let aggregatedText = "";
+    setUploadStatus('uploading');
 
     try {
-      // Extract text only from NEW files
+      // Send raw files to the Edge Function — no client-side parsing
+      // Process files sequentially and merge results
+      let mergedData: Record<string, any> | null = null;
+
       for (const fileData of newFiles) {
-        // @ts-ignore: We are storing the File object in the state now
-        const text = await extractText(fileData.file);
-        aggregatedText += `\n--- Document: ${fileData.name} ---\n${text}\n`;
+        setUploadStatus('parsing');
+
+        const fd = new FormData();
+        // @ts-ignore: file property stored on the state object
+        fd.append('file', fileData.file, fileData.name);
+        fd.append('name', fileData.name);
+
+        setUploadStatus('analyzing');
+
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/analyze-document`,
+          {
+            method: 'POST',
+            headers: {
+              // Do NOT set Content-Type — browser sets the multipart boundary automatically
+              'Authorization': `Bearer ${publicAnonKey}`,
+            },
+            body: fd,
+          },
+        );
+
+        if (response.status === 429) {
+          toast.error('AI usage limit reached. Proceeding to manual entry.');
+          setCurrentStep(3);
+          return;
+        }
+
+        if (response.status === 413) {
+          toast.error(`${fileData.name} exceeds the 25 MB limit and was skipped.`);
+          continue;
+        }
+
+        if (response.status === 415 || response.status === 422) {
+          const err = await response.json().catch(() => ({}));
+          toast.error(err.error ?? `Could not parse ${fileData.name}. Skipping.`);
+          continue;
+        }
+
+        if (!response.ok) throw new Error(`Analysis failed for ${fileData.name}`);
+
+        const data = await response.json();
+
+        // Merge results across multiple files — later files extend earlier ones
+        if (!mergedData) {
+          mergedData = data;
+        } else {
+          mergedData = {
+            projectDescription: mergedData.projectDescription || data.projectDescription,
+            goals: [mergedData.goals, data.goals].filter(Boolean).join('\n'),
+            problems: [mergedData.problems, data.problems].filter(Boolean).join('\n'),
+            requirements: [mergedData.requirements, data.requirements].filter(Boolean).join('\n'),
+            suggestedInfrastructure: [...(mergedData.suggestedInfrastructure ?? []), ...(data.suggestedInfrastructure ?? [])],
+            suggestedServices: [...(mergedData.suggestedServices ?? []), ...(data.suggestedServices ?? [])],
+            suggestedPowerUps: [...(mergedData.suggestedPowerUps ?? []), ...(data.suggestedPowerUps ?? [])],
+          };
+        }
+
+        analyzedFileNamesRef.current.add(fileData.name + '|' + fileData.size);
       }
 
-      if (!aggregatedText.trim()) {
-         setCurrentStep(3);
-         return;
-      }
-
-      // Truncate text on frontend to avoid payload limits (Supabase Edge Functions have 6MB limit, but smaller is better for latency)
-      // The backend truncates to 15000 anyway.
-      const truncatedText = aggregatedText.length > 20000 ? aggregatedText.substring(0, 20000) + "...[truncated]" : aggregatedText;
-
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/analyze-document`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          text: truncatedText,
-          fileName: "Aggregated Documents"
-        }),
-      });
-
-      if (response.status === 429) {
-        toast.error("AI Usage Limit Reached. Proceeding to manual entry.");
-        setCurrentStep(3);
-        return;
-      }
-
-      if (!response.ok) throw new Error('Analysis failed');
-      
-      const data = await response.json();
+      const data = mergedData;
       
       if (data) {
           // Helper to ensure string
@@ -538,14 +517,13 @@ export function Estimator({
             };
           });
           
+          setUploadStatus('complete');
           toast.success('Project details analyzed and auto-filled!');
-
-          // Mark these files as analyzed so navigating back won't re-trigger
-          newFiles.forEach(f => analyzedFileNamesRef.current.add(f.name + '|' + f.size));
       }
 
     } catch (error) {
       console.error('Analysis error:', error);
+      setUploadStatus('error');
       toast.error('Could not analyze documents. Proceeding to next step.');
     } finally {
       setIsAnalyzing(false);
@@ -960,10 +938,29 @@ export function Estimator({
                  />
                  
                  {isAnalyzing ? (
-                   <div className="flex flex-col items-center">
+                   <div className="flex flex-col items-center w-full max-w-xs">
                      <Loader2Icon size={48} className="text-blue-500 mb-4" />
-                     <p className="text-lg font-medium text-slate-700">Analyzing document...</p>
-                     <p className="text-[14px] md:text-[16px] text-slate-500 mt-2">Extracting structured data to autofill your scope.</p>
+                     <div className="flex items-center gap-2 w-full mb-3">
+                       {(['uploading', 'parsing', 'analyzing'] as const).map((stage, i) => {
+                         const stages = ['uploading', 'parsing', 'analyzing'] as const;
+                         const currentIdx = stages.indexOf(uploadStatus as typeof stages[number]);
+                         const isDone = currentIdx > i;
+                         const isActive = currentIdx === i;
+                         return (
+                           <div key={stage} className="flex-1 flex flex-col items-center gap-1">
+                             <div className={`h-1.5 w-full rounded-full transition-colors duration-300 ${isDone ? 'bg-blue-500' : isActive ? 'bg-blue-400' : 'bg-slate-200'}`} />
+                             <span className={`text-[11px] font-medium capitalize ${isActive ? 'text-blue-600' : isDone ? 'text-slate-500' : 'text-slate-300'}`}>
+                               {stage === 'uploading' ? 'Uploading' : stage === 'parsing' ? 'Parsing' : 'Analyzing'}
+                             </span>
+                           </div>
+                         );
+                       })}
+                     </div>
+                     <p className="text-[14px] text-slate-500 text-center">
+                       {uploadStatus === 'uploading' && 'Sending your document...'}
+                       {uploadStatus === 'parsing' && 'Extracting text from document...'}
+                       {uploadStatus === 'analyzing' && 'AI is reading your scope...'}
+                     </p>
                    </div>
                  ) : (
                    <>
@@ -972,7 +969,7 @@ export function Estimator({
                      </div>
                      <p className="text-lg font-medium text-slate-700 mb-2">Click to upload or drag and drop</p>
                      <p className="text-sm text-slate-500 max-w-sm">
-                       Supports PDF, DOCX, TXT, PNG, JPG (Max 500MB)
+                       Supports PDF, DOCX, TXT (Max 25 MB per file)
                      </p>
                    </>
                  )}

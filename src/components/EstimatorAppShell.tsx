@@ -4,11 +4,37 @@ import { Footer } from "./Footer";
 import { Estimator } from "./Estimator";
 import { Quote } from "./Quote";
 import { AIChatbot } from "./AIChatbot";
+import { PersonaFunnel } from "./PersonaFunnel";
 import { Toaster } from "sonner@2.0.3";
 import { PWAHead } from "./PWAHead";
-import { FormData, QuoteData, initialFormData } from "../types";
+import { FormData, QuoteData, PersonaMode, PersonaRole, initialFormData } from "../types";
+
+function resolveUrlPersona(): { mode: PersonaMode | null; role: PersonaRole | null; skip: boolean } {
+  if (typeof window === 'undefined') return { mode: null, role: null, skip: false };
+  const params = new URLSearchParams(window.location.search);
+  const rawMode = params.get('mode');
+  const rawRole = params.get('role');
+  const skip = params.get('skip-funnel') === '1';
+  const mode: PersonaMode | null =
+    rawMode === 'lite' ? 'lite' : rawMode === 'enterprise' ? 'enterprise' : null;
+  const validRoles: PersonaRole[] = ['business-owner', 'technical-lead', 'project-manager', 'other'];
+  const role: PersonaRole | null = validRoles.includes(rawRole as PersonaRole)
+    ? (rawRole as PersonaRole)
+    : null;
+  return { mode, role, skip };
+}
 
 export function EstimatorAppShell() {
+  const urlPersona = resolveUrlPersona();
+
+  const [showFunnel, setShowFunnel] = useState<boolean>(
+    !urlPersona.skip && urlPersona.mode === null
+  );
+  const [personaMode, setPersonaMode] = useState<PersonaMode | null>(
+    urlPersona.mode ?? (urlPersona.skip ? 'enterprise' : null)
+  );
+  const [personaRole, setPersonaRole] = useState<PersonaRole | null>(urlPersona.role);
+
   const [showQuote, setShowQuote] = useState(false);
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -75,6 +101,13 @@ export function EstimatorAppShell() {
     }
   }, []);
 
+  const handleFunnelComplete = (mode: PersonaMode, role: PersonaRole) => {
+    setPersonaMode(mode);
+    setPersonaRole(role);
+    setShowFunnel(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleGenerateQuote = (data: QuoteData) => {
     setQuoteData(data);
     setShowQuote(true);
@@ -128,7 +161,9 @@ export function EstimatorAppShell() {
       <Toaster />
 
       <main className="flex-grow flex flex-col">
-        {!showQuote ? (
+        {showFunnel ? (
+          <PersonaFunnel onComplete={handleFunnelComplete} />
+        ) : !showQuote ? (
           <>
             <Estimator
               formData={formData}
@@ -139,6 +174,8 @@ export function EstimatorAppShell() {
               onBackToHome={handleBackToHome}
               onTriggerAIAction={handleTriggerAIAction}
               aiUsageCount={aiUsageCount}
+              personaMode={personaMode}
+              personaRole={personaRole}
             />
             <AIChatbot
               currentPage="estimator"
@@ -151,7 +188,7 @@ export function EstimatorAppShell() {
           </>
         ) : (
           <>
-            <Quote data={quoteData!} onBack={handleBackToEstimator} />
+            <Quote data={quoteData!} onBack={handleBackToEstimator} personaMode={personaMode} />
             <AIChatbot
               currentPage="quote"
               onInsertPrompt={handleInsertPrompt}

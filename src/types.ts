@@ -1,3 +1,6 @@
+export type PersonaMode = 'lite' | 'enterprise';
+export type PersonaRole = 'business-owner' | 'technical-lead' | 'project-manager' | 'other';
+
 export interface FormData {
   // Contact Info
   firstName: string;
@@ -22,6 +25,8 @@ export interface FormData {
   powerUps: string[];
   uploadedFiles: { name: string; size: number; type: string }[];
   valueStatement?: string;
+  personaMode?: PersonaMode;
+  personaRole?: PersonaRole;
 }
 
 export interface QuoteData {

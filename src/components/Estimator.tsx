@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FormData, QuoteData } from '../types';
+import { FormData, QuoteData, PersonaMode, PersonaRole } from '../types';
 import { EstimatorStepper } from './EstimatorStepper';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
@@ -104,17 +104,21 @@ interface EstimatorProps {
   onBackToHome: () => void;
   onTriggerAIAction: (type: 'generate' | 'autofill') => void;
   aiUsageCount: { generate: number; autofill: number };
+  personaMode?: PersonaMode | null;
+  personaRole?: PersonaRole | null;
 }
 
-export function Estimator({ 
+export function Estimator({
   formData,
-  setFormData, 
-  currentStep, 
-  setCurrentStep, 
-  onGenerateQuote, 
+  setFormData,
+  currentStep,
+  setCurrentStep,
+  onGenerateQuote,
   onBackToHome,
   onTriggerAIAction,
-  aiUsageCount
+  aiUsageCount,
+  personaMode,
+  personaRole,
 }: EstimatorProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [scrollOpacity, setScrollOpacity] = useState(1);

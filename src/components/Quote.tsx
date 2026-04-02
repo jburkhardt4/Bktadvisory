@@ -4,7 +4,7 @@ import {
   convertInchesToTwip
 } from 'docx';
 import { useRef, useState, useEffect } from 'react';
-import { QuoteData } from '../types';
+import { QuoteData, PersonaMode } from '../types';
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -74,9 +74,10 @@ const toPngFilter = (node: any) => {
 interface QuoteProps {
   data: QuoteData;
   onBack: () => void;
+  personaMode?: PersonaMode | null;
 }
 
-export function Quote({ data, onBack }: QuoteProps) {
+export function Quote({ data, onBack, personaMode }: QuoteProps) {
   const quoteRef = useRef<HTMLDivElement>(null);
   const pdfCaptureRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);

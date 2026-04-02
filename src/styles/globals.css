@@ -331,11 +331,11 @@ html {
   }
 
   .bkt-tech-pill {
-    @apply inline-flex items-center rounded-full border px-4 py-2 text-sm text-slate-100;
-    border-color: rgba(148, 163, 184, 0.18);
-    background-color: rgba(15, 23, 43, 0.54);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 10px 24px rgba(2, 6, 23, 0.16);
+    @apply inline-flex items-center rounded-full px-4 py-2 text-sm text-slate-50;
+    border: 1px solid rgba(59, 130, 246, 0.7);
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 
   .bkt-brand-surface {

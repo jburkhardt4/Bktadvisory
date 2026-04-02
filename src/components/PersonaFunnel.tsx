@@ -111,7 +111,6 @@ export function PersonaFunnel({ onComplete }: PersonaFunnelProps) {
                     Fewer inputs
                   </span>
                 </div>
-                <ArrowRightIcon size={16} />
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-blue-500">
                   <ArrowRightIcon size={16} />
                 </div>

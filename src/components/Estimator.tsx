@@ -114,7 +114,7 @@ export function Estimator({
   currentStep,
   setCurrentStep,
   onGenerateQuote,
-  onBackToHome,
+  onBackToHome: _onBackToHome,
   onTriggerAIAction,
   aiUsageCount,
   personaMode,
@@ -128,6 +128,10 @@ export function Estimator({
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  // Lite mode collapse toggles — default collapsed in Lite, always open in Enterprise
+  const isLite = personaMode === 'lite';
+  const [showTechDetails, setShowTechDetails] = useState(!isLite);
+  const [showPowerUps, setShowPowerUps] = useState(!isLite);
   const formContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scopeProblemsRef = useRef<HTMLTextAreaElement>(null);
@@ -1035,7 +1039,13 @@ export function Estimator({
                   value={formData.scopeGoals}
                   onChange={(e) => handleInputChange('scopeGoals', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeGoals ? 'border-red-500' : 'border-slate-300'}`}
-                  placeholder="Define success metrics..."
+                  placeholder={
+                    personaRole === 'business-owner'
+                      ? 'What does success look like? What ROI or business outcome are you aiming for?'
+                      : personaRole === 'technical-lead'
+                      ? 'What are the technical objectives? What does the architecture need to achieve?'
+                      : 'Define success metrics...'
+                  }
                 />
                 {errors.scopeGoals && <p className="text-red-500 text-xs mt-1">{errors.scopeGoals}</p>}
               </div>
@@ -1061,7 +1071,13 @@ export function Estimator({
                   value={formData.scopeProblems}
                   onChange={(e) => handleInputChange('scopeProblems', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeProblems ? 'border-red-500' : 'border-slate-300'}`}
-                  placeholder="Describe current pain points..."
+                  placeholder={
+                    personaRole === 'business-owner'
+                      ? "What business problem is slowing you down? What's the cost of the status quo?"
+                      : personaRole === 'technical-lead'
+                      ? 'What are the technical pain points? What systems or processes are breaking down?'
+                      : 'Describe current pain points...'
+                  }
                 />
                 {errors.scopeProblems && <p className="text-red-500 text-xs mt-1">{errors.scopeProblems}</p>}
               </div>
@@ -1087,7 +1103,13 @@ export function Estimator({
                   value={formData.scopeRequirements}
                   onChange={(e) => handleInputChange('scopeRequirements', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none overflow-hidden text-base ${errors.scopeRequirements ? 'border-red-500' : 'border-slate-300'}`}
-                  placeholder="List key technical requirements..."
+                  placeholder={
+                    personaRole === 'business-owner'
+                      ? 'What must the solution do? Include any compliance, timeline, or budget constraints.'
+                      : personaRole === 'technical-lead'
+                      ? 'What systems need to connect? What are the API, security, or performance requirements?'
+                      : 'List key technical requirements...'
+                  }
                 />
                 {errors.scopeRequirements && <p className="text-red-500 text-xs mt-1">{errors.scopeRequirements}</p>}
               </div>
@@ -1101,6 +1123,50 @@ export function Estimator({
                 <h2 className="text-[18px] md:text-[20px] mb-2">IT Infrastructure</h2>
                 <p className="text-slate-600 text-[14px] md:text-[16px]">Choose the CRMs, clouds, integrations, and AI tools you need.</p>
               </div>
+
+              {/* Lite mode: collapsible tech details toggle */}
+              {isLite && (
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowTechDetails(v => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] md:text-[15px] font-medium text-slate-700">Technical Selections</span>
+                      {(() => {
+                        const all = [
+                          ...formData.selectedCRMs,
+                          ...formData.selectedClouds,
+                          ...formData.selectedIntegrations,
+                          ...formData.selectedAITools,
+                        ];
+                        return all.length > 0 ? (
+                          <span className="text-[13px] text-slate-500 truncate max-w-[200px] sm:max-w-xs">{all.join(', ')}</span>
+                        ) : (
+                          <span className="text-[13px] text-slate-400 italic">none selected</span>
+                        );
+                      })()}
+                    </div>
+                    <span className={`text-slate-400 transition-transform duration-200 ${showTechDetails ? 'rotate-180' : ''}`}>
+                      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </span>
+                  </button>
+                  {!showTechDetails && (
+                    <div className="px-4 py-2 bg-white border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setShowTechDetails(true)}
+                        className="text-[13px] text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Edit Technical Details →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
                 <div className="flex items-start gap-3 mb-3">
@@ -1147,99 +1213,114 @@ export function Estimator({
                 </div>
               </div>
 
-              <div>
-                <h3 className="mb-3">CRM Platforms</h3>
-                {/* Desktop: exposed checkbox grid */}
-                <div className="hidden md:grid grid-cols-2 gap-3">
-                  {Object.keys(crmHours).map(crm => (
-                    <label key={crm} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                      <input type="checkbox" checked={formData.selectedCRMs.includes(crm)} onChange={() => handleMultiSelect('selectedCRMs', crm)} className="w-4 h-4 text-blue-600" />
-                      <span>{crm}</span>
-                    </label>
-                  ))}
-                </div>
-                {/* Mobile: multi-select dropdown */}
-                <div className="block md:hidden">
-                  <MultiSelectDropdown
-                    options={Object.keys(crmHours)}
-                    selected={formData.selectedCRMs}
-                    onToggle={(crm) => handleMultiSelect('selectedCRMs', crm)}
-                    onClear={() => handleInputChange('selectedCRMs', [])}
-                    placeholder="Select CRMs..."
-                  />
-                </div>
-              </div>
+              {(!isLite || showTechDetails) && (
+                <>
+                  <div>
+                    <h3 className="mb-3">CRM Platforms</h3>
+                    {/* Desktop: exposed checkbox grid */}
+                    <div className="hidden md:grid grid-cols-2 gap-3">
+                      {Object.keys(crmHours).map(crm => (
+                        <label key={crm} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                          <input type="checkbox" checked={formData.selectedCRMs.includes(crm)} onChange={() => handleMultiSelect('selectedCRMs', crm)} className="w-4 h-4 text-blue-600" />
+                          <span>{crm}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {/* Mobile: multi-select dropdown */}
+                    <div className="block md:hidden">
+                      <MultiSelectDropdown
+                        options={Object.keys(crmHours)}
+                        selected={formData.selectedCRMs}
+                        onToggle={(crm) => handleMultiSelect('selectedCRMs', crm)}
+                        onClear={() => handleInputChange('selectedCRMs', [])}
+                        placeholder="Select CRMs..."
+                      />
+                    </div>
+                  </div>
 
-              {formData.selectedCRMs.includes('Salesforce') && (
-                <div>
-                  <h3 className="mb-3">Salesforce Clouds</h3>
-                  {/* Desktop: exposed checkbox grid */}
-                  <div className="hidden md:grid grid-cols-2 gap-3">
-                    {Object.keys(cloudHours).map(cloud => (
-                      <label key={cloud} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                        <input type="checkbox" checked={formData.selectedClouds.includes(cloud)} onChange={() => handleMultiSelect('selectedClouds', cloud)} className="w-4 h-4 text-blue-600" />
-                        <span>{cloud}</span>
-                      </label>
-                    ))}
+                  {formData.selectedCRMs.includes('Salesforce') && (
+                    <div>
+                      <h3 className="mb-3">Salesforce Clouds</h3>
+                      {/* Desktop: exposed checkbox grid */}
+                      <div className="hidden md:grid grid-cols-2 gap-3">
+                        {Object.keys(cloudHours).map(cloud => (
+                          <label key={cloud} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                            <input type="checkbox" checked={formData.selectedClouds.includes(cloud)} onChange={() => handleMultiSelect('selectedClouds', cloud)} className="w-4 h-4 text-blue-600" />
+                            <span>{cloud}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {/* Mobile: multi-select dropdown */}
+                      <div className="block md:hidden">
+                        <MultiSelectDropdown
+                          options={Object.keys(cloudHours)}
+                          selected={formData.selectedClouds}
+                          onToggle={(cloud) => handleMultiSelect('selectedClouds', cloud)}
+                          onClear={() => handleInputChange('selectedClouds', [])}
+                          placeholder="Select Salesforce Clouds..."
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="mb-3">Integrations</h3>
+                    {/* Desktop: exposed checkbox grid */}
+                    <div className="hidden md:grid grid-cols-2 gap-3">
+                      {Object.keys(integrationHours).map(integration => (
+                        <label key={integration} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                          <input type="checkbox" checked={formData.selectedIntegrations.includes(integration)} onChange={() => handleMultiSelect('selectedIntegrations', integration)} className="w-4 h-4 text-blue-600" />
+                          <span>{integration}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {/* Mobile: multi-select dropdown */}
+                    <div className="block md:hidden">
+                      <MultiSelectDropdown
+                        options={Object.keys(integrationHours)}
+                        selected={formData.selectedIntegrations}
+                        onToggle={(integration) => handleMultiSelect('selectedIntegrations', integration)}
+                        onClear={() => handleInputChange('selectedIntegrations', [])}
+                        placeholder="Select Integrations..."
+                      />
+                    </div>
                   </div>
-                  {/* Mobile: multi-select dropdown */}
-                  <div className="block md:hidden">
-                    <MultiSelectDropdown
-                      options={Object.keys(cloudHours)}
-                      selected={formData.selectedClouds}
-                      onToggle={(cloud) => handleMultiSelect('selectedClouds', cloud)}
-                      onClear={() => handleInputChange('selectedClouds', [])}
-                      placeholder="Select Salesforce Clouds..."
-                    />
+
+                  <div>
+                    <h3 className="mb-3">AI Tools</h3>
+                    {/* Desktop: exposed checkbox grid */}
+                    <div className="hidden md:grid grid-cols-2 gap-3">
+                      {Object.keys(aiToolHours).map(tool => (
+                        <label key={tool} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                          <input type="checkbox" checked={formData.selectedAITools.includes(tool)} onChange={() => handleMultiSelect('selectedAITools', tool)} className="w-4 h-4 text-blue-600" />
+                          <span>{tool}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {/* Mobile: multi-select dropdown */}
+                    <div className="block md:hidden">
+                      <MultiSelectDropdown
+                        options={Object.keys(aiToolHours)}
+                        selected={formData.selectedAITools}
+                        onToggle={(tool) => handleMultiSelect('selectedAITools', tool)}
+                        onClear={() => handleInputChange('selectedAITools', [])}
+                        placeholder="Select AI Tools..."
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  {/* Collapse link shown at bottom when expanded in Lite mode */}
+                  {isLite && (
+                    <button
+                      type="button"
+                      onClick={() => setShowTechDetails(false)}
+                      className="text-[13px] text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      ↑ Collapse Technical Details
+                    </button>
+                  )}
+                </>
               )}
-
-              <div>
-                <h3 className="mb-3">Integrations</h3>
-                {/* Desktop: exposed checkbox grid */}
-                <div className="hidden md:grid grid-cols-2 gap-3">
-                  {Object.keys(integrationHours).map(integration => (
-                    <label key={integration} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                      <input type="checkbox" checked={formData.selectedIntegrations.includes(integration)} onChange={() => handleMultiSelect('selectedIntegrations', integration)} className="w-4 h-4 text-blue-600" />
-                      <span>{integration}</span>
-                    </label>
-                  ))}
-                </div>
-                {/* Mobile: multi-select dropdown */}
-                <div className="block md:hidden">
-                  <MultiSelectDropdown
-                    options={Object.keys(integrationHours)}
-                    selected={formData.selectedIntegrations}
-                    onToggle={(integration) => handleMultiSelect('selectedIntegrations', integration)}
-                    onClear={() => handleInputChange('selectedIntegrations', [])}
-                    placeholder="Select Integrations..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <h3 className="mb-3">AI Tools</h3>
-                {/* Desktop: exposed checkbox grid */}
-                <div className="hidden md:grid grid-cols-2 gap-3">
-                  {Object.keys(aiToolHours).map(tool => (
-                    <label key={tool} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                      <input type="checkbox" checked={formData.selectedAITools.includes(tool)} onChange={() => handleMultiSelect('selectedAITools', tool)} className="w-4 h-4 text-blue-600" />
-                      <span>{tool}</span>
-                    </label>
-                  ))}
-                </div>
-                {/* Mobile: multi-select dropdown */}
-                <div className="block md:hidden">
-                  <MultiSelectDropdown
-                    options={Object.keys(aiToolHours)}
-                    selected={formData.selectedAITools}
-                    onToggle={(tool) => handleMultiSelect('selectedAITools', tool)}
-                    onClear={() => handleInputChange('selectedAITools', [])}
-                    placeholder="Select AI Tools..."
-                  />
-                </div>
-              </div>
 
               {/* Mobile-only Assist Me button */}
               <div className="md:hidden">
@@ -1312,25 +1393,66 @@ export function Estimator({
                 </div>
               </div>
 
-              <div>
-                <h3 className="mb-3">Power-Ups (Optional)</h3>
-                <div className="space-y-2">
-                  {Object.keys(powerUpRates).map(powerUp => (
-                    <label key={powerUp} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                      <input
-                        type="checkbox"
-                        checked={formData.powerUps.includes(powerUp)}
-                        onChange={() => handleMultiSelect('powerUps', powerUp)}
-                        className="w-4 h-4 text-blue-600"
-                      />
-                      <div className="flex-1 flex justify-between items-center">
-                        <span className="text-[15px] text-[14px]">{powerUp}</span>
-                        <span className="text-sm text-slate-500">+${powerUpRates[powerUp]}/hr</span>
-                      </div>
-                    </label>
-                  ))}
+              {/* Power-Ups: always show in Enterprise; toggle in Lite */}
+              {isLite ? (
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowPowerUps(v => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] md:text-[15px] font-medium text-slate-700">Add Power-Ups (Optional)</span>
+                      {formData.powerUps.length > 0 && (
+                        <span className="text-[13px] text-slate-500 truncate max-w-[200px] sm:max-w-xs">{formData.powerUps.join(', ')}</span>
+                      )}
+                    </div>
+                    <span className={`text-slate-400 transition-transform duration-200 ${showPowerUps ? 'rotate-180' : ''}`}>
+                      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </span>
+                  </button>
+                  {showPowerUps && (
+                    <div className="p-4 border-t border-slate-100 space-y-2">
+                      {Object.keys(powerUpRates).map(powerUp => (
+                        <label key={powerUp} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            checked={formData.powerUps.includes(powerUp)}
+                            onChange={() => handleMultiSelect('powerUps', powerUp)}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <div className="flex-1 flex justify-between items-center">
+                            <span className="text-[14px] md:text-[15px]">{powerUp}</span>
+                            <span className="text-sm text-slate-500">+${powerUpRates[powerUp]}/hr</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <h3 className="mb-3">Power-Ups (Optional)</h3>
+                  <div className="space-y-2">
+                    {Object.keys(powerUpRates).map(powerUp => (
+                      <label key={powerUp} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                        <input
+                          type="checkbox"
+                          checked={formData.powerUps.includes(powerUp)}
+                          onChange={() => handleMultiSelect('powerUps', powerUp)}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div className="flex-1 flex justify-between items-center">
+                          <span className="text-[14px] md:text-[15px]">{powerUp}</span>
+                          <span className="text-sm text-slate-500">+${powerUpRates[powerUp]}/hr</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

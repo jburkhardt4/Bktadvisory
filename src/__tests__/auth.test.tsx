@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Routes, Route } from 'react-router';
 
 // ---------------------------------------------------------------------------
 // Mock the Supabase client so tests never hit the network
@@ -373,6 +373,84 @@ describe('AuthPage Supabase integration', () => {
     await waitFor(() =>
       expect(screen.getByText('Invalid login credentials')).toBeInTheDocument(),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AuthPage — already-authenticated redirect
+// ---------------------------------------------------------------------------
+describe('AuthPage — already-authenticated redirect', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockProfileMaybeSingle.mockResolvedValue({ data: null, error: null });
+    mockProfileEq.mockReturnValue({ maybeSingle: mockProfileMaybeSingle });
+    mockProfileSelect.mockReturnValue({ eq: mockProfileEq });
+    mockFrom.mockReturnValue({ select: mockProfileSelect });
+    const session = makeSession();
+    mockGetSession.mockResolvedValue({ data: { session } });
+    mockOnAuthStateChange.mockImplementation((cb) => {
+      setTimeout(() => cb('SIGNED_IN', session), 0);
+      return makeSubscription();
+    });
+  });
+
+  it('redirects to /portal when session is active and no from state', async () => {
+    const { AuthPage } = await import('../components/AuthPage');
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/auth']}>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/portal" element={<div data-testid="portal-home">Portal</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('portal-home')).toBeInTheDocument(),
+    );
+  });
+
+  it('redirects to location.state.from when set', async () => {
+    const { AuthPage } = await import('../components/AuthPage');
+
+    render(
+      <AuthProvider>
+        <MemoryRouter
+          initialEntries={[{ pathname: '/auth', state: { from: '/portal/dashboard' } }]}
+        >
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/portal/dashboard" element={<div data-testid="portal-dashboard">Dashboard</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('portal-dashboard')).toBeInTheDocument(),
+    );
+  });
+
+  it('does not redirect while auth is still loading', async () => {
+    mockGetSession.mockReturnValue(new Promise(() => {}));
+
+    const { AuthPage } = await import('../components/AuthPage');
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={['/auth']}>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/portal" element={<div data-testid="portal-home">Portal</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+
+    expect(screen.queryByTestId('portal-home')).toBeNull();
   });
 });
 

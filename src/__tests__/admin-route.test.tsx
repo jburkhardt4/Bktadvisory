@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 
 const { mockUseAuth } = vi.hoisted(() => ({
   mockUseAuth: vi.fn(),
@@ -74,6 +74,38 @@ describe('AdminRoute', () => {
       expect(screen.getByText('Portal Home')).toBeInTheDocument();
     });
     expect(screen.queryByText('Admin Area')).toBeNull();
+  });
+
+  it('does not pass from state when redirecting non-admin to /portal', async () => {
+    function LocationStateDisplay() {
+      const { state } = useLocation();
+      return (
+        <div data-testid="state">
+          {state ? JSON.stringify(state) : 'null'}
+        </div>
+      );
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/portal/admin']}>
+        <Routes>
+          <Route path="/portal" element={<LocationStateDisplay />} />
+          <Route
+            path="/portal/admin"
+            element={
+              <AdminRoute>
+                <div>Admin Area</div>
+              </AdminRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('state')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('state').textContent).toBe('null');
   });
 
   it('renders admin children for admin users', () => {

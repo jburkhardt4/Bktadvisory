@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { supabase } from "../supabase/client";
+import { useAuth } from "../contexts/AuthContext";
 
 // BKT brand assets
 const BKT_ICON_URL =
@@ -163,6 +164,7 @@ const INITIAL_RECOVERY_FORM: RecoveryFormState = {
 export function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { session, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<AuthMode>("signup");
   const [serverError, setServerError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
@@ -236,6 +238,17 @@ export function AuthPage() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (mode === "recovery") return;
+    if (session) {
+      const from = location.state?.from;
+      const destination =
+        typeof from === "string" && from.startsWith("/") ? from : "/portal";
+      navigate(destination, { replace: true });
+    }
+  }, [authLoading, session, navigate, location.state, mode]);
 
   const validateField = (
     name: string,

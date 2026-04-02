@@ -25,7 +25,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (role !== 'admin') {
-    return <Navigate to="/portal" replace state={{ from }} />;
+    return <Navigate to="/portal" replace />;
   }
 
   return <>{children}</>;

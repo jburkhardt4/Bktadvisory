@@ -84,7 +84,7 @@ Route guards:
 ### 3c. Bktadvisory — Key Module Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `src/contexts/AuthContext.tsx` | Session + role state, retry logic, SSO fallback |
 | `src/components/RequireAuth.tsx` | Auth-only route guard |
 | `src/components/AdminRoute.tsx` | Admin-role route guard |
@@ -136,7 +136,7 @@ Portal (Bktadvisory):
 ### 4a. Bktadvisory — `docs/orchestration/agentic-release-plan.md`
 
 | Requirement | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Phase 1: Design system + mobile audit | PENDING | No evidence of completed token audit |
 | Phase 2: Auth + navigation integrity | PARTIAL | Auth guards exist; Playwright E2E not yet written |
 | Phase 3: Quote-to-project workflow | PARTIAL | Mapper layer exists; end-to-end not verified |
@@ -148,7 +148,7 @@ Portal (Bktadvisory):
 **CLAUDE.md Compliance:**
 
 | Rule | Status |
-|---|---|
+| --- |--- |
 | Dark mode anchor: slate-950 | VERIFIED — ThemeProvider uses `#0f172a` (= slate-950) |
 | Light mode anchor: slate-50 | VERIFIED — ThemeProvider uses `#f8fafc` (= slate-50) |
 | `npm run typecheck && npm run lint` before complete | RULE ESTABLISHED — enforcement not yet runtime-verified |
@@ -158,7 +158,7 @@ Portal (Bktadvisory):
 ### 4b. Estimator — `docs/orchestration/estimator-execution-constraints.md`
 
 | Requirement | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Scope limited to estimator UI, quote flow, mobile, document export | COMPLIANT | No portal/marketing code in repo |
 | No auth implementation | COMPLIANT | Public-facing; no login required |
 | Verification maturity must compensate for no test runner | FAILING | No visual evidence artifacts exist |

@@ -52,6 +52,7 @@ const Loader2Icon = ({ size, className }: { size?: number; className?: string })
 );
 
 import { getSupabaseFunctionUrl, supabaseAnonKey } from "../supabase/client";
+import type { FormData } from "../types";
 
 interface Message {
   id: string;
@@ -68,7 +69,23 @@ interface Message {
 
 type PageContext = "home" | "work" | "services" | "process" | "about";
 
-export function AIChatbot() {
+interface AIChatbotProps {
+  currentPage?: string;
+  currentStep?: number;
+  formData?: FormData;
+  onInsertPrompt?: (prompt: string) => void;
+  onAutofill?: (partialData: Partial<FormData>) => void;
+  aiActionTrigger?: { type: string; timestamp: number } | null;
+}
+
+export function AIChatbot({
+  currentPage: _externalPage,
+  currentStep: _currentStep,
+  formData: _formData,
+  onInsertPrompt: _onInsertPrompt,
+  onAutofill: _onAutofill,
+  aiActionTrigger: _aiActionTrigger,
+}: AIChatbotProps = {}) {
   const location = useLocation();
 
   // Derive current page from route

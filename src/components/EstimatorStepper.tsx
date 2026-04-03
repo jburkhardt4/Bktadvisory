@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not needed with JSX transform
 import { motion } from 'motion/react';
 
 interface EstimatorStepperProps {
@@ -7,7 +7,7 @@ interface EstimatorStepperProps {
   steps: { num: number; label: string }[];
 }
 
-export function EstimatorStepper({ currentStep, totalSteps, steps }: EstimatorStepperProps) {
+export function EstimatorStepper({ currentStep, totalSteps: _totalSteps, steps }: EstimatorStepperProps) {
   // Mobile Carousel Logic
   // Each item is 33.33% width of the container.
   // We want the active item to be centered (i.e., in the second slot of the 3 visible slots).

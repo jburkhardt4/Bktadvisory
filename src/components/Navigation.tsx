@@ -54,7 +54,11 @@ const CalendarIcon = () => (
 import logo from 'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png';
 import { ScheduleCallButton } from './ScheduleCallButton';
 
-export function Navigation() {
+interface NavigationProps {
+  onNavigateToEstimator?: () => void;
+}
+
+export function Navigation({ onNavigateToEstimator: _onNavigateToEstimator }: NavigationProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useAuth();
   const authed = !!session;

@@ -5,7 +5,7 @@ import { Estimator } from "./Estimator";
 import { Quote } from "./Quote";
 import { AIChatbot } from "./AIChatbot";
 import { PersonaFunnel } from "./PersonaFunnel";
-import { Toaster } from "sonner@2.0.3";
+import { Toaster } from "sonner";
 import { PWAHead } from "./PWAHead";
 import { FormData, QuoteData, PersonaMode, PersonaRole, initialFormData } from "../types";
 

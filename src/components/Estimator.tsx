@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FormData, QuoteData, PersonaMode, PersonaRole } from '../types';
+import type { FormData, QuoteData, PersonaMode, PersonaRole } from '../types';
 import { EstimatorStepper } from './EstimatorStepper';
 import { MultiSelectDropdown } from './MultiSelectDropdown';
 import { projectId, publicAnonKey } from '../utils/supabase/info';

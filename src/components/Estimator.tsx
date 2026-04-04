@@ -122,7 +122,6 @@ export function Estimator({
 }: EstimatorProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [scrollOpacity, setScrollOpacity] = useState(1);
-  const [refiningField, setRefiningField] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   type UploadStatus = 'idle' | 'uploading' | 'parsing' | 'analyzing' | 'complete' | 'error';
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
@@ -288,42 +287,6 @@ export function Estimator({
     e.preventDefault();
     setDragActive(false);
     handleFileUpload(e.dataTransfer.files);
-  };
-
-  const handleRefineScope = async (field: 'scopeProblems' | 'scopeRequirements' | 'scopeGoals', label: string) => {
-    const content = formData[field];
-    if (!content || content.length < 5) return;
-
-    setRefiningField(field);
-
-    try {
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-07a007e1/refine-scope`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify({
-          text: content,
-          type: label
-        }),
-      });
-
-      if (response.status === 429) {
-        toast.error("AI Limit Reached. Please refine manually.");
-        setRefiningField(null);
-        return;
-      }
-
-      const data = await response.json();
-      if (data.content || data.refinedText) {
-        handleInputChange(field, data.content || data.refinedText);
-      }
-    } catch (error) {
-      console.error('Failed to refine scope:', error);
-    } finally {
-      setRefiningField(null);
-    }
   };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -1021,18 +984,7 @@ export function Estimator({
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-[14px] md:text-[16px]">Goals</label>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 500 chars</span>
-                    {formData.scopeGoals.length > 5 && (
-                      <button
-                        onClick={() => handleRefineScope('scopeGoals', 'Goal')}
-                        disabled={refiningField === 'scopeGoals'}
-                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
-                      >
-                        {refiningField === 'scopeGoals' ? 'Refining...' : <>Refine <SparklesIcon size={12} /></>}
-                      </button>
-                    )}
-                  </div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 500 chars</span>
                 </div>
                 <textarea
                   ref={scopeGoalsRef}
@@ -1053,18 +1005,7 @@ export function Estimator({
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-[14px] md:text-[16px]">Problems</label>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 750 chars</span>
-                    {formData.scopeProblems.length > 5 && (
-                      <button
-                        onClick={() => handleRefineScope('scopeProblems', 'Problem')}
-                        disabled={refiningField === 'scopeProblems'}
-                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
-                      >
-                        {refiningField === 'scopeProblems' ? 'Refining...' : <>Refine <SparklesIcon size={12} /></>}
-                      </button>
-                    )}
-                  </div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 750 chars</span>
                 </div>
                 <textarea
                   ref={scopeProblemsRef}
@@ -1085,18 +1026,7 @@ export function Estimator({
               <div className="relative group">
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-[14px] md:text-[16px]">Requirements</label>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 1,000 chars</span>
-                    {formData.scopeRequirements.length > 5 && (
-                      <button
-                        onClick={() => handleRefineScope('scopeRequirements', 'Requirement')}
-                        disabled={refiningField === 'scopeRequirements'}
-                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
-                      >
-                        {refiningField === 'scopeRequirements' ? 'Refining...' : <>Refine <SparklesIcon size={12} /></>}
-                      </button>
-                    )}
-                  </div>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wide hidden sm:inline-block">Max 1,000 chars</span>
                 </div>
                 <textarea
                   ref={scopeRequirementsRef}

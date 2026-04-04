@@ -189,10 +189,6 @@ export function EstimatorAppShell() {
         ) : (
           <>
             <Quote data={quoteData!} onBack={handleBackToEstimator} personaMode={personaMode} />
-            <AIChatbot
-              currentPage="quote"
-              onInsertPrompt={handleInsertPrompt}
-            />
           </>
         )}
       </main>

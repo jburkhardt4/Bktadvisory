@@ -3,7 +3,6 @@ import { Navigation } from "./Navigation";
 import { Footer } from "./Footer";
 import { Estimator } from "./Estimator";
 import { Quote } from "./Quote";
-import { AIChatbot } from "./AIChatbot";
 import { PersonaFunnel } from "./PersonaFunnel";
 import { Toaster } from "sonner";
 import { PWAHead } from "./PWAHead";
@@ -39,10 +38,6 @@ export function EstimatorAppShell() {
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
-  const [aiActionTrigger, setAiActionTrigger] = useState<{
-    type: "generate" | "autofill";
-    timestamp: number;
-  } | null>(null);
   const [aiUsageCount, setAiUsageCount] = useState({
     generate: 0,
     autofill: 0,
@@ -127,27 +122,7 @@ export function EstimatorAppShell() {
     window.location.href = "https://bktadvisory.com";
   };
 
-  const handleInsertPrompt = (prompt: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      projectDescription: prev.projectDescription
-        ? `${prev.projectDescription}\n\n${prompt}`
-        : prompt,
-    }));
-  };
-
-  const handleAutofillData = (partialData: Partial<FormData>) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...partialData,
-      // Rule 3: Delivery Team defaults to Nearshore, Power-Ups unchecked
-      deliveryTeam: partialData.deliveryTeam || "nearshore",
-      powerUps: partialData.powerUps || [],
-    }));
-  };
-
   const handleTriggerAIAction = (type: "generate" | "autofill") => {
-    setAiActionTrigger({ type, timestamp: Date.now() });
     setAiUsageCount((prev) => ({
       ...prev,
       [type]: prev[type] + 1,
@@ -164,28 +139,18 @@ export function EstimatorAppShell() {
         {showFunnel ? (
           <PersonaFunnel onComplete={handleFunnelComplete} />
         ) : !showQuote ? (
-          <>
-            <Estimator
-              formData={formData}
-              setFormData={setFormData}
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              onGenerateQuote={handleGenerateQuote}
-              onBackToHome={handleBackToHome}
-              onTriggerAIAction={handleTriggerAIAction}
-              aiUsageCount={aiUsageCount}
-              personaMode={personaMode}
-              personaRole={personaRole}
-            />
-            <AIChatbot
-              currentPage="estimator"
-              currentStep={currentStep}
-              formData={formData}
-              onInsertPrompt={handleInsertPrompt}
-              onAutofill={handleAutofillData}
-              aiActionTrigger={aiActionTrigger}
-            />
-          </>
+          <Estimator
+            formData={formData}
+            setFormData={setFormData}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+            onGenerateQuote={handleGenerateQuote}
+            onBackToHome={handleBackToHome}
+            onTriggerAIAction={handleTriggerAIAction}
+            aiUsageCount={aiUsageCount}
+            personaMode={personaMode}
+            personaRole={personaRole}
+          />
         ) : (
           <>
             <Quote data={quoteData!} onBack={handleBackToEstimator} personaMode={personaMode} />

@@ -22,6 +22,8 @@
         'figma:asset/2db40784bd77d5bad84a04e4e645b0c1f3c7d8bf.png': path.resolve(__dirname, './src/assets/2db40784bd77d5bad84a04e4e645b0c1f3c7d8bf.png'),
         'figma:asset/0e0a121653cc931918711be760206409b22eeac2.png': path.resolve(__dirname, './src/assets/0e0a121653cc931918711be760206409b22eeac2.png'),
         'figma:asset/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png': path.resolve(__dirname, './src/assets/01ab4ddf9498ad72150c22c58a71c1af4fd5772b.png'),
+        'figma:asset/9cffe000c5dffcabac269f49ac3d9d3bd3026163.png': path.resolve(__dirname, './src/assets/9cffe000c5dffcabac269f49ac3d9d3bd3026163.png'),
+        'figma:asset/c9b7fbd7a0a9b7fe816298e590cdf7f50d449a06.png': path.resolve(__dirname, './src/assets/c9b7fbd7a0a9b7fe816298e590cdf7f50d449a06.png'),
         'embla-carousel-react@8.6.0': 'embla-carousel-react',
         'cmdk@1.1.1': 'cmdk',
         'class-variance-authority@0.7.1': 'class-variance-authority',

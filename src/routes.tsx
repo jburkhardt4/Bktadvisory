@@ -5,6 +5,7 @@ import { WorkPage } from './components/WorkPage';
 import { ServicesPage } from './components/ServicesPage';
 import { ProcessPage } from './components/ProcessPage';
 import { AboutPage } from './components/AboutPage';
+import { EnvironmentsPage } from './components/EnvironmentsPage';
 import { AuthPage } from './components/AuthPage';
 import { PortalPage } from './components/portal/PortalPage';
 import { PortalThemeLayout } from './components/portal/PortalThemeLayout';
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { path: 'services', Component: ServicesPage },
       { path: 'process', Component: ProcessPage },
       { path: 'about', Component: AboutPage },
+      { path: 'environments', Component: EnvironmentsPage },
       // Catch-all: fallback to Home
       { path: '*', Component: HomePage },
     ],

@@ -131,6 +131,10 @@ export function Estimator({
   const isLite = personaMode === 'lite';
   const [showTechDetails, setShowTechDetails] = useState(!isLite);
   const [showPowerUps, setShowPowerUps] = useState(!isLite);
+
+  // Jargon-free labels for business owners
+  const infraLabel = personaRole === 'business-owner' ? 'Your Tools & Platforms' : 'IT Infrastructure';
+  const integrationsLabel = personaRole === 'business-owner' ? 'Connected Apps' : 'Integrations';
   const formContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scopeProblemsRef = useRef<HTMLTextAreaElement>(null);
@@ -302,6 +306,26 @@ export function Estimator({
       ? currentValues.filter(v => v !== value)
       : [...currentValues, value];
     handleInputChange(field, newValues);
+  };
+
+  // Lite-mode Step 1: keyword-match description text to pre-select checkboxes in later steps
+  const prefillFromDescription = (text: string) => {
+    if (!text || text.length < 20) return;
+    const lower = text.toLowerCase();
+    const matchedCRMs = Object.keys(crmHours).filter(c => lower.includes(c.toLowerCase()));
+    const matchedIntegrations = Object.keys(integrationHours)
+      .filter(i => i !== 'MuleSoft')
+      .filter(i => lower.includes(i.toLowerCase()));
+    const matchedModules = Object.keys(moduleHours).filter(m => lower.includes(m.toLowerCase()));
+    if (matchedCRMs.length || matchedIntegrations.length || matchedModules.length) {
+      setFormData(prev => ({
+        ...prev,
+        selectedCRMs: [...new Set([...prev.selectedCRMs, ...matchedCRMs])],
+        selectedIntegrations: [...new Set([...prev.selectedIntegrations, ...matchedIntegrations])],
+        additionalModules: [...new Set([...prev.additionalModules, ...matchedModules])],
+      }));
+      toast.success("We suggested some tools based on your description. Review them in the next step.");
+    }
   };
 
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
@@ -520,7 +544,7 @@ export function Estimator({
       }
       setCurrentStep(4);
     } else {
-      setCurrentStep(prev => Math.min(6, prev + 1));
+      setCurrentStep(prev => Math.min(isLite ? 5 : 6, prev + 1));
     }
   };
 
@@ -591,7 +615,12 @@ export function Estimator({
     formData.selectedAITools.forEach(tool => { baseHours += aiToolHours[tool] || 0; });
     formData.additionalModules.forEach(module => { baseHours += moduleHours[module] || 0; });
 
-    const totalSelections = 
+    // Business Owner: add 15% Discovery & Advisory buffer for extra scoping required
+    if (personaRole === 'business-owner') {
+      baseHours = Math.round(baseHours * 1.15);
+    }
+
+    const totalSelections =
       formData.selectedCRMs.length + 
       formData.selectedClouds.length + 
       formData.selectedIntegrations.length +
@@ -681,14 +710,22 @@ export function Estimator({
     }
   }, [formData.projectDescription]);
 
-  const steps = [
-    { num: 1, label: 'Contact Info' },
-    { num: 2, label: 'Upload Docs' },
-    { num: 3, label: 'Scope' },
-    { num: 4, label: 'IT Infrastructure' },
-    { num: 5, label: 'Services' },
-    { num: 6, label: 'Team & Extras' }
-  ];
+  const steps = isLite
+    ? [
+        { num: 1, label: 'Contact Info' },
+        { num: 2, label: 'Upload Docs' },
+        { num: 3, label: 'Scope' },
+        { num: 4, label: 'Systems' },
+        { num: 5, label: 'Team & Extras' },
+      ]
+    : [
+        { num: 1, label: 'Contact Info' },
+        { num: 2, label: 'Upload Docs' },
+        { num: 3, label: 'Scope' },
+        { num: 4, label: infraLabel },
+        { num: 5, label: 'Services' },
+        { num: 6, label: 'Team & Extras' },
+      ];
 
   return (
     <div className="min-h-screen flex-1 bg-[#eff6ff]">
@@ -725,7 +762,7 @@ export function Estimator({
           </div>
         </header>
 
-        <EstimatorStepper currentStep={currentStep} totalSteps={6} steps={steps} />
+        <EstimatorStepper currentStep={currentStep} totalSteps={isLite ? 5 : 6} steps={steps} />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 md:px-8 md:py-12">
@@ -745,7 +782,7 @@ export function Estimator({
                 <span className="text-slate-600">Previous</span>
               </button>
               
-              {currentStep < 6 ? (
+              {currentStep < (isLite ? 5 : 6) ? (
                 <button
                   onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                   disabled={isAnalyzing || isGeneratingSummary}
@@ -884,6 +921,23 @@ export function Estimator({
                 </div>
                 {errors.contact && <p className="text-red-500 text-sm mt-2">{errors.contact}</p>}
               </div>
+
+              {/* Lite mode: project description textarea with keyword-based pre-fill */}
+              {isLite && (
+                <div className="space-y-2">
+                  <label className="block text-[14px] md:text-[16px]">
+                    Describe your project
+                    <span className="text-slate-400 text-xs ml-2">optional — we'll suggest tools for you</span>
+                  </label>
+                  <textarea
+                    value={formData.projectDescription}
+                    onChange={(e) => handleInputChange('projectDescription', e.target.value)}
+                    onBlur={(e) => prefillFromDescription(e.target.value)}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[140px] resize-none text-base"
+                    placeholder="Tell us what you're trying to build or automate. We'll handle the technical details."
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -1046,12 +1100,16 @@ export function Estimator({
             </div>
           )}
 
-          {/* Step 4: IT Infrastructure (Was Step 3) */}
+          {/* Step 4: Systems (Lite — merged) / IT Infrastructure (Enterprise) */}
           {currentStep === 4 && (
             <div className="space-y-8">
               <div>
-                <h2 className="text-[18px] md:text-[20px] mb-2">IT Infrastructure</h2>
-                <p className="text-slate-600 text-[14px] md:text-[16px]">Choose the CRMs, clouds, integrations, and AI tools you need.</p>
+                <h2 className="text-[18px] md:text-[20px] mb-2">{isLite ? 'Your Systems' : infraLabel}</h2>
+                <p className="text-slate-600 text-[14px] md:text-[16px]">
+                  {isLite
+                    ? 'Select the tools and apps your project will use. We\'ll take care of the rest.'
+                    : 'Choose the CRMs, clouds, integrations, and AI tools you need.'}
+                </p>
               </div>
 
               {/* Lite mode: collapsible tech details toggle */}
@@ -1194,24 +1252,26 @@ export function Estimator({
                   )}
 
                   <div>
-                    <h3 className="mb-3">Integrations</h3>
+                    <h3 className="mb-3">{integrationsLabel}</h3>
                     {/* Desktop: exposed checkbox grid */}
                     <div className="hidden md:grid grid-cols-2 gap-3">
-                      {Object.keys(integrationHours).map(integration => (
-                        <label key={integration} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
-                          <input type="checkbox" checked={formData.selectedIntegrations.includes(integration)} onChange={() => handleMultiSelect('selectedIntegrations', integration)} className="w-4 h-4 text-blue-600" />
-                          <span>{integration}</span>
-                        </label>
-                      ))}
+                      {Object.keys(integrationHours)
+                        .filter(i => !isLite || i !== 'MuleSoft')
+                        .map(integration => (
+                          <label key={integration} className="flex items-center gap-3 p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                            <input type="checkbox" checked={formData.selectedIntegrations.includes(integration)} onChange={() => handleMultiSelect('selectedIntegrations', integration)} className="w-4 h-4 text-blue-600" />
+                            <span>{integration}</span>
+                          </label>
+                        ))}
                     </div>
                     {/* Mobile: multi-select dropdown */}
                     <div className="block md:hidden">
                       <MultiSelectDropdown
-                        options={Object.keys(integrationHours)}
+                        options={Object.keys(integrationHours).filter(i => !isLite || i !== 'MuleSoft')}
                         selected={formData.selectedIntegrations}
                         onToggle={(integration) => handleMultiSelect('selectedIntegrations', integration)}
                         onClear={() => handleInputChange('selectedIntegrations', [])}
-                        placeholder="Select Integrations..."
+                        placeholder={`Select ${integrationsLabel}...`}
                       />
                     </div>
                   </div>
@@ -1266,11 +1326,29 @@ export function Estimator({
                   <p className="text-[10px] text-slate-400 text-center mt-1.5">Add scope details or a project description to enable AI assistance</p>
                 )}
               </div>
+
+              {/* Lite mode: service modules merged into this step */}
+              {isLite && (
+                <div className="border-t border-slate-200 pt-6 space-y-4">
+                  <div>
+                    <h3 className="mb-1 text-[14px] md:text-base font-semibold">Service Modules</h3>
+                    <p className="text-slate-500 text-[13px] md:text-[14px] mb-3">Pick any services you'd like included.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.keys(moduleHours).map(module => (
+                      <label key={module} className="flex items-center gap-3 p-[10px] md:p-3 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" checked={formData.additionalModules.includes(module)} onChange={() => handleMultiSelect('additionalModules', module)} className="w-4 h-4 text-blue-600" />
+                        <span className="text-[13px] md:text-[16px]">{module}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Step 5: Services (Was Step 4) */}
-          {currentStep === 5 && (
+          {/* Step 5: Services — Enterprise only */}
+          {currentStep === 5 && !isLite && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-[18px] md:text-[20px] mb-2">Additional Services</h2>
@@ -1290,8 +1368,8 @@ export function Estimator({
             </div>
           )}
 
-          {/* Step 6: Team & Extras (Was Step 5) */}
-          {currentStep === 6 && (
+          {/* Step 6: Team & Extras — Enterprise; Step 5 in Lite */}
+          {currentStep === (isLite ? 5 : 6) && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-[18px] md:text-[20px] mb-2">Team Configuration</h2>
@@ -1399,7 +1477,7 @@ export function Estimator({
               </button>
             )}
             
-            {currentStep < 6 ? (
+            {currentStep < (isLite ? 5 : 6) ? (
               <button
                 onClick={() => { handleNextStep(); window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }}
                 disabled={isAnalyzing || isGeneratingSummary}

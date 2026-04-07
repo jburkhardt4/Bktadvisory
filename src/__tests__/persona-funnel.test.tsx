@@ -1,8 +1,59 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { PersonaFunnel } from '../components/PersonaFunnel';
-import type { PersonaMode, PersonaRole } from '../types';
+import { Estimator } from '../components/Estimator';
+import type { PersonaMode, PersonaRole, FormData } from '../types';
+import { initialFormData } from '../types';
+
+// ---------------------------------------------------------------------------
+// Mocks needed by Estimator
+// ---------------------------------------------------------------------------
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+  Toaster: () => null,
+}));
+vi.mock('motion/react', () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: (_t: object, tag: string | symbol) => {
+        const s = String(tag);
+        return ({ children, ...rest }: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) =>
+          React.createElement(s as React.ElementType, rest, children);
+      },
+    }
+  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// ---------------------------------------------------------------------------
+// Helper: render Estimator at step 1 with given persona
+// ---------------------------------------------------------------------------
+function renderEstimator(
+  personaMode: PersonaMode | null = null,
+  personaRole: PersonaRole | null = null,
+  step = 1,
+) {
+  const formData: FormData = { ...initialFormData };
+  const setFormData = vi.fn();
+  const setCurrentStep = vi.fn();
+  return render(
+    <Estimator
+      formData={formData}
+      setFormData={setFormData}
+      currentStep={step}
+      setCurrentStep={setCurrentStep}
+      onGenerateQuote={vi.fn()}
+      onBackToHome={vi.fn()}
+      onTriggerAIAction={vi.fn()}
+      aiUsageCount={{ generate: 0, autofill: 0 }}
+      personaMode={personaMode}
+      personaRole={personaRole}
+    />
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -168,5 +219,144 @@ describe('PersonaFunnel — Screen 2 (role selection, lite mode)', () => {
       'enterprise',
       'project-manager',
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Adaptive Complexity — Step gating
+// ---------------------------------------------------------------------------
+
+describe('Adaptive Complexity — step gating (lite mode)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('scrollTo', vi.fn());
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: false, media: q, onchange: null,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  it('renders "Systems" step label in lite mode stepper', () => {
+    renderEstimator('lite', 'business-owner');
+    expect(screen.getAllByText('Systems').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Services')).not.toBeInTheDocument();
+  });
+
+  it('renders "Services" step label in enterprise mode stepper', () => {
+    renderEstimator('enterprise', 'technical-lead');
+    expect(screen.getAllByText('Services').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Systems')).not.toBeInTheDocument();
+  });
+
+  it('shows projectDescription textarea in lite mode Step 1', () => {
+    renderEstimator('lite', 'business-owner', 1);
+    expect(
+      screen.getByPlaceholderText("Tell us what you're trying to build or automate. We'll handle the technical details.")
+    ).toBeInTheDocument();
+  });
+
+  it('does not show projectDescription textarea in enterprise mode Step 1', () => {
+    renderEstimator('enterprise', 'technical-lead', 1);
+    expect(
+      screen.queryByPlaceholderText("Tell us what you're trying to build or automate. We'll handle the technical details.")
+    ).not.toBeInTheDocument();
+  });
+
+  it('Step 4 heading is "Your Systems" in lite mode', () => {
+    renderEstimator('lite', 'business-owner', 4);
+    expect(screen.getByText('Your Systems')).toBeInTheDocument();
+  });
+
+  it('MuleSoft is NOT present in lite mode Step 4', () => {
+    renderEstimator('lite', 'business-owner', 4);
+    expect(screen.queryByText('MuleSoft')).not.toBeInTheDocument();
+  });
+
+  it('MuleSoft IS present in enterprise mode Step 4', () => {
+    renderEstimator('enterprise', 'technical-lead', 4);
+    expect(screen.getByText('MuleSoft')).toBeInTheDocument();
+  });
+
+  it('Service Modules are visible in lite mode Step 4 (merged)', () => {
+    renderEstimator('lite', 'business-owner', 4);
+    expect(screen.getByText('Service Modules')).toBeInTheDocument();
+    expect(screen.getByText('Workflow Automation')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Adaptive Complexity — Jargon removal
+// ---------------------------------------------------------------------------
+
+describe('Adaptive Complexity — jargon removal (business owner)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('scrollTo', vi.fn());
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: false, media: q, onchange: null,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  it('renders "Your Tools & Platforms" step label for business-owner in enterprise mode', () => {
+    renderEstimator('enterprise', 'business-owner');
+    expect(screen.getAllByText('Your Tools & Platforms').length).toBeGreaterThan(0);
+  });
+
+  it('renders "IT Infrastructure" step label for technical-lead', () => {
+    renderEstimator('enterprise', 'technical-lead');
+    expect(screen.getAllByText('IT Infrastructure').length).toBeGreaterThan(0);
+  });
+
+  it('renders "Connected Apps" integrations heading in enterprise Step 4 for business-owner', () => {
+    renderEstimator('enterprise', 'business-owner', 4);
+    expect(screen.getByText('Connected Apps')).toBeInTheDocument();
+  });
+
+  it('renders "Integrations" heading for technical-lead in enterprise Step 4', () => {
+    renderEstimator('enterprise', 'technical-lead', 4);
+    expect(screen.getByText('Integrations')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Adaptive Complexity — AI pre-fill (lite mode Step 1 textarea)
+// ---------------------------------------------------------------------------
+
+describe('Adaptive Complexity — AI pre-fill from description', () => {
+  beforeEach(() => {
+    vi.stubGlobal('scrollTo', vi.fn());
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: false, media: q, onchange: null,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  it('calls setFormData with matched selections on blur when text contains a known CRM', () => {
+    const setFormData = vi.fn();
+    render(
+      <Estimator
+        formData={{ ...initialFormData }}
+        setFormData={setFormData}
+        currentStep={1}
+        setCurrentStep={vi.fn()}
+        onGenerateQuote={vi.fn()}
+        onBackToHome={vi.fn()}
+        onTriggerAIAction={vi.fn()}
+        aiUsageCount={{ generate: 0, autofill: 0 }}
+        personaMode="lite"
+        personaRole="business-owner"
+      />
+    );
+    const textarea = screen.getByPlaceholderText(
+      "Tell us what you're trying to build or automate. We'll handle the technical details."
+    );
+    fireEvent.change(textarea, { target: { value: 'We use HubSpot and need Slack integration for our team.' } });
+    fireEvent.blur(textarea);
+    expect(setFormData).toHaveBeenCalled();
   });
 });

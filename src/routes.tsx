@@ -9,7 +9,7 @@ import { EnvironmentsPage } from './components/EnvironmentsPage';
 import { AuthPage } from './components/AuthPage';
 import { PortalPage } from './components/portal/PortalPage';
 import { PortalThemeLayout } from './components/portal/PortalThemeLayout';
-import { EstimatorBoundary } from './components/EstimatorBoundary';
+import { EstimatorAppShell } from './components/EstimatorAppShell';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminPortalLayout } from './components/admin/AdminPortalLayout';
 import { AdminDashboardPage } from './components/admin/AdminDashboardPage';
@@ -62,6 +62,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  // Estimator boundary — redirects to the standalone estimator app
-  { path: '/estimator', Component: EstimatorBoundary },
+  // Estimator — inline with PersonaFunnel (Tech vs Non-Tech fork)
+  { path: '/estimator', Component: EstimatorAppShell },
 ]);

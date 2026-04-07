@@ -13,6 +13,7 @@ import { EstimatorBoundary } from './components/EstimatorBoundary';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminPortalLayout } from './components/admin/AdminPortalLayout';
 import { AdminDashboardPage } from './components/admin/AdminDashboardPage';
+import { AdminContactsPage } from './components/admin/AdminContactsPage';
 import {
   AdminActivitiesPage,
   AdminMilestonesPage,
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
           { path: 'projects', element: <AdminProjectsPage /> },
           { path: 'activities', element: <AdminActivitiesPage /> },
           { path: 'milestones', element: <AdminMilestonesPage /> },
+          { path: 'contacts', element: <AdminContactsPage /> },
         ],
       },
     ],

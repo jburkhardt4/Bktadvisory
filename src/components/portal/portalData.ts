@@ -2,6 +2,7 @@
 
 export type QuoteStatus = 'draft' | 'scoping' | 'quoted' | 'sent' | 'revision_requested' | 'accepted' | 'declined' | 'expired';
 export type ProjectStatus = 'intake' | 'discovery' | 'scoping' | 'design_in_progress' | 'build_in_progress' | 'awaiting_client' | 'blocked' | 'uat' | 'completed' | 'archived';
+export type OpportunityStatus = 'discovery' | 'solutioning' | 'proposal_prepared' | 'proposal_sent' | 'negotiation' | 'closed_won' | 'closed_lost';
 
 export interface Quote {
   id: string;
@@ -100,6 +101,16 @@ export const QUOTE_STATUS_CONFIG: Record<QuoteStatus, { label: string; color: st
   accepted: { label: 'Accepted', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
   declined: { label: 'Declined', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', dot: 'bg-red-400' },
   expired: { label: 'Expired', color: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500' },
+};
+
+export const OPPORTUNITY_STATUS_CONFIG: Record<OpportunityStatus, { label: string; color: string; bg: string; dot: string }> = {
+  discovery: { label: 'Discovery', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', dot: 'bg-purple-400' },
+  solutioning: { label: 'Solutioning', color: 'text-cyan-400', bg: 'bg-cyan-400/10 border-cyan-400/20', dot: 'bg-cyan-400' },
+  proposal_prepared: { label: 'Proposal Prepared', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },
+  proposal_sent: { label: 'Proposal Sent', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', dot: 'bg-blue-400' },
+  negotiation: { label: 'Negotiation', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', dot: 'bg-indigo-400' },
+  closed_won: { label: 'Closed Won', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
+  closed_lost: { label: 'Closed Lost', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', dot: 'bg-red-400' },
 };
 
 export const PROJECT_STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string; dot: string }> = {

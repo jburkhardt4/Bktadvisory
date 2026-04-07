@@ -1,6 +1,6 @@
 import { cn } from '../ui/utils';
-import { QUOTE_STATUS_CONFIG, PROJECT_STATUS_CONFIG } from './portalData';
-import type { QuoteStatus, ProjectStatus } from './portalData';
+import { QUOTE_STATUS_CONFIG, PROJECT_STATUS_CONFIG, OPPORTUNITY_STATUS_CONFIG } from './portalData';
+import type { QuoteStatus, ProjectStatus, OpportunityStatus } from './portalData';
 
 function BaseStatusBadge({
   label,
@@ -75,6 +75,23 @@ export function MilestoneStatusBadge({
         className,
       )}
       dotClassName={completed ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-amber-500 dark:bg-amber-400'}
+    />
+  );
+}
+
+export function OpportunityStatusBadge({
+  status,
+  className,
+}: {
+  status: OpportunityStatus;
+  className?: string;
+}) {
+  const config = OPPORTUNITY_STATUS_CONFIG[status];
+  return (
+    <BaseStatusBadge
+      label={config.label}
+      className={cn(config.bg, config.color, className)}
+      dotClassName={config.dot}
     />
   );
 }

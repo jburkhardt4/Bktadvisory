@@ -18,6 +18,7 @@ const EMPTY_SNAPSHOT: AdminCrmSnapshot = {
   projects: [],
   activities: [],
   milestones: [],
+  opportunities: [],
 };
 
 const AdminCrmContext = createContext<AdminCrmContextValue | undefined>(undefined);

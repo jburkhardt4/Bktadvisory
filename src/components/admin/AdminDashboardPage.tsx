@@ -25,7 +25,7 @@ import {
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 export function AdminDashboardPage() {
-  const { quotes, projects, activities, milestones, loading, error } = useAdminCrm();
+  const { quotes, projects, activities, milestones, opportunities, loading, error } = useAdminCrm();
 
   if (loading) {
     return <AdminLoadingState label="Loading the CRM dashboard…" />;
@@ -49,8 +49,10 @@ export function AdminDashboardPage() {
   const activeProjects = projects.filter((project) =>
     !['completed', 'archived'].includes(project.status),
   ).length;
-  const blockedProjects = projects.filter((project) => project.status === 'blocked').length;
   const completedMilestones = milestones.filter((milestone) => milestone.completed).length;
+  const openOpportunities = opportunities.filter(
+    (o) => o.status !== 'closed_won' && o.status !== 'closed_lost',
+  ).length;
 
   return (
     <>
@@ -83,17 +85,17 @@ export function AdminDashboardPage() {
             variant="hero"
           />
           <AdminMetricCard
-            label="Activities"
-            value={String(activities.length)}
-            helper={`${blockedProjects} blocked project states`}
-            accentClassName="text-cyan-200"
-            variant="hero"
-          />
-          <AdminMetricCard
             label="Milestones"
             value={String(milestones.length)}
             helper={`${completedMilestones} completed`}
             accentClassName="text-emerald-200"
+            variant="hero"
+          />
+          <AdminMetricCard
+            label="Opportunities"
+            value={String(opportunities.length)}
+            helper={`${openOpportunities} open in pipeline`}
+            accentClassName="text-cyan-200"
             variant="hero"
           />
         </div>

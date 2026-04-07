@@ -8,6 +8,7 @@ import {
   FolderIcon,
   LayersIcon,
   TargetIcon,
+  UserIcon,
 } from '../portal/PortalIcons';
 import {
   PORTAL_APP_SHELL_CLASS,
@@ -39,7 +40,7 @@ export function AdminPortalLayout() {
 
 function AdminPortalScaffold() {
   const { session } = useAuth();
-  const { quotes, projects, activities, milestones, loading } = useAdminCrm();
+  const { quotes, projects, activities, milestones, opportunities, loading } = useAdminCrm();
   const navigate = useNavigate();
   const adminEmail = session?.user?.email ?? 'Admin account';
 
@@ -83,6 +84,13 @@ function AdminPortalScaffold() {
       description: 'Delivery checkpoints',
       icon: <TargetIcon size={16} />,
       count: milestones.length,
+    },
+    {
+      path: '/portal/admin/contacts',
+      label: 'Contacts',
+      description: 'Leads pipeline',
+      icon: <UserIcon size={16} />,
+      count: opportunities.length,
     },
   ];
 

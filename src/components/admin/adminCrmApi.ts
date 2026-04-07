@@ -6,10 +6,12 @@ export type QuoteRecord = Database['public']['Tables']['quotes']['Row'];
 export type ProjectRecord = Database['public']['Tables']['projects']['Row'];
 export type ActivityRecord = Database['public']['Tables']['activity_events']['Row'];
 export type MilestoneRecord = Database['public']['Tables']['milestones']['Row'];
+export type OpportunityRecord = Database['public']['Tables']['opportunities']['Row'];
 
 export type QuoteStatus = Database['public']['Enums']['quote_status'];
 export type ProjectStatus = Database['public']['Enums']['project_status'];
 export type ActivityEventType = Database['public']['Enums']['activity_event_type'];
+export type OpportunityStatus = Database['public']['Enums']['opportunity_status'];
 
 export interface QuoteFormData {
   client_name?: string;
@@ -46,6 +48,14 @@ export interface AdminCrmSnapshot {
   projects: AdminProjectRecord[];
   activities: AdminActivityRecord[];
   milestones: AdminMilestoneRecord[];
+  opportunities: OpportunityRecord[];
+}
+
+export interface OpportunityMutationValues {
+  name: string;
+  companyName: string;
+  status: OpportunityStatus;
+  value: string;
 }
 
 export interface QuoteMutationValues {
@@ -105,6 +115,16 @@ export const PROJECT_STATUS_OPTIONS: { value: ProjectStatus; label: string }[] =
   { value: 'uat', label: 'UAT' },
   { value: 'completed', label: 'Completed' },
   { value: 'archived', label: 'Archived' },
+];
+
+export const OPPORTUNITY_STATUS_OPTIONS: { value: OpportunityStatus; label: string }[] = [
+  { value: 'discovery', label: 'Discovery' },
+  { value: 'solutioning', label: 'Solutioning' },
+  { value: 'proposal_prepared', label: 'Proposal Prepared' },
+  { value: 'proposal_sent', label: 'Proposal Sent' },
+  { value: 'negotiation', label: 'Negotiation' },
+  { value: 'closed_won', label: 'Closed Won' },
+  { value: 'closed_lost', label: 'Closed Lost' },
 ];
 
 export const ACTIVITY_TYPE_OPTIONS: { value: ActivityEventType; label: string }[] = [
@@ -193,6 +213,10 @@ export function formatActivityType(type: ActivityEventType): string {
     .join(' ');
 }
 
+export function formatOpportunityStatus(status: OpportunityStatus): string {
+  return OPPORTUNITY_STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
+}
+
 function parseCurrencyInput(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -259,13 +283,14 @@ function buildMilestonePayload(
 }
 
 export async function fetchAdminCrmSnapshot(): Promise<AdminCrmSnapshot> {
-  const [profilesResult, quotesResult, projectsResult, activitiesResult, milestonesResult] =
+  const [profilesResult, quotesResult, projectsResult, activitiesResult, milestonesResult, opportunitiesResult] =
     await Promise.all([
       supabase.from('profiles').select('*').order('updated_at', { ascending: false }),
       supabase.from('quotes').select('*').order('updated_at', { ascending: false }),
       supabase.from('projects').select('*').order('updated_at', { ascending: false }),
       supabase.from('activity_events').select('*').order('created_at', { ascending: false }),
       supabase.from('milestones').select('*').order('target_date', { ascending: true }),
+      supabase.from('opportunities').select('*').order('updated_at', { ascending: false }),
     ]);
 
   assertNoError(profilesResult);
@@ -273,12 +298,14 @@ export async function fetchAdminCrmSnapshot(): Promise<AdminCrmSnapshot> {
   assertNoError(projectsResult);
   assertNoError(activitiesResult);
   assertNoError(milestonesResult);
+  assertNoError(opportunitiesResult);
 
   const profiles = (profilesResult.data ?? []) as ProfileRecord[];
   const quotes = (quotesResult.data ?? []) as QuoteRecord[];
   const projects = (projectsResult.data ?? []) as ProjectRecord[];
   const activities = (activitiesResult.data ?? []) as ActivityRecord[];
   const milestones = (milestonesResult.data ?? []) as MilestoneRecord[];
+  const opportunities = (opportunitiesResult.data ?? []) as OpportunityRecord[];
 
   const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
   const projectMap = new Map(projects.map((project) => [project.id, project]));
@@ -342,6 +369,7 @@ export async function fetchAdminCrmSnapshot(): Promise<AdminCrmSnapshot> {
         client: project?.client_id ? profileMap.get(project.client_id) ?? null : null,
       };
     }),
+    opportunities,
   };
 }
 
@@ -470,5 +498,34 @@ export async function deleteAdminMilestone(milestone: AdminMilestoneRecord) {
   }
 
   const result = await supabase.from('milestones').delete().eq('id', milestone.id);
+  assertNoError(result);
+}
+
+function buildOpportunityPayload(
+  values: OpportunityMutationValues,
+): Database['public']['Tables']['opportunities']['Insert'] {
+  return {
+    name: values.name.trim(),
+    company_name: values.companyName.trim(),
+    status: values.status,
+    value: parseCurrencyInput(values.value) ?? 0,
+  };
+}
+
+export async function createAdminOpportunity(values: OpportunityMutationValues) {
+  const result = await supabase.from('opportunities').insert(buildOpportunityPayload(values));
+  assertNoError(result);
+}
+
+export async function updateAdminOpportunity(opportunityId: string, values: OpportunityMutationValues) {
+  const result = await supabase
+    .from('opportunities')
+    .update(buildOpportunityPayload(values))
+    .eq('id', opportunityId);
+  assertNoError(result);
+}
+
+export async function deleteAdminOpportunity(opportunityId: string) {
+  const result = await supabase.from('opportunities').delete().eq('id', opportunityId);
   assertNoError(result);
 }

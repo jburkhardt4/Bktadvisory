@@ -60,6 +60,53 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('react-dom') || id.includes('react-router') || (id.includes('/react/') && !id.includes('recharts'))) {
+              return 'vendor-react';
+            }
+            if (id.includes('@supabase') || id.includes('supabase__supabase-js')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('recharts') || id.includes('/d3-') || id.includes('/d3/')) {
+              return 'vendor-charts';
+            }
+            if (
+              id.includes('@radix-ui') ||
+              id.includes('lucide-react') ||
+              id.includes('/cmdk/') ||
+              id.includes('/vaul/') ||
+              id.includes('/sonner/') ||
+              id.includes('embla-carousel') ||
+              id.includes('next-themes') ||
+              id.includes('input-otp') ||
+              id.includes('react-resizable-panels') ||
+              id.includes('class-variance-authority') ||
+              id.includes('react-hook-form') ||
+              id.includes('react-day-picker')
+            ) {
+              return 'vendor-ui';
+            }
+            if (id.includes('/motion/') || id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('/openai/')) {
+              return 'vendor-openai';
+            }
+            if (
+              id.includes('/docx/') ||
+              id.includes('/jspdf/') ||
+              id.includes('/pizzip/') ||
+              id.includes('html-to-image') ||
+              id.includes('docxtemplater')
+            ) {
+              return 'vendor-docs';
+            }
+          },
+        },
+      },
     },
     server: {
       port: 5000,

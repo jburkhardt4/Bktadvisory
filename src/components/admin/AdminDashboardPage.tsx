@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
-import { MilestoneStatusBadge, ProjectStatusBadge, QuoteStatusBadge } from '../portal/StatusBadge';
+import { DealStageBadge, MilestoneStatusBadge, ProjectStatusBadge, QuoteStatusBadge } from '../portal/StatusBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useAdminCrm } from './AdminCrmContext';
+import { useSalesCrm } from './SalesCrmContext';
 import {
   AdminCenteredBadgeCell,
   AdminDataTable,
@@ -22,25 +23,30 @@ import {
   formatDateTime,
   getProfileDisplayName,
 } from './adminCrmApi';
+import { getContactDisplayName } from './salesCrmApi';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 export function AdminDashboardPage() {
   const { quotes, projects, activities, milestones, opportunities, loading, error } = useAdminCrm();
+  const { deals, contacts: salesContacts, accounts, loading: salesLoading, error: salesError } = useSalesCrm();
 
-  if (loading) {
+  if (loading || salesLoading) {
     return <AdminLoadingState label="Loading the CRM dashboard…" />;
   }
+
+  const displayError = error || salesError;
 
   const hasData =
     quotes.length > 0 ||
     projects.length > 0 ||
     activities.length > 0 ||
-    milestones.length > 0;
+    milestones.length > 0 ||
+    deals.length > 0;
 
-  if (error && !hasData) {
+  if (displayError && !hasData) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-        {error}
+        {displayError}
       </div>
     );
   }
@@ -50,15 +56,14 @@ export function AdminDashboardPage() {
     !['completed', 'archived'].includes(project.status),
   ).length;
   const completedMilestones = milestones.filter((milestone) => milestone.completed).length;
-  const openOpportunities = opportunities.filter(
-    (o) => o.status !== 'closed_won' && o.status !== 'closed_lost',
-  ).length;
+  const openDeals = deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost');
+  const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value ?? 0), 0);
 
   return (
     <>
-      {error && (
+      {displayError && (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-          {error}
+          {displayError}
         </div>
       )}
 
@@ -66,35 +71,42 @@ export function AdminDashboardPage() {
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-slate-50">Master CRM Dashboard</h2>
           <p className="mt-1 text-sm text-slate-200">
-            Review every quote, project, activity, and milestone across all client accounts from one place.
+            Sales pipeline, delivery operations, and client accounts — all from one place.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <AdminMetricCard
+            label="Pipeline"
+            value={formatCurrency(pipelineValue)}
+            helper={`${openDeals.length} open deals`}
+            accentClassName="text-blue-200"
+            variant="hero"
+          />
+          <AdminMetricCard
+            label="Contacts"
+            value={String(salesContacts.length)}
+            helper={`${accounts.length} accounts`}
+            accentClassName="text-purple-200"
+            variant="hero"
+          />
           <AdminMetricCard
             label="Quotes"
             value={String(quotes.length)}
             helper={`${acceptedQuotes} accepted`}
-            accentClassName="text-blue-200"
+            accentClassName="text-indigo-200"
             variant="hero"
           />
           <AdminMetricCard
             label="Projects"
             value={String(projects.length)}
-            helper={`${activeProjects} active engagements`}
-            accentClassName="text-indigo-200"
+            helper={`${activeProjects} active`}
+            accentClassName="text-emerald-200"
             variant="hero"
           />
           <AdminMetricCard
             label="Milestones"
             value={String(milestones.length)}
             helper={`${completedMilestones} completed`}
-            accentClassName="text-emerald-200"
-            variant="hero"
-          />
-          <AdminMetricCard
-            label="Opportunities"
-            value={String(opportunities.length)}
-            helper={`${openOpportunities} open in pipeline`}
             accentClassName="text-cyan-200"
             variant="hero"
           />
@@ -110,13 +122,51 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="p-6">
-          <Tabs defaultValue="quotes" className="gap-4">
-            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1 dark:bg-slate-950 md:grid-cols-4">
+          <Tabs defaultValue="deals" className="gap-4">
+            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1 dark:bg-slate-950 md:grid-cols-5">
+              <TabsTrigger value="deals" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Deals</TabsTrigger>
               <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Quotes</TabsTrigger>
               <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Projects</TabsTrigger>
               <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Activities</TabsTrigger>
               <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Milestones</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="deals">
+              <AdminDataTable>
+                <AdminDataTableHeader>
+                  <AdminDataTableHeaderRow>
+                    <AdminDataTableHead>Deal</AdminDataTableHead>
+                    <AdminDataTableHead>Contact</AdminDataTableHead>
+                    <AdminDataTableHead align="center">Stage</AdminDataTableHead>
+                    <AdminDataTableHead align="right">Value</AdminDataTableHead>
+                    <AdminDataTableHead>Last Updated</AdminDataTableHead>
+                  </AdminDataTableHeaderRow>
+                </AdminDataTableHeader>
+                <AdminDataTableBody>
+                  {deals.slice(0, 5).map((deal) => (
+                    <AdminDataTableRow key={deal.id}>
+                      <AdminDataTableCell className="whitespace-normal">
+                        <div>
+                          <p className="font-medium text-slate-900 dark:text-slate-50">{deal.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{deal.account?.name || deal.owner || 'Unassigned'}</p>
+                        </div>
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>{getContactDisplayName(deal.contact)}</AdminDataTableCell>
+                      <AdminCenteredBadgeCell>
+                        <DealStageBadge stage={deal.stage} />
+                      </AdminCenteredBadgeCell>
+                      <AdminDataTableCell className="text-right font-medium tabular-nums text-slate-900 dark:text-slate-50">
+                        {formatCurrency(deal.value)}
+                      </AdminDataTableCell>
+                      <AdminDataTableCell>{formatDateTime(deal.updated_at)}</AdminDataTableCell>
+                    </AdminDataTableRow>
+                  ))}
+                </AdminDataTableBody>
+              </AdminDataTable>
+              <div className="mt-4 flex justify-end">
+                <AdminPreviewLink to="/portal/admin/pipeline" label="Open pipeline" />
+              </div>
+            </TabsContent>
 
             <TabsContent value="quotes">
               <AdminDataTable>

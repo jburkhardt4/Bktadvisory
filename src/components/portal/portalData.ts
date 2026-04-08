@@ -92,6 +92,19 @@ export interface ActivityEvent {
   status?: QuoteStatus | ProjectStatus;
 }
 
+export type DealStage = 'identified' | 'contacted' | 'responded' | 'qualified' | 'proposal_sent' | 'negotiation' | 'won' | 'lost';
+
+export const DEAL_STAGE_CONFIG: Record<DealStage, { label: string; color: string; bg: string; dot: string }> = {
+  identified: { label: 'Identified', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', dot: 'bg-slate-400' },
+  contacted: { label: 'Contacted', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', dot: 'bg-purple-400' },
+  responded: { label: 'Responded', color: 'text-cyan-400', bg: 'bg-cyan-400/10 border-cyan-400/20', dot: 'bg-cyan-400' },
+  qualified: { label: 'Qualified', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },
+  proposal_sent: { label: 'Proposal Sent', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/20', dot: 'bg-blue-400' },
+  negotiation: { label: 'Negotiation', color: 'text-indigo-400', bg: 'bg-indigo-400/10 border-indigo-400/20', dot: 'bg-indigo-400' },
+  won: { label: 'Won', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', dot: 'bg-emerald-400' },
+  lost: { label: 'Lost', color: 'text-red-400', bg: 'bg-red-400/10 border-red-400/20', dot: 'bg-red-400' },
+};
+
 export const QUOTE_STATUS_CONFIG: Record<QuoteStatus, { label: string; color: string; bg: string; dot: string }> = {
   draft: { label: 'Draft', color: 'text-slate-400', bg: 'bg-slate-400/10 border-slate-400/20', dot: 'bg-slate-400' },
   scoping: { label: 'Scoping', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },

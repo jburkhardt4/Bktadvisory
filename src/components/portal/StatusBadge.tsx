@@ -1,6 +1,6 @@
 import { cn } from '../ui/utils';
-import { QUOTE_STATUS_CONFIG, PROJECT_STATUS_CONFIG, OPPORTUNITY_STATUS_CONFIG } from './portalData';
-import type { QuoteStatus, ProjectStatus, OpportunityStatus } from './portalData';
+import { QUOTE_STATUS_CONFIG, PROJECT_STATUS_CONFIG, OPPORTUNITY_STATUS_CONFIG, DEAL_STAGE_CONFIG } from './portalData';
+import type { QuoteStatus, ProjectStatus, OpportunityStatus, DealStage } from './portalData';
 
 function BaseStatusBadge({
   label,
@@ -87,6 +87,23 @@ export function OpportunityStatusBadge({
   className?: string;
 }) {
   const config = OPPORTUNITY_STATUS_CONFIG[status];
+  return (
+    <BaseStatusBadge
+      label={config.label}
+      className={cn(config.bg, config.color, className)}
+      dotClassName={config.dot}
+    />
+  );
+}
+
+export function DealStageBadge({
+  stage,
+  className,
+}: {
+  stage: DealStage;
+  className?: string;
+}) {
+  const config = DEAL_STAGE_CONFIG[stage];
   return (
     <BaseStatusBadge
       label={config.label}

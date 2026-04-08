@@ -2,13 +2,18 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { clearSession } from '../../utils/authSession';
 import { AdminCrmProvider, useAdminCrm } from './AdminCrmContext';
+import { SalesCrmProvider, useSalesCrm } from './SalesCrmContext';
 import {
   ActivityIcon,
+  BriefcaseIcon,
+  BuildingIcon,
   FileTextIcon,
   FolderIcon,
   LayersIcon,
   TargetIcon,
+  TrendingUpIcon,
   UserIcon,
+  UsersIcon,
 } from '../portal/PortalIcons';
 import {
   PORTAL_APP_SHELL_CLASS,
@@ -30,10 +35,17 @@ interface AdminNavigationItem {
   end?: boolean;
 }
 
+interface AdminNavigationGroup {
+  title: string;
+  items: AdminNavigationItem[];
+}
+
 export function AdminPortalLayout() {
   return (
     <AdminCrmProvider>
-      <AdminPortalScaffold />
+      <SalesCrmProvider>
+        <AdminPortalScaffold />
+      </SalesCrmProvider>
     </AdminCrmProvider>
   );
 }
@@ -41,56 +53,96 @@ export function AdminPortalLayout() {
 function AdminPortalScaffold() {
   const { session } = useAuth();
   const { quotes, projects, activities, milestones, opportunities, loading } = useAdminCrm();
+  const { deals, contacts: salesContacts, accounts, loading: salesLoading } = useSalesCrm();
   const navigate = useNavigate();
   const adminEmail = session?.user?.email ?? 'Admin account';
+  const isLoading = loading || salesLoading;
 
   async function handleSignOut() {
     await clearSession();
     navigate('/auth', { replace: true });
   }
 
-  const navigationItems: AdminNavigationItem[] = [
+  const navigationGroups: AdminNavigationGroup[] = [
     {
-      path: '/portal/admin',
-      label: 'Overview',
-      description: 'Master CRM dashboard',
-      icon: <LayersIcon size={16} />,
-      end: true,
+      title: 'Sales',
+      items: [
+        {
+          path: '/portal/admin',
+          label: 'Overview',
+          description: 'Master CRM dashboard',
+          icon: <LayersIcon size={16} />,
+          end: true,
+        },
+        {
+          path: '/portal/admin/pipeline',
+          label: 'Pipeline',
+          description: 'Visual deal board',
+          icon: <TrendingUpIcon size={16} />,
+          count: deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost').length,
+        },
+        {
+          path: '/portal/admin/sales-contacts',
+          label: 'Contacts',
+          description: 'Prospects and leads',
+          icon: <UsersIcon size={16} />,
+          count: salesContacts.length,
+        },
+        {
+          path: '/portal/admin/accounts',
+          label: 'Accounts',
+          description: 'Companies and orgs',
+          icon: <BuildingIcon size={16} />,
+          count: accounts.length,
+        },
+        {
+          path: '/portal/admin/deals',
+          label: 'Deals',
+          description: 'All deal records',
+          icon: <BriefcaseIcon size={16} />,
+          count: deals.length,
+        },
+      ],
     },
     {
-      path: '/portal/admin/quotes',
-      label: 'Quotes',
-      description: 'Pricing and assignments',
-      icon: <FileTextIcon size={16} />,
-      count: quotes.length,
-    },
-    {
-      path: '/portal/admin/projects',
-      label: 'Projects',
-      description: 'Delivery management',
-      icon: <FolderIcon size={16} />,
-      count: projects.length,
-    },
-    {
-      path: '/portal/admin/activities',
-      label: 'Activities',
-      description: 'Timeline control',
-      icon: <ActivityIcon size={16} />,
-      count: activities.length,
-    },
-    {
-      path: '/portal/admin/milestones',
-      label: 'Milestones',
-      description: 'Delivery checkpoints',
-      icon: <TargetIcon size={16} />,
-      count: milestones.length,
-    },
-    {
-      path: '/portal/admin/contacts',
-      label: 'Contacts',
-      description: 'Leads pipeline',
-      icon: <UserIcon size={16} />,
-      count: opportunities.length,
+      title: 'Delivery',
+      items: [
+        {
+          path: '/portal/admin/quotes',
+          label: 'Quotes',
+          description: 'Pricing and assignments',
+          icon: <FileTextIcon size={16} />,
+          count: quotes.length,
+        },
+        {
+          path: '/portal/admin/projects',
+          label: 'Projects',
+          description: 'Delivery management',
+          icon: <FolderIcon size={16} />,
+          count: projects.length,
+        },
+        {
+          path: '/portal/admin/activities',
+          label: 'Activities',
+          description: 'Timeline control',
+          icon: <ActivityIcon size={16} />,
+          count: activities.length,
+        },
+        {
+          path: '/portal/admin/milestones',
+          label: 'Milestones',
+          description: 'Delivery checkpoints',
+          icon: <TargetIcon size={16} />,
+          count: milestones.length,
+        },
+        {
+          path: '/portal/admin/contacts',
+          label: 'Opportunities',
+          description: 'Legacy leads pipeline',
+          icon: <UserIcon size={16} />,
+          count: opportunities.length,
+        },
+      ],
     },
   ];
 
@@ -171,37 +223,46 @@ function AdminPortalScaffold() {
           </div>
         </section>
 
-        <nav className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Admin sections">
-          {navigationItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                `rounded-2xl border p-4 transition-all ${
-                  isActive
-                    ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-500/10'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-900/80'
-                }`
-              }
-            >
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                  {item.icon}
-                </span>
-                <div className="min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{item.label}</p>
-                    {typeof item.count === 'number' && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {loading ? '…' : item.count}
+        <nav className="space-y-4" aria-label="Admin sections">
+          {navigationGroups.map((group) => (
+            <div key={group.title}>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                {group.title}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `rounded-2xl border p-4 transition-all ${
+                        isActive
+                          ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-500/10'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-900/80'
+                      }`
+                    }
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        {item.icon}
                       </span>
-                    )}
-                  </div>
-                  <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
-                </div>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{item.label}</p>
+                          {typeof item.count === 'number' && (
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                              {isLoading ? '…' : item.count}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
+                      </div>
+                    </div>
+                  </NavLink>
+                ))}
               </div>
-            </NavLink>
+            </div>
           ))}
         </nav>
 

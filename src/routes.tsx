@@ -68,6 +68,15 @@ export const router = createBrowserRouter([
           { path: 'milestones', element: <AdminMilestonesPage /> },
           // Automation
           { path: 'automation', element: <div className="py-12 text-center text-sm text-slate-400">Workflow automation — coming in Phase 2.</div> },
+          // AI/Automations — placeholders
+          { path: 'prompt-library', element: <div className="py-12 text-center text-sm text-slate-400">Prompt Library — coming soon.</div> },
+          { path: 'automation-rules', element: <div className="py-12 text-center text-sm text-slate-400">Automation Rules — coming soon.</div> },
+          { path: 'analytics', element: <div className="py-12 text-center text-sm text-slate-400">Analytics — coming soon.</div> },
+          // Sales — placeholders
+          { path: 'calendar', element: <div className="py-12 text-center text-sm text-slate-400">Calendar — coming soon.</div> },
+          { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
+          // Delivery — placeholders
+          { path: 'approvals', element: <div className="py-12 text-center text-sm text-slate-400">Client Approvals — coming soon.</div> },
         ],
       },
     ],

@@ -6,7 +6,6 @@
  *
  * Visibility rules:
  * - QuoteRecord and ProjectRecord are client-facing (visible in Client Portal).
- * - OpportunityRecord is internal-only (BKT Advisory admin pipeline).
  * - The Client Portal provides a secure, read-only dashboard — status flows
  *   one-way from admin to client.
  */
@@ -15,7 +14,6 @@ import type { QuoteData } from "../types";
 import type {
   ActivityEvent,
   ActivityEventType,
-  OpportunityRecord,
   ProjectRecord,
   QuoteRecord,
   QuoteStatus,
@@ -105,35 +103,6 @@ export function mapQuoteDataToQuoteRecord(
     createdAt: now,
     updatedAt: now,
     description: formData.projectDescription,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// OpportunityRecord mapper (internal-only — NEVER exposed to Client Portal)
-// ---------------------------------------------------------------------------
-
-/**
- * Create an `OpportunityRecord` from a `QuoteRecord`.
- *
- * An opportunity is internal-only and is typically created when a quote is
- * first sent to a prospect. The caller decides when to invoke this mapper.
- * This data must NEVER be exposed or rendered in the Client Portal UI.
- *
- * @param quote - the portal `QuoteRecord` to derive the opportunity from
- */
-export function mapQuoteToOpportunityRecord(
-  quote: QuoteRecord,
-): OpportunityRecord {
-  const now = nowISO();
-
-  return {
-    id: generateId("opp"),
-    name: `${quote.companyName} – Opportunity`,
-    companyName: quote.companyName,
-    status: "proposal_prepared",
-    value: quote.amount,
-    createdAt: now,
-    updatedAt: now,
   };
 }
 

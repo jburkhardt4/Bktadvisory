@@ -12,8 +12,8 @@ import {
   LayersIcon,
   TargetIcon,
   TrendingUpIcon,
-  UserIcon,
   UsersIcon,
+  ZapIcon,
 } from '../portal/PortalIcons';
 import {
   PORTAL_APP_SHELL_CLASS,
@@ -52,7 +52,7 @@ export function AdminPortalLayout() {
 
 function AdminPortalScaffold() {
   const { session } = useAuth();
-  const { quotes, projects, activities, milestones, opportunities, loading } = useAdminCrm();
+  const { quotes, projects, activities, milestones, loading } = useAdminCrm();
   const { deals, contacts: salesContacts, accounts, loading: salesLoading } = useSalesCrm();
   const navigate = useNavigate();
   const adminEmail = session?.user?.email ?? 'Admin account';
@@ -135,12 +135,16 @@ function AdminPortalScaffold() {
           icon: <TargetIcon size={16} />,
           count: milestones.length,
         },
+      ],
+    },
+    {
+      title: 'Automation',
+      items: [
         {
-          path: '/portal/admin/contacts',
-          label: 'Opportunities',
-          description: 'Legacy leads pipeline',
-          icon: <UserIcon size={16} />,
-          count: opportunities.length,
+          path: '/portal/admin/automation',
+          label: 'Workflows',
+          description: 'Coming soon',
+          icon: <ZapIcon size={16} />,
         },
       ],
     },

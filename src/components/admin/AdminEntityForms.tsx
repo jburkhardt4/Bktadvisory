@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   ACTIVITY_TYPE_OPTIONS,
-  OPPORTUNITY_STATUS_OPTIONS,
   PROJECT_STATUS_OPTIONS,
   QUOTE_STATUS_OPTIONS,
   formatDateTime,
@@ -14,8 +13,6 @@ import {
   type AdminProjectRecord,
   type AdminQuoteRecord,
   type MilestoneMutationValues,
-  type OpportunityMutationValues,
-  type OpportunityRecord,
   type ProfileRecord,
   type ProjectMutationValues,
   type ProjectRecord,
@@ -31,7 +28,6 @@ type QuoteFormErrors = Partial<Record<keyof QuoteMutationValues, string>>;
 type ProjectFormErrors = Partial<Record<keyof ProjectMutationValues, string>>;
 type ActivityFormErrors = Partial<Record<keyof ActivityMutationValues, string>>;
 type MilestoneFormErrors = Partial<Record<keyof MilestoneMutationValues, string>>;
-type OpportunityFormErrors = Partial<Record<keyof OpportunityMutationValues, string>>;
 
 interface AdminQuoteFormProps {
   clients: ProfileRecord[];
@@ -59,12 +55,6 @@ interface AdminMilestoneFormProps {
   initialRecord?: AdminMilestoneRecord | null;
   onCancel: () => void;
   onSave: (values: MilestoneMutationValues) => Promise<void>;
-}
-
-interface AdminOpportunityFormProps {
-  initialRecord?: OpportunityRecord | null;
-  onCancel: () => void;
-  onSave: (values: OpportunityMutationValues) => Promise<void>;
 }
 
 function FormError({ message }: { message?: string }) {
@@ -913,141 +903,3 @@ export function AdminMilestoneForm({
   );
 }
 
-function buildOpportunityValues(record?: OpportunityRecord | null): OpportunityMutationValues {
-  return {
-    name: record?.name ?? '',
-    companyName: record?.company_name ?? '',
-    status: record?.status ?? 'discovery',
-    value: record?.value != null ? String(record.value) : '',
-  };
-}
-
-function validateOpportunityValues(values: OpportunityMutationValues): OpportunityFormErrors {
-  const errors: OpportunityFormErrors = {};
-  if (!values.name.trim()) errors.name = 'Lead name is required.';
-  if (!values.companyName.trim()) errors.companyName = 'Company name is required.';
-  return errors;
-}
-
-export function AdminOpportunityForm({
-  initialRecord,
-  onCancel,
-  onSave,
-}: AdminOpportunityFormProps) {
-  const [values, setValues] = useState<OpportunityMutationValues>(buildOpportunityValues(initialRecord));
-  const [errors, setErrors] = useState<OpportunityFormErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setValues(buildOpportunityValues(initialRecord));
-    setErrors({});
-    setSubmitError(null);
-  }, [initialRecord]);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const nextErrors = validateOpportunityValues(values);
-    setErrors(nextErrors);
-    setSubmitError(null);
-
-    if (Object.keys(nextErrors).length > 0) return;
-
-    setIsSaving(true);
-
-    try {
-      await onSave(values);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'We could not save the opportunity.');
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <FormAlert message={submitError} />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Lead / Opportunity Name</label>
-          <Input
-            value={values.name}
-            onChange={(event) => {
-              setValues((v) => ({ ...v, name: event.target.value }));
-              setErrors((e) => ({ ...e, name: undefined }));
-            }}
-            placeholder="e.g. Salesforce CPQ Evaluation"
-            disabled={isSaving}
-          />
-          <FormError message={errors.name} />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Company Name</label>
-          <Input
-            value={values.companyName}
-            onChange={(event) => {
-              setValues((v) => ({ ...v, companyName: event.target.value }));
-              setErrors((e) => ({ ...e, companyName: undefined }));
-            }}
-            placeholder="e.g. Apex Financial Group"
-            disabled={isSaving}
-          />
-          <FormError message={errors.companyName} />
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Pipeline Stage</label>
-          <Select
-            value={values.status}
-            onValueChange={(next) =>
-              setValues((v) => ({ ...v, status: next as OpportunityMutationValues['status'] }))
-            }
-            disabled={isSaving}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {OPPORTUNITY_STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Estimated Value (USD)</label>
-          <Input
-            type="number"
-            min="0"
-            step="1000"
-            value={values.value}
-            onChange={(event) => setValues((v) => ({ ...v, value: event.target.value }))}
-            placeholder="e.g. 75000"
-            disabled={isSaving}
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isSaving}
-          className="bkt-primary-button rounded-xl"
-        >
-          {isSaving ? 'Saving…' : initialRecord ? 'Save Opportunity' : 'Create Opportunity'}
-        </Button>
-      </div>
-    </form>
-  );
-}

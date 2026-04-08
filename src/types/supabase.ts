@@ -329,36 +329,6 @@ export type Database = {
           },
         ];
       };
-      opportunities: {
-        Row: {
-          id: string;
-          name: string;
-          company_name: string;
-          status: Database['public']['Enums']['opportunity_status'];
-          value: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          company_name: string;
-          status?: Database['public']['Enums']['opportunity_status'];
-          value: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          company_name?: string;
-          status?: Database['public']['Enums']['opportunity_status'];
-          value?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       activity_events: {
         Row: {
           id: string;
@@ -496,14 +466,6 @@ export type Database = {
         | 'uat'
         | 'completed'
         | 'archived';
-      opportunity_status:
-        | 'discovery'
-        | 'solutioning'
-        | 'proposal_prepared'
-        | 'proposal_sent'
-        | 'negotiation'
-        | 'closed_won'
-        | 'closed_lost';
       activity_event_type:
         | 'quote_generated'
         | 'quote_sent'

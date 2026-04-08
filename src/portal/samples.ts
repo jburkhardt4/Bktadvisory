@@ -8,7 +8,6 @@
 import type { QuoteData } from "../types";
 import type {
   ActivityEvent,
-  OpportunityRecord,
   ProjectRecord,
   QuoteRecord,
 } from "./types";
@@ -107,17 +106,6 @@ export const sampleActivityEvents: ActivityEvent[] = [
     actor: "system",
   },
 ];
-
-/** Sample opportunity record (internal-only — not client-facing). */
-export const sampleOpportunityRecord: OpportunityRecord = {
-  id: "opp_sample_def456_1",
-  name: "Acme Corp – Opportunity",
-  companyName: "Acme Corp",
-  status: "proposal_prepared",
-  value: 16170,
-  createdAt: "2026-03-19T00:00:00.000Z",
-  updatedAt: "2026-03-19T00:00:00.000Z",
-};
 
 export const sampleProjectRecord: ProjectRecord = {
   id: "proj_sample_ghi012_1",

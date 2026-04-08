@@ -1,6 +1,5 @@
 import type {
   QuoteRecord,
-  OpportunityRecord,
   ProjectRecord,
   ActivityEvent,
 } from '../types/portal';
@@ -45,27 +44,6 @@ export const mockQuotes: QuoteRecord[] = [
     createdAt: '2026-03-12T08:30:00Z',
     updatedAt: '2026-03-12T08:30:00Z',
     description: 'Marketing automation and pipeline acceleration on HubSpot with AI agent integration.',
-  },
-];
-
-export const mockOpportunities: OpportunityRecord[] = [
-  {
-    id: 'opp-001',
-    name: 'Apex FinTech — Sales Cloud Expansion',
-    companyName: 'Apex FinTech Solutions',
-    status: 'negotiation',
-    value: 95000,
-    createdAt: '2025-12-01T09:00:00Z',
-    updatedAt: '2026-03-10T14:00:00Z',
-  },
-  {
-    id: 'opp-002',
-    name: 'Meridian Capital — Agentforce Pilot',
-    companyName: 'Meridian Capital Group',
-    status: 'proposal_sent',
-    value: 58000,
-    createdAt: '2026-02-18T11:00:00Z',
-    updatedAt: '2026-03-05T10:30:00Z',
   },
 ];
 

@@ -80,41 +80,6 @@ export interface QuoteRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Opportunity record (internal-only — NEVER exposed to Client Portal UI)
-// ---------------------------------------------------------------------------
-
-/**
- * Opportunity lifecycle: tracks a sales opportunity from discovery through close.
- * This data is strictly internal to BKT Advisory's admin pipeline.
- * - discovery: initial exploration of the opportunity
- * - solutioning: designing the proposed solution
- * - proposal_prepared: proposal document is ready
- * - proposal_sent: proposal has been sent to prospect
- * - negotiation: terms are being negotiated
- * - closed_won: deal was won
- * - closed_lost: deal was lost
- */
-export type OpportunityStatus =
-  | "discovery"
-  | "solutioning"
-  | "proposal_prepared"
-  | "proposal_sent"
-  | "negotiation"
-  | "closed_won"
-  | "closed_lost";
-
-/** Canonical record for a sales opportunity. Internal-only, not client-facing. */
-export interface OpportunityRecord {
-  id: string;
-  name: string;
-  companyName: string;
-  status: OpportunityStatus;
-  value: number;
-  createdAt: string; // ISO-8601
-  updatedAt: string; // ISO-8601
-}
-
-// ---------------------------------------------------------------------------
 // Project record (created when a quote is accepted)
 // ---------------------------------------------------------------------------
 

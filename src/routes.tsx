@@ -61,22 +61,20 @@ export const router = createBrowserRouter([
           { path: 'sales-contacts', element: <SalesContactsPage /> },
           { path: 'accounts', element: <SalesAccountsPage /> },
           { path: 'deals', element: <SalesDealsPage /> },
+          // Sales — additional
+          { path: 'calendar', element: <div className="py-12 text-center text-sm text-slate-400">Calendar — coming soon.</div> },
+          { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
           // Delivery
           { path: 'quotes', element: <AdminQuotesPage /> },
           { path: 'projects', element: <AdminProjectsPage /> },
           { path: 'activities', element: <AdminActivitiesPage /> },
           { path: 'milestones', element: <AdminMilestonesPage /> },
-          // Automation
-          { path: 'automation', element: <div className="py-12 text-center text-sm text-slate-400">Workflow automation — coming in Phase 2.</div> },
-          // AI/Automations — placeholders
+          { path: 'approvals', element: <div className="py-12 text-center text-sm text-slate-400">Client Approvals — coming soon.</div> },
+          // AI / Automations
+          { path: 'automation', element: <div className="py-12 text-center text-sm text-slate-400">Agent Workflows — coming in Phase 2.</div> },
           { path: 'prompt-library', element: <div className="py-12 text-center text-sm text-slate-400">Prompt Library — coming soon.</div> },
           { path: 'automation-rules', element: <div className="py-12 text-center text-sm text-slate-400">Automation Rules — coming soon.</div> },
-          { path: 'analytics', element: <div className="py-12 text-center text-sm text-slate-400">Analytics — coming soon.</div> },
-          // Sales — placeholders
-          { path: 'calendar', element: <div className="py-12 text-center text-sm text-slate-400">Calendar — coming soon.</div> },
-          { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
-          // Delivery — placeholders
-          { path: 'approvals', element: <div className="py-12 text-center text-sm text-slate-400">Client Approvals — coming soon.</div> },
+          { path: 'analytics', element: <div className="py-12 text-center text-sm text-slate-400">AI Analytics — coming soon.</div> },
         ],
       },
     ],

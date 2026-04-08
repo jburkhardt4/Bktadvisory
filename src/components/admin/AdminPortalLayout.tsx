@@ -1,25 +1,13 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router';
+import { Link, Outlet, useNavigate } from 'react-router';
 import { useTheme } from 'next-themes';
 import { useAuth } from '../../contexts/AuthContext';
 import { clearSession } from '../../utils/authSession';
 import { AdminCrmProvider, useAdminCrm } from './AdminCrmContext';
 import { SalesCrmProvider, useSalesCrm } from './SalesCrmContext';
-import {
-  ActivityIcon,
-  BriefcaseIcon,
-  BuildingIcon,
-  FileTextIcon,
-  FolderIcon,
-  LayersIcon,
-  TargetIcon,
-  TrendingUpIcon,
-  UsersIcon,
-  ZapIcon,
-} from '../portal/PortalIcons';
+import { AdminTopNav, type NavCounts } from './AdminTopNav';
 import {
   PORTAL_APP_SHELL_CLASS,
   PORTAL_APP_URL,
-  PORTAL_HERO_SURFACE_CLASS,
   PORTAL_ICON_LOGO,
   PORTAL_ICON_LOGO_WHITE,
   PORTAL_ICON_BUTTON_CLASS,
@@ -27,20 +15,6 @@ import {
   PORTAL_SECONDARY_ACTION_CLASS,
   PORTAL_TOPBAR_CLASS,
 } from '../portal/portalBranding';
-
-interface AdminNavigationItem {
-  path: string;
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-  count?: number;
-  end?: boolean;
-}
-
-interface AdminNavigationGroup {
-  title: string;
-  items: AdminNavigationItem[];
-}
 
 export function AdminPortalLayout() {
   return (
@@ -67,98 +41,25 @@ function AdminPortalScaffold() {
     navigate('/auth', { replace: true });
   }
 
-  const navigationGroups: AdminNavigationGroup[] = [
-    {
-      title: 'Sales',
-      items: [
-        {
-          path: '/portal/admin',
-          label: 'Overview',
-          description: 'Master CRM dashboard',
-          icon: <LayersIcon size={16} />,
-          end: true,
-        },
-        {
-          path: '/portal/admin/pipeline',
-          label: 'Pipeline',
-          description: 'Visual deal board',
-          icon: <TrendingUpIcon size={16} />,
-          count: deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost').length,
-        },
-        {
-          path: '/portal/admin/sales-contacts',
-          label: 'Contacts',
-          description: 'Prospects and leads',
-          icon: <UsersIcon size={16} />,
-          count: salesContacts.length,
-        },
-        {
-          path: '/portal/admin/accounts',
-          label: 'Accounts',
-          description: 'Companies and orgs',
-          icon: <BuildingIcon size={16} />,
-          count: accounts.length,
-        },
-        {
-          path: '/portal/admin/deals',
-          label: 'Deals',
-          description: 'All deal records',
-          icon: <BriefcaseIcon size={16} />,
-          count: deals.length,
-        },
-      ],
-    },
-    {
-      title: 'Delivery',
-      items: [
-        {
-          path: '/portal/admin/quotes',
-          label: 'Quotes',
-          description: 'Pricing and assignments',
-          icon: <FileTextIcon size={16} />,
-          count: quotes.length,
-        },
-        {
-          path: '/portal/admin/projects',
-          label: 'Projects',
-          description: 'Delivery management',
-          icon: <FolderIcon size={16} />,
-          count: projects.length,
-        },
-        {
-          path: '/portal/admin/activities',
-          label: 'Activities',
-          description: 'Timeline control',
-          icon: <ActivityIcon size={16} />,
-          count: activities.length,
-        },
-        {
-          path: '/portal/admin/milestones',
-          label: 'Milestones',
-          description: 'Delivery checkpoints',
-          icon: <TargetIcon size={16} />,
-          count: milestones.length,
-        },
-      ],
-    },
-    {
-      title: 'Automation',
-      items: [
-        {
-          path: '/portal/admin/automation',
-          label: 'Workflows',
-          description: 'Coming soon',
-          icon: <ZapIcon size={16} />,
-        },
-      ],
-    },
-  ];
+  const counts: NavCounts = isLoading
+    ? {}
+    : {
+        activeDeals: String(deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost').length),
+        contacts: String(salesContacts.length),
+        accounts: String(accounts.length),
+        deals: String(deals.length),
+        quotes: String(quotes.length),
+        projects: String(projects.length),
+        activities: String(activities.length),
+        milestones: String(milestones.length),
+      };
 
   return (
     <div className={PORTAL_APP_SHELL_CLASS}>
       <header className={PORTAL_TOPBAR_CLASS}>
         <div className="max-w-[1440px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 xl:px-8">
-          <div className="flex items-center gap-3">
+          {/* Left: Logo + brand + nav */}
+          <div className="flex items-center gap-4">
             <a
               href={PORTAL_APP_URL}
               className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white p-1 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:shadow-none dark:focus-visible:ring-offset-slate-950"
@@ -169,12 +70,18 @@ function AdminPortalScaffold() {
                 className="h-6 w-6 scale-[1.3] object-contain"
               />
             </a>
-            <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Admin Panel</p>
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Sales Console</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">{adminEmail}</p>
             </div>
+
+            {/* Divider between brand and nav */}
+            <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800" />
+
+            <AdminTopNav counts={counts} />
           </div>
 
+          {/* Right: actions */}
           <div className="flex items-center gap-2">
             <Link
               to="/portal"
@@ -217,63 +124,7 @@ function AdminPortalScaffold() {
         </div>
       </header>
 
-      <main className="max-w-[1440px] mx-auto space-y-6 px-4 py-8 sm:px-6 xl:px-8">
-        <section className={`${PORTAL_HERO_SURFACE_CLASS} p-8`}>
-          <div className="max-w-4xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/80">
-              Protected Workspace
-            </p>
-            <h1 className="mt-3 text-3xl font-bold text-white">BKT Advisory CRM Control Center</h1>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              Review every record across the portal, manage client ownership, and keep projects, activities,
-              and milestones aligned from one protected admin workspace.
-            </p>
-          </div>
-        </section>
-
-        <nav className="space-y-4" aria-label="Admin sections">
-          {navigationGroups.map((group) => (
-            <div key={group.title}>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                {group.title}
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `rounded-2xl border p-4 transition-all ${
-                        isActive
-                          ? 'border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-500/10'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-900/80'
-                      }`
-                    }
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                        {item.icon}
-                      </span>
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{item.label}</p>
-                          {typeof item.count === 'number' && (
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                              {isLoading ? '…' : item.count}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{item.description}</p>
-                      </div>
-                    </div>
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-
+      <main className="max-w-[1440px] mx-auto px-4 py-6 sm:px-6 xl:px-8">
         <div className={PORTAL_PANEL_SURFACE_CLASS}>
           <Outlet />
         </div>

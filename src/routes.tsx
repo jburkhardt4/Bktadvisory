@@ -20,6 +20,10 @@ import {
   AdminProjectsPage,
   AdminQuotesPage,
 } from './components/admin/AdminEntityPages';
+import { SalesPipelinePage } from './components/admin/SalesPipelinePage';
+import { SalesContactsPage } from './components/admin/SalesContactsPage';
+import { SalesAccountsPage } from './components/admin/SalesAccountsPage';
+import { SalesDealsPage } from './components/admin/SalesDealsPage';
 
 export const router = createBrowserRouter([
   {
@@ -52,7 +56,13 @@ export const router = createBrowserRouter([
           </AdminRoute>
         ),
         children: [
+          // Sales
           { index: true, element: <AdminDashboardPage /> },
+          { path: 'pipeline', element: <SalesPipelinePage /> },
+          { path: 'sales-contacts', element: <SalesContactsPage /> },
+          { path: 'accounts', element: <SalesAccountsPage /> },
+          { path: 'deals', element: <SalesDealsPage /> },
+          // Delivery
           { path: 'quotes', element: <AdminQuotesPage /> },
           { path: 'projects', element: <AdminProjectsPage /> },
           { path: 'activities', element: <AdminActivitiesPage /> },

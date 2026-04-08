@@ -13,6 +13,7 @@ Follow these steps to run the BKT Advisory portal locally:
 
 2. **Start the development server:**
    `npm run dev`
+
 ————————————————————————————————
 
 ## Available Scripts
@@ -21,6 +22,7 @@ Once installed, you can run the following utility commands:
 * `npm run typecheck` — Scans the codebase for TypeScript errors.
 * `npm test` — Runs the automated test suite.
 * `npm run build` — Compiles and bundles the application for production.
+
 ————————————————————————————————
 
 Before doing any work, read and follow:

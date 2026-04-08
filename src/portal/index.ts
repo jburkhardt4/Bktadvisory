@@ -9,8 +9,6 @@
 export type {
   ActivityEvent,
   ActivityEventType,
-  OpportunityRecord,
-  OpportunityStatus,
   ProjectRecord,
   ProjectStatus,
   QuoteRecord,
@@ -21,5 +19,4 @@ export {
   createActivityEvent,
   mapAcceptedQuoteToProjectRecord,
   mapQuoteDataToQuoteRecord,
-  mapQuoteToOpportunityRecord,
 } from "./mappers";

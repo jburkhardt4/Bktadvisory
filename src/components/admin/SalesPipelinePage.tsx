@@ -25,7 +25,7 @@ import {
   type DealStage,
   type SalesDealRecord,
 } from './salesCrmApi';
-import { formatCurrency } from './adminCrmApi';
+import { formatCurrency, createAdminProject } from './adminCrmApi';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 function WorkspaceErrorBanner({ message }: { message: string }) {
@@ -120,11 +120,30 @@ function KanbanColumn({ stage, deals, onMoveLeft, onMoveRight }: KanbanColumnPro
 
 export function SalesPipelinePage() {
   const { deals, contacts, accounts, pipelines, loading, error, refreshData } = useSalesCrm();
-  const { quotes } = useAdminCrm();
+  const { quotes, refreshData: refreshAdminData } = useAdminCrm();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const stages = DEAL_STAGE_OPTIONS;
   const stageKeys = stages.map((s) => s.value);
+
+  async function handleCreateProjectFromDeal(deal: SalesDealRecord) {
+    try {
+      const companyName = deal.account?.name ?? deal.contact?.last_name ?? 'New Client';
+      await createAdminProject({
+        clientId: '',
+        name: `${companyName} — ${deal.name}`,
+        companyName,
+        description: `Project created from won deal: ${deal.name}`,
+        owner: deal.owner ?? 'John Burkhardt',
+        status: 'intake',
+        targetMilestone: 'TBD',
+      });
+      await refreshAdminData();
+      toast.success('Project created from deal.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create project.');
+    }
+  }
 
   async function handleMoveStage(deal: SalesDealRecord, direction: 'left' | 'right') {
     const currentIndex = stageKeys.indexOf(deal.stage);
@@ -136,6 +155,16 @@ export function SalesPipelinePage() {
     try {
       await updateDealStage(deal.id, nextStage);
       await refreshData();
+
+      if (nextStage === 'won') {
+        toast.success('Deal won!', {
+          action: {
+            label: 'Create Project',
+            onClick: () => { void handleCreateProjectFromDeal(deal); },
+          },
+          duration: 10000,
+        });
+      }
     } catch (moveError) {
       toast.error(moveError instanceof Error ? moveError.message : 'Could not move deal.');
     }

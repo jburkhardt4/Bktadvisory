@@ -20,25 +20,6 @@ export type QuoteStatus =
   | 'expired';
 
 /**
- * Opportunity lifecycle: tracks a sales opportunity from discovery through close.
- * - discovery: initial exploration of the opportunity
- * - solutioning: designing the proposed solution
- * - proposal_prepared: proposal document is ready
- * - proposal_sent: proposal has been sent to prospect
- * - negotiation: terms are being negotiated
- * - closed_won: deal was won
- * - closed_lost: deal was lost
- */
-export type OpportunityStatus =
-  | 'discovery'
-  | 'solutioning'
-  | 'proposal_prepared'
-  | 'proposal_sent'
-  | 'negotiation'
-  | 'closed_won'
-  | 'closed_lost';
-
-/**
  * Project lifecycle: tracks an active engagement from intake through archival.
  * - intake: project is being onboarded
  * - discovery: requirements and context are being gathered
@@ -94,17 +75,6 @@ export interface QuoteRecord {
   createdAt: string;
   updatedAt: string;
   description: string;
-}
-
-/** Canonical record for a sales opportunity. */
-export interface OpportunityRecord {
-  id: string;
-  name: string;
-  companyName: string;
-  status: OpportunityStatus;
-  value: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 /** Canonical record for an active or historical project. */

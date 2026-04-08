@@ -60,6 +60,56 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // Independent heavy libraries that don't cross-depend on each other
+              if (id.includes('@supabase') || id.includes('@jsr/supabase')) {
+                return 'supabase-vendor';
+              }
+              if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('@floating-ui') || id.includes('aria-hidden') || id.includes('react-remove-scroll')) {
+                return 'ui-vendor';
+              }
+              if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) {
+                return 'chart-vendor';
+              }
+              if (id.includes('jspdf')) {
+                return 'pdf-vendor';
+              }
+              if (id.includes('docx') || id.includes('pizzip') || id.includes('xmlbuilder') || id.includes('saxes')) {
+                return 'doc-vendor';
+              }
+              if (id.includes('html-to-image') || id.includes('html2canvas')) {
+                return 'image-vendor';
+              }
+              if (id.includes('openai')) {
+                return 'openai-vendor';
+              }
+              if (id.includes('motion') || id.includes('framer-motion')) {
+                return 'motion-vendor';
+              }
+              if (id.includes('react-day-picker') || id.includes('react-hook-form') || id.includes('react-resizable-panels') || id.includes('embla-carousel')) {
+                return 'forms-vendor';
+              }
+              if (id.includes('dompurify') || id.includes('purify')) {
+                return 'sanitize-vendor';
+              }
+              if (id.includes('react-router') || id.includes('@remix-run') || id.includes('set-cookie-parser') || id.includes('/cookie/')) {
+                return 'router-vendor';
+              }
+              if (id.includes('tailwind-merge') || id.includes('class-variance-authority') || id.includes('clsx') || id.includes('tw-animate')) {
+                return 'css-utils-vendor';
+              }
+              if (id.includes('sonner') || id.includes('vaul') || id.includes('cmdk') || id.includes('input-otp') || id.includes('next-themes')) {
+                return 'small-ui-vendor';
+              }
+              // React + all other deps stay together to avoid circular chunks
+              return 'vendor';
+            }
+          },
+        },
+      },
     },
     server: {
       port: 5000,

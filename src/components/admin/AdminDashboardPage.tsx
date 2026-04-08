@@ -41,7 +41,9 @@ export function AdminDashboardPage() {
     projects.length > 0 ||
     activities.length > 0 ||
     milestones.length > 0 ||
-    deals.length > 0;
+    deals.length > 0 ||
+    salesContacts.length > 0 ||
+    accounts.length > 0;
 
   if (displayError && !hasData) {
     return (

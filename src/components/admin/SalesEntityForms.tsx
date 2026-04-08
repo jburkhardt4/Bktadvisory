@@ -249,12 +249,13 @@ export function AdminContactForm({
       <div className="space-y-2">
         <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Account</label>
         <Select
-          value={values.accountId || undefined}
-          onValueChange={(v) => { setValues((prev) => ({ ...prev, accountId: v })); }}
+          value={values.accountId || '__NONE__'}
+          onValueChange={(v) => { setValues((prev) => ({ ...prev, accountId: v === '__NONE__' ? '' : v })); }}
           disabled={isSaving}
         >
           <SelectTrigger><SelectValue placeholder="Select an account (optional)" /></SelectTrigger>
           <SelectContent>
+            <SelectItem value="__NONE__">None</SelectItem>
             {accounts.map((a) => (
               <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
             ))}
@@ -493,19 +494,24 @@ export function AdminDealForm({
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Contact</label>
           <Select
-            value={values.contactId || undefined}
+            value={values.contactId || '__NONE__'}
             onValueChange={(v) => {
+              if (v === '__NONE__') {
+                setValues((prev) => ({ ...prev, contactId: '' }));
+                return;
+              }
               const c = contacts.find((ct) => ct.id === v);
               setValues((prev) => ({
                 ...prev,
                 contactId: v,
-                accountId: c?.account_id ?? prev.accountId,
+                accountId: c?.account_id ?? '',
               }));
             }}
             disabled={isSaving}
           >
             <SelectTrigger><SelectValue placeholder="Select contact (optional)" /></SelectTrigger>
             <SelectContent>
+              <SelectItem value="__NONE__">None</SelectItem>
               {contacts.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{getContactDisplayName(c)}</SelectItem>
               ))}
@@ -515,12 +521,13 @@ export function AdminDealForm({
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Account</label>
           <Select
-            value={values.accountId || undefined}
-            onValueChange={(v) => setValues((prev) => ({ ...prev, accountId: v }))}
+            value={values.accountId || '__NONE__'}
+            onValueChange={(v) => setValues((prev) => ({ ...prev, accountId: v === '__NONE__' ? '' : v }))}
             disabled={isSaving}
           >
             <SelectTrigger><SelectValue placeholder="Select account (optional)" /></SelectTrigger>
             <SelectContent>
+              <SelectItem value="__NONE__">None</SelectItem>
               {accounts.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
               ))}
@@ -578,12 +585,13 @@ export function AdminDealForm({
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Linked Quote</label>
           <Select
-            value={values.quoteId || undefined}
-            onValueChange={(v) => setValues((prev) => ({ ...prev, quoteId: v }))}
+            value={values.quoteId || '__NONE__'}
+            onValueChange={(v) => setValues((prev) => ({ ...prev, quoteId: v === '__NONE__' ? '' : v }))}
             disabled={isSaving}
           >
             <SelectTrigger><SelectValue placeholder="Link to quote (optional)" /></SelectTrigger>
             <SelectContent>
+              <SelectItem value="__NONE__">None</SelectItem>
               {quotes.map((q) => (
                 <SelectItem key={q.id} value={q.id}>
                   {q.metadata.company_name || q.client?.company_name || q.id.slice(0, 8)} — {formatCurrency(q.estimated_budget_min)} to {formatCurrency(q.estimated_budget_max)}

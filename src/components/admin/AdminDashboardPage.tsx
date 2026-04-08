@@ -27,7 +27,7 @@ import { getContactDisplayName } from './salesCrmApi';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 export function AdminDashboardPage() {
-  const { quotes, projects, activities, milestones, opportunities, loading, error } = useAdminCrm();
+  const { quotes, projects, activities, milestones, loading, error } = useAdminCrm();
   const { deals, contacts: salesContacts, accounts, loading: salesLoading, error: salesError } = useSalesCrm();
 
   if (loading || salesLoading) {

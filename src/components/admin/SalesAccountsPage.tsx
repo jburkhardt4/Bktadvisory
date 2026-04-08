@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -97,13 +97,21 @@ export function SalesAccountsPage() {
     }
   }
 
-  function contactCountForAccount(accountId: string) {
-    return contacts.filter((c) => c.account_id === accountId).length;
-  }
+  const contactCountMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const c of contacts) {
+      if (c.account_id) map[c.account_id] = (map[c.account_id] ?? 0) + 1;
+    }
+    return map;
+  }, [contacts]);
 
-  function dealCountForAccount(accountId: string) {
-    return deals.filter((d) => d.account_id === accountId).length;
-  }
+  const dealCountMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const d of deals) {
+      if (d.account_id) map[d.account_id] = (map[d.account_id] ?? 0) + 1;
+    }
+    return map;
+  }, [deals]);
 
   if (loading) {
     return <AdminLoadingState label="Loading accounts…" />;
@@ -153,8 +161,8 @@ export function SalesAccountsPage() {
                     </div>
                   </AdminDataTableCell>
                   <AdminDataTableCell>{account.industry || '—'}</AdminDataTableCell>
-                  <AdminDataTableCell className="text-right tabular-nums">{contactCountForAccount(account.id)}</AdminDataTableCell>
-                  <AdminDataTableCell className="text-right tabular-nums">{dealCountForAccount(account.id)}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right tabular-nums">{contactCountMap[account.id] ?? 0}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right tabular-nums">{dealCountMap[account.id] ?? 0}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right font-medium tabular-nums text-slate-900 dark:text-slate-50">
                     {formatCurrency(account.annual_revenue)}
                   </AdminDataTableCell>

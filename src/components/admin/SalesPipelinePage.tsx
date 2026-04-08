@@ -38,7 +38,6 @@ function WorkspaceErrorBanner({ message }: { message: string }) {
 
 interface KanbanColumnProps {
   stage: DealStage;
-  label: string;
   deals: SalesDealRecord[];
   onMoveLeft?: (deal: SalesDealRecord) => void;
   onMoveRight?: (deal: SalesDealRecord) => void;
@@ -86,7 +85,7 @@ function KanbanCard({ deal, onMoveLeft, onMoveRight }: { deal: SalesDealRecord; 
   );
 }
 
-function KanbanColumn({ stage, label, deals, onMoveLeft, onMoveRight }: KanbanColumnProps) {
+function KanbanColumn({ stage, deals, onMoveLeft, onMoveRight }: KanbanColumnProps) {
   const stageValue = deals.reduce((sum, d) => sum + (d.value ?? 0), 0);
 
   return (
@@ -120,15 +119,16 @@ function KanbanColumn({ stage, label, deals, onMoveLeft, onMoveRight }: KanbanCo
 }
 
 export function SalesPipelinePage() {
-  const { deals, contacts, accounts, pipelines, loading, error, isRefreshing, refreshData } = useSalesCrm();
+  const { deals, contacts, accounts, pipelines, loading, error, refreshData } = useSalesCrm();
   const { quotes } = useAdminCrm();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const stages = DEAL_STAGE_OPTIONS.filter((s) => s.value !== 'lost');
+  const stages = DEAL_STAGE_OPTIONS;
   const stageKeys = stages.map((s) => s.value);
 
   async function handleMoveStage(deal: SalesDealRecord, direction: 'left' | 'right') {
     const currentIndex = stageKeys.indexOf(deal.stage);
+    if (currentIndex === -1) return;
     const nextIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
     if (nextIndex < 0 || nextIndex >= stageKeys.length) return;
     const nextStage = stageKeys[nextIndex];
@@ -220,7 +220,6 @@ export function SalesPipelinePage() {
               <KanbanColumn
                 key={stageOption.value}
                 stage={stageOption.value}
-                label={stageOption.label}
                 deals={stageDeals}
                 onMoveLeft={index > 0 ? (deal) => handleMoveStage(deal, 'left') : undefined}
                 onMoveRight={index < stages.length - 1 ? (deal) => handleMoveStage(deal, 'right') : undefined}

@@ -21,6 +21,7 @@ import {
   PORTAL_APP_SHELL_CLASS,
   PORTAL_HERO_SURFACE_CLASS,
   PORTAL_ICON_LOGO,
+  PORTAL_ICON_LOGO_WHITE,
   PORTAL_ICON_BUTTON_CLASS,
   PORTAL_LOGO_DARK,
   PORTAL_LOGO_WHITE,
@@ -49,9 +50,8 @@ const iconDark = {
 };
 
 const iconLight = {
-  src: PORTAL_ICON_LOGO,
-  className:
-    'brightness-[1.14] contrast-[1.08] drop-shadow-[0_0_14px_rgba(248,250,252,0.18)]',
+  src: PORTAL_ICON_LOGO_WHITE,
+  className: '',
 };
 
 function getGreeting(): string {

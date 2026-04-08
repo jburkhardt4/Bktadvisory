@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router';
+import { useTheme } from 'next-themes';
 import { useAuth } from '../../contexts/AuthContext';
 import { clearSession } from '../../utils/authSession';
 import { AdminCrmProvider, useAdminCrm } from './AdminCrmContext';
@@ -20,6 +21,7 @@ import {
   PORTAL_APP_URL,
   PORTAL_HERO_SURFACE_CLASS,
   PORTAL_ICON_LOGO,
+  PORTAL_ICON_LOGO_WHITE,
   PORTAL_ICON_BUTTON_CLASS,
   PORTAL_PANEL_SURFACE_CLASS,
   PORTAL_SECONDARY_ACTION_CLASS,
@@ -52,11 +54,13 @@ export function AdminPortalLayout() {
 
 function AdminPortalScaffold() {
   const { session } = useAuth();
+  const { resolvedTheme } = useTheme();
   const { quotes, projects, activities, milestones, loading } = useAdminCrm();
   const { deals, contacts: salesContacts, accounts, loading: salesLoading } = useSalesCrm();
   const navigate = useNavigate();
   const adminEmail = session?.user?.email ?? 'Admin account';
   const isLoading = loading || salesLoading;
+  const iconSrc = resolvedTheme === 'dark' ? PORTAL_ICON_LOGO_WHITE : PORTAL_ICON_LOGO;
 
   async function handleSignOut() {
     await clearSession();
@@ -160,7 +164,7 @@ function AdminPortalScaffold() {
               className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white p-1 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:shadow-none dark:focus-visible:ring-offset-slate-950"
             >
               <img
-                src={PORTAL_ICON_LOGO}
+                src={iconSrc}
                 alt="BKT Advisory Portal"
                 className="h-6 w-6 scale-[1.3] object-contain"
               />

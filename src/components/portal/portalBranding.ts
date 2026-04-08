@@ -5,6 +5,9 @@ export const PORTAL_APP_URL = 'https://bktadvisory.com/portal';
 export const PORTAL_ICON_LOGO =
   'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Icon%20Logo%20(Transparent).png';
 
+export const PORTAL_ICON_LOGO_WHITE =
+  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Portal%20Icon_White%202%20(Dark%20Theme)%20-%20HD.PNG';
+
 export const PORTAL_LOGO_WHITE =
   'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Portal%20Horizontal_White%20(Dark%20Theme)%20-%20HD.png';
 

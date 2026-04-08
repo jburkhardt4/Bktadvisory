@@ -19,6 +19,7 @@ Follow these steps to run the BKT Advisory portal locally:
 ## Available Scripts
 
 Once installed, you can run the following utility commands:
+
 * `npm run typecheck` — Scans the codebase for TypeScript errors.
 * `npm test` — Runs the automated test suite.
 * `npm run build` — Compiles and bundles the application for production.
@@ -27,5 +28,5 @@ Once installed, you can run the following utility commands:
 
 Before doing any work, read and follow:
 
-- docs/orchestration/agentic-release-plan.md
-- docs/orchestration/prompt-library.md
+* docs/orchestration/agentic-release-plan.md
+* docs/orchestration/prompt-library.md

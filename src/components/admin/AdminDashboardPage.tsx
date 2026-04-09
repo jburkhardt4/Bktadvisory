@@ -125,12 +125,12 @@ export function AdminDashboardPage() {
 
         <div className="p-6">
           <Tabs defaultValue="deals" className="gap-4">
-            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl bg-slate-50 p-1 dark:bg-slate-950 md:grid-cols-5">
-              <TabsTrigger value="deals" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Deals</TabsTrigger>
-              <TabsTrigger value="quotes" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Quotes</TabsTrigger>
-              <TabsTrigger value="projects" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Projects</TabsTrigger>
-              <TabsTrigger value="activities" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Activities</TabsTrigger>
-              <TabsTrigger value="milestones" className="data-[state=active]:border-blue-500 data-[state=active]:shadow-[0_0_10px_rgba(59,130,246,0.2)] dark:data-[state=active]:border-blue-400 dark:data-[state=active]:bg-slate-950">Milestones</TabsTrigger>
+            <TabsList className="grid h-[70px] w-full grid-cols-2 gap-2 rounded-2xl border-2 border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-950 md:grid-cols-5">
+              <TabsTrigger value="deals" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white">Deals</TabsTrigger>
+              <TabsTrigger value="quotes" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white">Quotes</TabsTrigger>
+              <TabsTrigger value="projects" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white">Projects</TabsTrigger>
+              <TabsTrigger value="activities" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white">Activities</TabsTrigger>
+              <TabsTrigger value="milestones" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md dark:data-[state=active]:bg-blue-600 dark:data-[state=active]:text-white">Milestones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="deals">

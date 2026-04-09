@@ -171,7 +171,7 @@ export function AdminTopNav({ counts }: { counts: NavCounts }) {
                 className={
                   active
                     ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300'
-                    : 'text-slate-700 dark:text-slate-300'
+                    : 'text-slate-900 dark:text-slate-300'
                 }
               >
                 {group.trigger}
@@ -202,7 +202,7 @@ export function AdminTopNav({ counts }: { counts: NavCounts }) {
                                 `group/link flex items-start gap-3 rounded-md px-2 py-2 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                                   isActive
                                     ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300'
-                                    : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                                    : 'text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                                 }`
                               }
                             >

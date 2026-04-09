@@ -1,5 +1,15 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  type DragEndEvent,
+  type DragStartEvent,
+  useDraggable,
+  useDroppable,
+} from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { DealStageBadge } from '../portal/StatusBadge';
 import { Button } from '../ui/button';
 import {
@@ -36,16 +46,9 @@ function WorkspaceErrorBanner({ message }: { message: string }) {
   );
 }
 
-interface KanbanColumnProps {
-  stage: DealStage;
-  deals: SalesDealRecord[];
-  onMoveLeft?: (deal: SalesDealRecord) => void;
-  onMoveRight?: (deal: SalesDealRecord) => void;
-}
-
-function KanbanCard({ deal, onMoveLeft, onMoveRight }: { deal: SalesDealRecord; onMoveLeft?: () => void; onMoveRight?: () => void }) {
+function KanbanCardContent({ deal }: { deal: SalesDealRecord }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <>
       <p className="text-sm font-medium text-slate-900 dark:text-slate-50 truncate">{deal.name}</p>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
         {deal.account?.name || getContactDisplayName(deal.contact)}
@@ -61,35 +64,48 @@ function KanbanCard({ deal, onMoveLeft, onMoveRight }: { deal: SalesDealRecord; 
       {deal.owner && (
         <p className="mt-1.5 text-[11px] text-slate-400 truncate">{deal.owner}</p>
       )}
-      <div className="mt-2 flex justify-between gap-1">
-        {onMoveLeft ? (
-          <button
-            type="button"
-            onClick={onMoveLeft}
-            className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-          >
-            &larr;
-          </button>
-        ) : <span />}
-        {onMoveRight && (
-          <button
-            type="button"
-            onClick={onMoveRight}
-            className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-          >
-            &rarr;
-          </button>
-        )}
-      </div>
+    </>
+  );
+}
+
+function KanbanCard({ deal }: { deal: SalesDealRecord }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: deal.id });
+  const style = { transform: CSS.Translate.toString(transform) };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 cursor-grab active:cursor-grabbing select-none touch-none transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'}`}
+    >
+      <KanbanCardContent deal={deal} />
     </div>
   );
 }
 
-function KanbanColumn({ stage, deals, onMoveLeft, onMoveRight }: KanbanColumnProps) {
+function KanbanCardOverlay({ deal }: { deal: SalesDealRecord }) {
+  return (
+    <div className="rounded-xl border-2 border-blue-400 bg-white p-3 shadow-2xl dark:border-blue-500 dark:bg-slate-900 rotate-2 cursor-grabbing select-none">
+      <KanbanCardContent deal={deal} />
+    </div>
+  );
+}
+
+function KanbanColumn({ stage, deals }: { stage: DealStage; deals: SalesDealRecord[] }) {
+  const { setNodeRef, isOver } = useDroppable({ id: stage });
   const stageValue = deals.reduce((sum, d) => sum + (d.value ?? 0), 0);
 
   return (
-    <div className="flex min-w-[220px] flex-col rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+    <div
+      ref={setNodeRef}
+      className={`flex min-w-[220px] flex-col rounded-xl border-2 transition-colors ${
+        isOver
+          ? 'border-blue-400 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-950/20'
+          : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950'
+      }`}
+    >
       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2.5 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <DealStageBadge stage={stage} />
@@ -103,15 +119,10 @@ function KanbanColumn({ stage, deals, onMoveLeft, onMoveRight }: KanbanColumnPro
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-3" style={{ maxHeight: '60vh' }}>
         {deals.map((deal) => (
-          <KanbanCard
-            key={deal.id}
-            deal={deal}
-            onMoveLeft={onMoveLeft ? () => onMoveLeft(deal) : undefined}
-            onMoveRight={onMoveRight ? () => onMoveRight(deal) : undefined}
-          />
+          <KanbanCard key={deal.id} deal={deal} />
         ))}
         {deals.length === 0 && (
-          <p className="py-6 text-center text-xs text-slate-400">No deals</p>
+          <p className="py-6 text-center text-xs text-slate-400">Drop deals here</p>
         )}
       </div>
     </div>
@@ -122,9 +133,9 @@ export function SalesPipelinePage() {
   const { deals, contacts, accounts, pipelines, loading, error, refreshData } = useSalesCrm();
   const { quotes, refreshData: refreshAdminData } = useAdminCrm();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [activeDealId, setActiveDealId] = useState<string | null>(null);
 
   const stages = DEAL_STAGE_OPTIONS;
-  const stageKeys = stages.map((s) => s.value);
 
   async function handleCreateProjectFromDeal(deal: SalesDealRecord) {
     try {
@@ -145,18 +156,24 @@ export function SalesPipelinePage() {
     }
   }
 
-  async function handleMoveStage(deal: SalesDealRecord, direction: 'left' | 'right') {
-    const currentIndex = stageKeys.indexOf(deal.stage);
-    if (currentIndex === -1) return;
-    const nextIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-    if (nextIndex < 0 || nextIndex >= stageKeys.length) return;
-    const nextStage = stageKeys[nextIndex];
+  function handleDragStart({ active }: DragStartEvent) {
+    setActiveDealId(String(active.id));
+  }
+
+  async function handleDragEnd({ active, over }: DragEndEvent) {
+    setActiveDealId(null);
+    if (!over) return;
+
+    const dealId = String(active.id);
+    const newStage = String(over.id) as DealStage;
+    const deal = deals.find((d) => d.id === dealId);
+    if (!deal || deal.stage === newStage) return;
 
     try {
-      await updateDealStage(deal.id, nextStage);
+      await updateDealStage(dealId, newStage);
       await refreshData();
 
-      if (nextStage === 'won') {
+      if (newStage === 'won') {
         toast.success('Deal won!', {
           action: {
             label: 'Create Project',
@@ -190,6 +207,8 @@ export function SalesPipelinePage() {
     ? Math.round((wonDeals.length / deals.length) * 100)
     : 0;
 
+  const activeDeal = activeDealId ? deals.find((d) => d.id === activeDealId) : null;
+
   return (
     <div className="space-y-6">
       {error && <WorkspaceErrorBanner message={error} />}
@@ -199,7 +218,7 @@ export function SalesPipelinePage() {
           <div>
             <h2 className="text-lg font-semibold text-slate-50">Sales Pipeline</h2>
             <p className="mt-1 text-sm text-slate-200">
-              Visual pipeline board — move deals forward through each stage.
+              Drag and drop deals between stages to move them through the pipeline.
             </p>
           </div>
           <Button
@@ -242,20 +261,27 @@ export function SalesPipelinePage() {
       </div>
 
       <div className="bkt-shell-surface rounded-t-none border-t-0 overflow-x-auto p-4">
-        <div className="flex gap-3" style={{ minWidth: `${stages.length * 240}px` }}>
-          {stages.map((stageOption, index) => {
-            const stageDeals = deals.filter((d) => d.stage === stageOption.value);
-            return (
-              <KanbanColumn
-                key={stageOption.value}
-                stage={stageOption.value}
-                deals={stageDeals}
-                onMoveLeft={index > 0 ? (deal) => handleMoveStage(deal, 'left') : undefined}
-                onMoveRight={index < stages.length - 1 ? (deal) => handleMoveStage(deal, 'right') : undefined}
-              />
-            );
-          })}
-        </div>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex gap-3" style={{ minWidth: `${stages.length * 240}px` }}>
+            {stages.map((stageOption) => {
+              const stageDeals = deals.filter((d) => d.stage === stageOption.value);
+              return (
+                <KanbanColumn
+                  key={stageOption.value}
+                  stage={stageOption.value}
+                  deals={stageDeals}
+                />
+              );
+            })}
+          </div>
+          <DragOverlay dropAnimation={null}>
+            {activeDeal ? <KanbanCardOverlay deal={activeDeal} /> : null}
+          </DragOverlay>
+        </DndContext>
       </div>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

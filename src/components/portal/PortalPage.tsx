@@ -75,7 +75,7 @@ function PortalPageContent() {
   const { profile } = usePortalProfile();
   const navigate = useNavigate();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('projects');
+  const [activeTab, setActiveTab] = useState<'quotes' | 'projects'>('quotes');
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [settingsCategory, setSettingsCategory] = useState<SettingsCategory>('profile');
   const [isSigningOut, setIsSigningOut] = useState(false);

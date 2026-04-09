@@ -382,14 +382,14 @@ html {
   }
 
   .bkt-shell-surface {
-    @apply overflow-hidden rounded-2xl border;
+    @apply overflow-hidden rounded-2xl border-2;
     background-color: var(--surface);
     border-color: var(--border);
     box-shadow: var(--bkt-surface-shadow);
   }
 
   .bkt-shell-surface-muted {
-    @apply rounded-2xl border;
+    @apply rounded-2xl border-2;
     background-color: var(--surface-muted);
     border-color: var(--border);
     box-shadow: var(--bkt-surface-shadow);
@@ -423,11 +423,11 @@ html {
   }
 
   .bkt-tab-button {
-    @apply whitespace-nowrap border-b-2 px-5 py-3 text-xs font-semibold transition-colors;
+    @apply whitespace-nowrap border-b-[3px] px-5 py-3 text-xs font-semibold transition-colors;
   }
 
   .bkt-tab-button-active {
-    @apply border-blue-600 bg-white text-blue-700 dark:border-blue-400 dark:bg-slate-900 dark:text-blue-200;
+    @apply border-blue-600 bg-white shadow-sm text-blue-700 dark:border-blue-400 dark:bg-slate-900 dark:text-blue-200;
   }
 
   .bkt-tab-button-inactive {

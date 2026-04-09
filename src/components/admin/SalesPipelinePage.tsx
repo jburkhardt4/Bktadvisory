@@ -18,6 +18,7 @@ import {
   type SalesContactRecord,
 } from './salesCrmApi';
 import { formatDateTime } from './adminCrmApi';
+import { formatPhoneNumber } from '../portal/profileUtils';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
 /* ------------------------------------------------------------------ */
@@ -92,7 +93,18 @@ function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
               )}
             </AdminDataTableCell>
             <AdminDataTableCell className="text-sm text-slate-600 dark:text-slate-400">
-              {contact.phone || <span className="text-slate-400">—</span>}
+              {contact.phone ? (() => {
+                const digits = contact.phone!.replace(/\D/g, '');
+                const telDigits = digits.length === 10 ? `1${digits}` : digits;
+                const display = formatPhoneNumber(digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits);
+                return (
+                  <a href={`tel:${telDigits}`} className="hover:underline">
+                    {display ? `+1 ${display}` : contact.phone}
+                  </a>
+                );
+              })() : (
+                <span className="text-slate-400">—</span>
+              )}
             </AdminDataTableCell>
             <AdminDataTableCell className="text-sm text-slate-600 dark:text-slate-400">
               {contact.website_url ? (

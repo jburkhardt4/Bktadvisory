@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router';
 import { toast } from 'sonner';
 import {
   DndContext,
@@ -85,7 +86,13 @@ function RowActionButton({ label, onClick, destructive = false }: { label: strin
 function KanbanCardContent({ deal }: { deal: SalesDealRecord }) {
   return (
     <>
-      <p className="text-sm font-medium text-slate-900 dark:text-slate-50 truncate">{deal.name}</p>
+      <NavLink
+        to={`/portal/admin/deals/${deal.id}`}
+        className="block truncate text-sm font-medium text-slate-900 hover:underline dark:text-slate-50"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {deal.name}
+      </NavLink>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
         {deal.account?.name || getContactDisplayName(deal.contact)}
       </p>
@@ -416,13 +423,27 @@ export function SalesDealsPage() {
                   <AdminDataTableRow key={deal.id}>
                     <AdminDataTableCell className="whitespace-normal">
                       <div>
-                        <p className="font-medium text-slate-900 dark:text-slate-50">{deal.name}</p>
+                        <NavLink
+                          to={`/portal/admin/deals/${deal.id}`}
+                          className="font-medium text-slate-900 hover:underline dark:text-slate-50"
+                        >
+                          {deal.name}
+                        </NavLink>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {deal.account?.name || deal.owner || 'Unassigned'}
                         </p>
                       </div>
                     </AdminDataTableCell>
-                    <AdminDataTableCell>{getContactDisplayName(deal.contact)}</AdminDataTableCell>
+                    <AdminDataTableCell>
+                      {deal.contact && deal.contact_id ? (
+                        <NavLink
+                          to={`/portal/admin/contacts/${deal.contact_id}`}
+                          className="hover:underline"
+                        >
+                          {getContactDisplayName(deal.contact)}
+                        </NavLink>
+                      ) : getContactDisplayName(deal.contact)}
+                    </AdminDataTableCell>
                     <AdminCenteredBadgeCell>
                       <DealStageBadge stage={deal.stage} />
                     </AdminCenteredBadgeCell>

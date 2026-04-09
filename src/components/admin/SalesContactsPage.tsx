@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -141,11 +142,25 @@ export function SalesContactsPage() {
                 <AdminDataTableRow key={contact.id}>
                   <AdminDataTableCell className="whitespace-normal">
                     <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">{getContactDisplayName(contact)}</p>
+                      <NavLink
+                        to={`/portal/admin/contacts/${contact.id}`}
+                        className="font-medium text-slate-900 hover:underline dark:text-slate-50"
+                      >
+                        {getContactDisplayName(contact)}
+                      </NavLink>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{contact.email || 'No email'}</p>
                     </div>
                   </AdminDataTableCell>
-                  <AdminDataTableCell>{contact.account?.name || '—'}</AdminDataTableCell>
+                  <AdminDataTableCell>
+                    {contact.account && contact.account_id ? (
+                      <NavLink
+                        to={`/portal/admin/accounts/${contact.account_id}`}
+                        className="hover:underline"
+                      >
+                        {contact.account.name}
+                      </NavLink>
+                    ) : '—'}
+                  </AdminDataTableCell>
                   <AdminDataTableCell>
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                       {formatContactSource(contact.source)}

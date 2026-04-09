@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router';
 import { useSalesCrm } from './SalesCrmContext';
 import {
   AdminDataTable,
@@ -75,9 +76,12 @@ function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
         {leads.map((contact) => (
           <AdminDataTableRow key={contact.id}>
             <AdminDataTableCell className="whitespace-normal">
-              <p className="font-medium text-slate-900 dark:text-slate-50">
+              <NavLink
+                to={`/portal/admin/contacts/${contact.id}`}
+                className="font-medium text-slate-900 hover:underline dark:text-slate-50"
+              >
                 {contact.first_name} {contact.last_name}
-              </p>
+              </NavLink>
             </AdminDataTableCell>
             <AdminDataTableCell className="text-sm text-slate-700 dark:text-slate-300">
               {contact.account?.name ?? <span className="text-slate-400">—</span>}

@@ -298,6 +298,115 @@ export async function updateDealStage(id: string, stage: DealStage) {
 }
 
 // ---------------------------------------------------------------------------
+// Detail record types
+// ---------------------------------------------------------------------------
+export interface AccountDetailRecord extends AccountRecord {
+  contacts: SalesContactRecord[];
+  deals: SalesDealRecord[];
+}
+
+export interface ContactDetailRecord extends SalesContactRecord {
+  deals: SalesDealRecord[];
+}
+
+// ---------------------------------------------------------------------------
+// Single-record fetchers (for detail pages)
+// ---------------------------------------------------------------------------
+export async function fetchAccountById(id: string): Promise<AccountDetailRecord | null> {
+  const [accountResult, contactsResult, dealsResult] = await Promise.all([
+    supabase.from('accounts').select('*').eq('id', id).single(),
+    supabase.from('contacts').select('*').eq('account_id', id).order('updated_at', { ascending: false }),
+    supabase.from('deals').select('*').eq('account_id', id).order('updated_at', { ascending: false }),
+  ]);
+
+  if (accountResult.error?.code === 'PGRST116' || !accountResult.data) return null;
+  assertNoError(accountResult);
+  assertNoError(contactsResult);
+  assertNoError(dealsResult);
+
+  const account = accountResult.data as AccountRecord;
+  const rawContacts = (contactsResult.data ?? []) as ContactRecord[];
+  const rawDeals = (dealsResult.data ?? []) as DealRecord[];
+
+  const dealCountByContact = new Map<string, number>();
+  rawDeals.forEach((deal) => {
+    if (deal.contact_id) {
+      dealCountByContact.set(deal.contact_id, (dealCountByContact.get(deal.contact_id) ?? 0) + 1);
+    }
+  });
+
+  const contacts: SalesContactRecord[] = rawContacts.map((c) => ({
+    ...c,
+    account,
+    dealCount: dealCountByContact.get(c.id) ?? 0,
+  }));
+
+  const deals: SalesDealRecord[] = rawDeals.map((d) => ({
+    ...d,
+    contact: rawContacts.find((c) => c.id === d.contact_id) ?? null,
+    account,
+  }));
+
+  return { ...account, contacts, deals };
+}
+
+export async function fetchContactById(id: string): Promise<ContactDetailRecord | null> {
+  const contactResult = await supabase.from('contacts').select('*').eq('id', id).single();
+
+  if (contactResult.error?.code === 'PGRST116' || !contactResult.data) return null;
+  assertNoError(contactResult);
+
+  const contact = contactResult.data as ContactRecord;
+
+  const [accountResult, dealsResult] = await Promise.all([
+    contact.account_id
+      ? supabase.from('accounts').select('*').eq('id', contact.account_id).single()
+      : Promise.resolve({ data: null, error: null }),
+    supabase.from('deals').select('*').eq('contact_id', id).order('updated_at', { ascending: false }),
+  ]);
+
+  if (accountResult.error && accountResult.error.code !== 'PGRST116') {
+    assertNoError(accountResult);
+  }
+  assertNoError(dealsResult);
+
+  const account = (accountResult.data as AccountRecord | null) ?? null;
+  const rawDeals = (dealsResult.data ?? []) as DealRecord[];
+
+  const deals: SalesDealRecord[] = rawDeals.map((d) => ({
+    ...d,
+    contact,
+    account: d.account_id === account?.id ? account : null,
+  }));
+
+  return { ...contact, account, dealCount: rawDeals.length, deals };
+}
+
+export async function fetchDealById(id: string): Promise<SalesDealRecord | null> {
+  const dealResult = await supabase.from('deals').select('*').eq('id', id).single();
+
+  if (dealResult.error?.code === 'PGRST116' || !dealResult.data) return null;
+  assertNoError(dealResult);
+
+  const deal = dealResult.data as DealRecord;
+
+  const [contactResult, accountResult] = await Promise.all([
+    deal.contact_id
+      ? supabase.from('contacts').select('*').eq('id', deal.contact_id).single()
+      : Promise.resolve({ data: null, error: null }),
+    deal.account_id
+      ? supabase.from('accounts').select('*').eq('id', deal.account_id).single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  return {
+    ...deal,
+    contact: (contactResult.data as ContactRecord | null) ?? null,
+    account: (accountResult.data as AccountRecord | null) ?? null,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Estimator → Lead creation
 // ---------------------------------------------------------------------------
 export interface EstimatorLeadInput {

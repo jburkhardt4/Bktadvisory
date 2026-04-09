@@ -23,6 +23,9 @@ import { SalesPipelinePage } from './components/admin/SalesPipelinePage';
 import { SalesContactsPage } from './components/admin/SalesContactsPage';
 import { SalesAccountsPage } from './components/admin/SalesAccountsPage';
 import { SalesDealsPage } from './components/admin/SalesDealsPage';
+import { AccountDetailPage } from './components/admin/AccountDetailPage';
+import { ContactDetailPage } from './components/admin/ContactDetailPage';
+import { DealDetailPage } from './components/admin/DealDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -60,7 +63,11 @@ export const router = createBrowserRouter([
           { path: 'pipeline', element: <SalesPipelinePage /> },
           { path: 'sales-contacts', element: <SalesContactsPage /> },
           { path: 'accounts', element: <SalesAccountsPage /> },
+          { path: 'accounts/:id', element: <AccountDetailPage /> },
+          { path: 'sales-contacts/:id', element: <ContactDetailPage /> },
+          { path: 'contacts/:id', element: <ContactDetailPage /> },
           { path: 'deals', element: <SalesDealsPage /> },
+          { path: 'deals/:id', element: <DealDetailPage /> },
           // Sales — additional
           {
             path: 'calendar',

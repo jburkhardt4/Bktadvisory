@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { NavLink } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -156,7 +157,12 @@ export function SalesAccountsPage() {
                 <AdminDataTableRow key={account.id}>
                   <AdminDataTableCell className="whitespace-normal">
                     <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">{account.name}</p>
+                      <NavLink
+                        to={`/portal/admin/accounts/${account.id}`}
+                        className="font-medium text-slate-900 hover:underline dark:text-slate-50"
+                      >
+                        {account.name}
+                      </NavLink>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{account.domain || 'No domain'}</p>
                     </div>
                   </AdminDataTableCell>

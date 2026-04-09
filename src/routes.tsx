@@ -62,7 +62,23 @@ export const router = createBrowserRouter([
           { path: 'accounts', element: <SalesAccountsPage /> },
           { path: 'deals', element: <SalesDealsPage /> },
           // Sales — additional
-          { path: 'calendar', element: <div className="py-12 text-center text-sm text-slate-400">Calendar — coming soon.</div> },
+          {
+            path: 'calendar',
+            element: (
+              <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+                <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">Calendar</h2>
+                <div className="relative w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700" style={{ paddingBottom: '75%' }}>
+                  <iframe
+                    src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FLos_Angeles&showPrint=0&src=am9obkBia3RhZHZpc29yeS5jb20&src=YXBwb2ludG1lbnRzQGJrdGFkdmlzb3J5LmNvbQ&src=Z3VubmFyY2JhcmNvbWJAZ21haWwuY29t&color=%23162556&color=%23d50000&color=%237cb342"
+                    title="BKT Advisory Calendar"
+                    className="absolute inset-0 h-full w-full"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            ),
+          },
           { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
           // Delivery
           { path: 'quotes', element: <AdminQuotesPage /> },

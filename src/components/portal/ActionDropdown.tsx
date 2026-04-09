@@ -39,9 +39,17 @@ interface ActionDropdownProps {
   items?: ActionItem[];
   onAction?: (action: string) => void;
   userRole?: 'admin' | 'client';
+  buttonClassName?: string;
 }
 
-export function ActionDropdown({ label, context, items, onAction, userRole = 'client' }: ActionDropdownProps) {
+export function ActionDropdown({
+  label,
+  context,
+  items,
+  onAction,
+  userRole = 'client',
+  buttonClassName,
+}: ActionDropdownProps) {
   const resolvedItems: ActionItem[] = context
     ? CONTEXT_ITEMS[context].map(item => ({ ...item, onClick: () => onAction?.(item.key) }))
     : items ?? [];
@@ -73,7 +81,7 @@ export function ActionDropdown({ label, context, items, onAction, userRole = 'cl
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="true"
-        className="bkt-primary-button px-4 py-2"
+        className={`bkt-primary-button px-4 py-2 ${buttonClassName ?? ''}`.trim()}
       >
         {label}
         <ChevronDownIcon size={14} />

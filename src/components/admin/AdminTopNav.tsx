@@ -76,10 +76,10 @@ function useNavGroups(counts: NavCounts): NavGroup[] {
           heading: 'Pipeline',
           items: [
             { path: '/portal/admin', label: 'Home (Overview)', description: 'Master CRM dashboard', icon: <LayersIcon size={16} />, end: true },
-            { path: '/portal/admin/pipeline', label: 'Leads (Pipeline)', description: 'Visual deal board', icon: <TrendingUpIcon size={16} />, badge: counts.activeDeals },
+            { path: '/portal/admin/pipeline', label: 'Leads', description: 'Inbound lead queue', icon: <TrendingUpIcon size={16} />, badge: counts.activeDeals },
             { path: '/portal/admin/sales-contacts', label: 'Contacts', description: 'Prospects and leads', icon: <UsersIcon size={16} />, badge: counts.contacts },
             { path: '/portal/admin/accounts', label: 'Accounts', description: 'Companies and orgs', icon: <BuildingIcon size={16} />, badge: counts.accounts },
-            { path: '/portal/admin/deals', label: 'Opportunities (Deals)', description: 'All deal records', icon: <BriefcaseIcon size={16} />, badge: counts.deals },
+            { path: '/portal/admin/deals', label: 'Deal Pipeline', description: 'All deal records', icon: <BriefcaseIcon size={16} />, badge: counts.deals },
           ],
         },
         {

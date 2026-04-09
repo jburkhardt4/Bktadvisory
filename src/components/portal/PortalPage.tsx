@@ -27,10 +27,6 @@ import {
   PORTAL_LOGO_WHITE,
   PORTAL_PANEL_SURFACE_CLASS,
   PORTAL_SECONDARY_ACTION_CLASS,
-  PORTAL_TAB_BAR_CLASS,
-  PORTAL_TAB_BUTTON_ACTIVE_CLASS,
-  PORTAL_TAB_BUTTON_BASE_CLASS,
-  PORTAL_TAB_BUTTON_INACTIVE_CLASS,
   PORTAL_TOPBAR_CLASS,
 } from './portalBranding';
   
@@ -53,6 +49,15 @@ const iconLight = {
   src: PORTAL_ICON_LOGO_WHITE,
   className: '',
 };
+
+const DASHBOARD_TAB_BUTTON_BASE_CLASS =
+  'relative inline-flex min-h-[4rem] flex-1 items-center justify-center px-6 text-sm font-semibold transition-all duration-200 sm:px-8';
+
+const DASHBOARD_TAB_BUTTON_ACTIVE_CLASS =
+  'border-b-2 border-blue-500 bg-white text-slate-900 shadow-[inset_0_-1px_0_rgba(59,130,246,0.24)] dark:border-blue-400 dark:bg-slate-900/90 dark:text-slate-50 dark:shadow-[inset_0_-1px_0_rgba(96,165,250,0.3)]';
+
+const DASHBOARD_TAB_BUTTON_INACTIVE_CLASS =
+  'border-b-2 border-transparent bg-transparent text-slate-500 hover:bg-white/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-950/80 dark:hover:text-slate-100';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -196,32 +201,35 @@ function PortalPageContent() {
               {/* Left: Tabbed Quotes/Projects Container */}
               <div className={`${PORTAL_PANEL_SURFACE_CLASS} overflow-visible`}>
                 {/* Tab Buttons + Actions */}
-                <div className={`${PORTAL_TAB_BAR_CLASS} flex-wrap items-center gap-3 overflow-visible px-4 py-4 sm:flex-nowrap`}>
-                  <div className="flex min-w-0 flex-1 gap-0">
-                    <button
-                      onClick={() => setActiveTab('quotes')}
-                      className={`${PORTAL_TAB_BUTTON_BASE_CLASS} flex-1 px-6 py-4 text-sm ${
-                        activeTab === 'quotes' ? PORTAL_TAB_BUTTON_ACTIVE_CLASS : PORTAL_TAB_BUTTON_INACTIVE_CLASS
-                      }`}
-                    >
-                      Quotes
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('projects')}
-                      className={`${PORTAL_TAB_BUTTON_BASE_CLASS} flex-1 px-6 py-4 text-sm ${
-                        activeTab === 'projects' ? PORTAL_TAB_BUTTON_ACTIVE_CLASS : PORTAL_TAB_BUTTON_INACTIVE_CLASS
-                      }`}
-                    >
-                      Projects
-                    </button>
-                  </div>
-                  <div className="relative z-20 flex shrink-0 justify-end">
-                    <ActionDropdown
-                      label="Actions"
-                      userRole={role}
-                      context="dashboard"
-                      onAction={setActiveModal}
-                    />
+                <div className="overflow-visible rounded-t-[calc(1rem-2px)] border-b border-slate-200 bg-slate-100/90 dark:border-slate-800 dark:bg-slate-950/70">
+                  <div className="grid min-h-[4rem] grid-cols-[minmax(0,1fr)_auto] items-stretch overflow-visible rounded-t-[calc(1rem-2px)]">
+                    <div className="flex min-w-0 items-stretch overflow-hidden rounded-tl-[calc(1rem-2px)]">
+                      <button
+                        onClick={() => setActiveTab('quotes')}
+                        className={`${DASHBOARD_TAB_BUTTON_BASE_CLASS} ${
+                          activeTab === 'quotes' ? DASHBOARD_TAB_BUTTON_ACTIVE_CLASS : DASHBOARD_TAB_BUTTON_INACTIVE_CLASS
+                        }`}
+                      >
+                        Quotes
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('projects')}
+                        className={`${DASHBOARD_TAB_BUTTON_BASE_CLASS} ${
+                          activeTab === 'projects' ? DASHBOARD_TAB_BUTTON_ACTIVE_CLASS : DASHBOARD_TAB_BUTTON_INACTIVE_CLASS
+                        }`}
+                      >
+                        Projects
+                      </button>
+                    </div>
+                    <div className="relative z-20 flex items-center justify-end border-l border-slate-200/90 px-3 dark:border-slate-800/90">
+                      <ActionDropdown
+                        label="Actions"
+                        userRole={role}
+                        context="dashboard"
+                        onAction={setActiveModal}
+                        buttonClassName="min-h-[2.75rem] min-w-[7.5rem] rounded-xl px-5"
+                      />
+                    </div>
                   </div>
                 </div>
 

@@ -1,305 +1,254 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-  type DragEndEvent,
-  type DragStartEvent,
-  useDraggable,
-  useDroppable,
-} from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { DealStageBadge } from '../portal/StatusBadge';
-import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
-import { useAdminCrm } from './AdminCrmContext';
 import { useSalesCrm } from './SalesCrmContext';
-import { AdminDealForm } from './SalesEntityForms';
 import {
+  AdminDataTable,
+  AdminDataTableBody,
+  AdminDataTableCell,
+  AdminDataTableHead,
+  AdminDataTableHeader,
+  AdminDataTableHeaderRow,
+  AdminDataTableRow,
+  AdminEmptyState,
   AdminLoadingState,
   AdminMetricCard,
 } from './AdminWorkspaceComponents';
 import {
-  createDeal,
-  getContactDisplayName,
-  updateDealStage,
-  DEAL_STAGE_OPTIONS,
-  type DealMutationValues,
-  type DealStage,
-  type SalesDealRecord,
+  CONTACT_SOURCE_OPTIONS,
+  type ContactSource,
+  type SalesContactRecord,
 } from './salesCrmApi';
-import { formatCurrency, createAdminProject } from './adminCrmApi';
+import { formatDateTime } from './adminCrmApi';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 
-function WorkspaceErrorBanner({ message }: { message: string }) {
+/* ------------------------------------------------------------------ */
+/*  Source badge                                                       */
+/* ------------------------------------------------------------------ */
+
+const SOURCE_STYLES: Record<ContactSource, { label: string; className: string }> = {
+  estimator: { label: 'Estimator', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
+  email:     { label: 'Email',     className: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
+  linkedin:  { label: 'LinkedIn',  className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
+  upwork:    { label: 'Upwork',    className: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300' },
+  referral:  { label: 'Referral',  className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' },
+  manual:    { label: 'Manual',    className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
+};
+
+function SourceBadge({ source }: { source: ContactSource }) {
+  const s = SOURCE_STYLES[source] ?? SOURCE_STYLES.manual;
   return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-      {message}
-    </div>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${s.className}`}>
+      {s.label}
+    </span>
   );
 }
 
-function KanbanCardContent({ deal }: { deal: SalesDealRecord }) {
+/* ------------------------------------------------------------------ */
+/*  Tag chips                                                          */
+/* ------------------------------------------------------------------ */
+
+function TagChips({ tags }: { tags: string[] }) {
+  if (!tags || tags.length === 0) return <span className="text-xs text-slate-400">—</span>;
+  const visible = tags.slice(0, 2);
+  const overflow = tags.length - 2;
   return (
-    <>
-      <p className="text-sm font-medium text-slate-900 dark:text-slate-50 truncate">{deal.name}</p>
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
-        {deal.account?.name || getContactDisplayName(deal.contact)}
-      </p>
-      <div className="mt-2 flex items-center justify-between">
-        <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">
-          {formatCurrency(deal.value)}
+    <div className="flex flex-wrap gap-1">
+      {visible.map((t) => (
+        <span
+          key={t}
+          className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+        >
+          {t}
         </span>
-        {deal.probability > 0 && (
-          <span className="text-xs tabular-nums text-slate-400">{deal.probability}%</span>
-        )}
-      </div>
-      {deal.owner && (
-        <p className="mt-1.5 text-[11px] text-slate-400 truncate">{deal.owner}</p>
+      ))}
+      {overflow > 0 && (
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          +{overflow} more
+        </span>
       )}
-    </>
-  );
-}
-
-function KanbanCard({ deal }: { deal: SalesDealRecord }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: deal.id });
-  const style = { transform: CSS.Translate.toString(transform) };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 cursor-grab active:cursor-grabbing select-none touch-none transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'}`}
-    >
-      <KanbanCardContent deal={deal} />
     </div>
   );
 }
 
-function KanbanCardOverlay({ deal }: { deal: SalesDealRecord }) {
-  return (
-    <div className="rounded-xl border-2 border-blue-400 bg-white p-3 shadow-2xl dark:border-blue-500 dark:bg-slate-900 rotate-2 cursor-grabbing select-none">
-      <KanbanCardContent deal={deal} />
-    </div>
-  );
-}
+/* ------------------------------------------------------------------ */
+/*  Lead table                                                         */
+/* ------------------------------------------------------------------ */
 
-function KanbanColumn({ stage, deals }: { stage: DealStage; deals: SalesDealRecord[] }) {
-  const { setNodeRef, isOver } = useDroppable({ id: stage });
-  const stageValue = deals.reduce((sum, d) => sum + (d.value ?? 0), 0);
+function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
+  if (leads.length === 0) {
+    return (
+      <AdminEmptyState
+        title="No leads in this category"
+        description="Leads will appear here as contacts are added from this source."
+      />
+    );
+  }
 
   return (
-    <div
-      ref={setNodeRef}
-      className={`flex min-w-[220px] flex-col rounded-xl border-2 transition-colors ${
-        isOver
-          ? 'border-blue-400 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-950/20'
-          : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950'
-      }`}
-    >
-      <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2.5 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <DealStageBadge stage={stage} />
-          <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            {deals.length}
-          </span>
-        </div>
-      </div>
-      <div className="px-2 py-1.5 text-[10px] font-medium text-slate-400 tabular-nums">
-        {formatCurrency(stageValue)}
-      </div>
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-3" style={{ maxHeight: '60vh' }}>
-        {deals.map((deal) => (
-          <KanbanCard key={deal.id} deal={deal} />
+    <AdminDataTable>
+      <AdminDataTableHeader>
+        <AdminDataTableHeaderRow>
+          <AdminDataTableHead>Lead</AdminDataTableHead>
+          <AdminDataTableHead>Source</AdminDataTableHead>
+          <AdminDataTableHead>Tags</AdminDataTableHead>
+          <AdminDataTableHead align="right">Added</AdminDataTableHead>
+        </AdminDataTableHeaderRow>
+      </AdminDataTableHeader>
+      <AdminDataTableBody>
+        {leads.map((contact) => (
+          <AdminDataTableRow key={contact.id}>
+            <AdminDataTableCell className="whitespace-normal">
+              <p className="font-medium text-slate-900 dark:text-slate-50">
+                {contact.first_name} {contact.last_name}
+              </p>
+              {contact.email && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">{contact.email}</p>
+              )}
+            </AdminDataTableCell>
+            <AdminDataTableCell>
+              <SourceBadge source={contact.source} />
+            </AdminDataTableCell>
+            <AdminDataTableCell>
+              <TagChips tags={contact.tags ?? []} />
+            </AdminDataTableCell>
+            <AdminDataTableCell className="text-right text-sm text-slate-500 dark:text-slate-400">
+              {formatDateTime(contact.created_at)}
+            </AdminDataTableCell>
+          </AdminDataTableRow>
         ))}
-        {deals.length === 0 && (
-          <p className="py-6 text-center text-xs text-slate-400">Drop deals here</p>
-        )}
-      </div>
-    </div>
+      </AdminDataTableBody>
+    </AdminDataTable>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Tab bar                                                            */
+/* ------------------------------------------------------------------ */
+
+type LeadTab = 'all' | 'contact_form' | 'estimator' | 'gmail';
+
+const TABS: { value: LeadTab; label: string }[] = [
+  { value: 'all',          label: 'All' },
+  { value: 'contact_form', label: 'Contact Form' },
+  { value: 'estimator',    label: 'Estimator' },
+  { value: 'gmail',        label: 'Gmail' },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
 
 export function SalesPipelinePage() {
-  const { deals, contacts, accounts, pipelines, loading, error, refreshData } = useSalesCrm();
-  const { quotes, refreshData: refreshAdminData } = useAdminCrm();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [activeDealId, setActiveDealId] = useState<string | null>(null);
+  const { contacts, loading, error } = useSalesCrm();
+  const [activeTab, setActiveTab] = useState<LeadTab>('all');
 
-  const stages = DEAL_STAGE_OPTIONS;
+  if (loading) return <AdminLoadingState label="Loading leads…" />;
 
-  async function handleCreateProjectFromDeal(deal: SalesDealRecord) {
-    try {
-      const companyName = deal.account?.name ?? deal.contact?.last_name ?? 'New Client';
-      await createAdminProject({
-        clientId: '',
-        name: `${companyName} — ${deal.name}`,
-        companyName,
-        description: `Project created from won deal: ${deal.name}`,
-        owner: deal.owner ?? 'John Burkhardt',
-        status: 'intake',
-        targetMilestone: 'TBD',
-      });
-      await refreshAdminData();
-      toast.success('Project created from deal.');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not create project.');
-    }
-  }
+  const estimatorLeads  = contacts.filter((c) => c.source === 'estimator');
+  const contactFormLeads = contacts.filter((c) => c.source !== 'estimator');
 
-  function handleDragStart({ active }: DragStartEvent) {
-    setActiveDealId(String(active.id));
-  }
+  const visibleLeads: SalesContactRecord[] = (() => {
+    if (activeTab === 'all')          return contacts;
+    if (activeTab === 'contact_form') return contactFormLeads;
+    if (activeTab === 'estimator')    return estimatorLeads;
+    return []; // gmail — placeholder
+  })();
 
-  async function handleDragEnd({ active, over }: DragEndEvent) {
-    setActiveDealId(null);
-    if (!over) return;
-
-    const dealId = String(active.id);
-    const newStage = String(over.id) as DealStage;
-    const deal = deals.find((d) => d.id === dealId);
-    if (!deal || deal.stage === newStage) return;
-
-    try {
-      await updateDealStage(dealId, newStage);
-      await refreshData();
-
-      if (newStage === 'won') {
-        toast.success('Deal won!', {
-          action: {
-            label: 'Create Project',
-            onClick: () => { void handleCreateProjectFromDeal(deal); },
-          },
-          duration: 10000,
-        });
-      }
-    } catch (moveError) {
-      toast.error(moveError instanceof Error ? moveError.message : 'Could not move deal.');
-    }
-  }
-
-  async function handleCreate(values: DealMutationValues) {
-    await createDeal(values);
-    await refreshData();
-    setIsCreateOpen(false);
-    toast.success('Deal created successfully.');
-  }
-
-  if (loading) {
-    return <AdminLoadingState label="Loading pipeline…" />;
-  }
-
-  const openDeals = deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost');
-  const wonDeals = deals.filter((d) => d.stage === 'won');
-  const lostDeals = deals.filter((d) => d.stage === 'lost');
-  const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value ?? 0), 0);
-  const wonValue = wonDeals.reduce((sum, d) => sum + (d.value ?? 0), 0);
-  const winRate = deals.length > 0
-    ? Math.round((wonDeals.length / deals.length) * 100)
-    : 0;
-
-  const activeDeal = activeDealId ? deals.find((d) => d.id === activeDealId) : null;
+  const sourceLabel = CONTACT_SOURCE_OPTIONS.find((o) => o.value)?.label;
+  void sourceLabel; // unused but keeps import live
 
   return (
     <div className="space-y-6">
-      {error && <WorkspaceErrorBanner message={error} />}
-
-      <div className={`${PORTAL_HERO_SURFACE_CLASS} rounded-b-none border-b-0 p-6`}>
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-50">Sales Pipeline</h2>
-            <p className="mt-1 text-sm text-slate-200">
-              Drag and drop deals between stages to move them through the pipeline.
-            </p>
-          </div>
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="bkt-primary-button rounded-xl"
-          >
-            New Deal
-          </Button>
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+          {error}
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      )}
+
+      {/* Hero */}
+      <div className={`${PORTAL_HERO_SURFACE_CLASS} rounded-b-none border-b-0 p-6`}>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-slate-50">Leads</h2>
+          <p className="mt-1 text-sm text-slate-200">
+            Inbound queue from all lead sources.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
           <AdminMetricCard
-            label="Pipeline Value"
-            value={formatCurrency(pipelineValue)}
-            helper={`${openDeals.length} open deals`}
+            label="Total Leads"
+            value={String(contacts.length)}
+            helper="all sources"
             accentClassName="text-blue-200"
             variant="hero"
           />
           <AdminMetricCard
-            label="Won Revenue"
-            value={formatCurrency(wonValue)}
-            helper={`${wonDeals.length} deals won`}
-            accentClassName="text-emerald-200"
+            label="Contact Form"
+            value={String(contactFormLeads.length)}
+            helper="inbound contacts"
+            accentClassName="text-indigo-200"
             variant="hero"
           />
           <AdminMetricCard
-            label="Win Rate"
-            value={deals.length > 0 ? `${winRate}%` : '—'}
-            helper="of all deals"
+            label="Estimator"
+            value={String(estimatorLeads.length)}
+            helper="quote submissions"
             accentClassName="text-cyan-200"
-            variant="hero"
-          />
-          <AdminMetricCard
-            label="Lost"
-            value={String(lostDeals.length)}
-            helper="deals lost"
-            accentClassName="text-red-300"
             variant="hero"
           />
         </div>
       </div>
 
-      <div className="bkt-shell-surface rounded-t-none border-t-0 overflow-x-auto p-4">
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex gap-3" style={{ minWidth: `${stages.length * 240}px` }}>
-            {stages.map((stageOption) => {
-              const stageDeals = deals.filter((d) => d.stage === stageOption.value);
-              return (
-                <KanbanColumn
-                  key={stageOption.value}
-                  stage={stageOption.value}
-                  deals={stageDeals}
-                />
-              );
-            })}
-          </div>
-          <DragOverlay dropAnimation={null}>
-            {activeDeal ? <KanbanCardOverlay deal={activeDeal} /> : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
+      {/* Tab bar + content */}
+      <div className="bkt-shell-surface rounded-t-none border-t-0">
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-slate-200 px-4 pt-4 dark:border-slate-800">
+          {TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setActiveTab(tab.value)}
+              className={`rounded-t-lg px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab.value
+                  ? 'border-b-2 border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+              {tab.value === 'gmail' && (
+                <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                  Soon
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
 
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-2xl rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Create Deal</DialogTitle>
-            <DialogDescription>Add a new deal to the sales pipeline.</DialogDescription>
-          </DialogHeader>
-          <AdminDealForm
-            contacts={contacts}
-            accounts={accounts}
-            pipelines={pipelines}
-            quotes={quotes}
-            onCancel={() => setIsCreateOpen(false)}
-            onSave={handleCreate}
-          />
-        </DialogContent>
-      </Dialog>
+        <div className="p-4">
+          {activeTab === 'gmail' ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-3 rounded-full bg-slate-100 p-4 dark:bg-slate-800">
+                <svg
+                  className="h-6 w-6 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Gmail sync coming soon</p>
+              <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
+                Tag emails with <span className="font-medium text-slate-600 dark:text-slate-300">"Web Leads"</span> in Gmail and they will automatically appear here.
+              </p>
+            </div>
+          ) : (
+            <LeadTable leads={visibleLeads} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

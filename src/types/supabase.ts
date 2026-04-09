@@ -53,6 +53,7 @@ export type Database = {
           last_name: string;
           email: string | null;
           phone: string | null;
+          website_url: string | null;
           linkedin_url: string | null;
           upwork_url: string | null;
           source: Database['public']['Enums']['contact_source'];
@@ -68,6 +69,7 @@ export type Database = {
           last_name?: string;
           email?: string | null;
           phone?: string | null;
+          website_url?: string | null;
           linkedin_url?: string | null;
           upwork_url?: string | null;
           source?: Database['public']['Enums']['contact_source'];
@@ -83,6 +85,7 @@ export type Database = {
           last_name?: string;
           email?: string | null;
           phone?: string | null;
+          website_url?: string | null;
           linkedin_url?: string | null;
           upwork_url?: string | null;
           source?: Database['public']['Enums']['contact_source'];
@@ -431,6 +434,7 @@ export type Database = {
     };
     Enums: {
       contact_source:
+        | 'website'
         | 'upwork'
         | 'linkedin'
         | 'email'

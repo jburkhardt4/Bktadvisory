@@ -190,6 +190,7 @@ function buildContactValues(record?: SalesContactRecord | null): ContactMutation
     lastName: record?.last_name ?? '',
     email: record?.email ?? '',
     phone: record?.phone ?? '',
+    websiteUrl: record?.website_url ?? '',
     linkedinUrl: record?.linkedin_url ?? '',
     upworkUrl: record?.upwork_url ?? '',
     source: record?.source ?? 'manual',
@@ -326,6 +327,17 @@ export function AdminContactForm({
             disabled={isSaving}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Website</label>
+        <Input
+          type="url"
+          value={values.websiteUrl}
+          onChange={(e) => setValues((v) => ({ ...v, websiteUrl: e.target.value }))}
+          placeholder="https://example.com"
+          disabled={isSaving}
+        />
       </div>
 
       <div className="space-y-2">

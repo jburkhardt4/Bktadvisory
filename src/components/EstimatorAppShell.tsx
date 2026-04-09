@@ -7,6 +7,7 @@ import { PersonaFunnel } from "./PersonaFunnel";
 import { Toaster } from "sonner";
 import { PWAHead } from "./PWAHead";
 import { FormData, QuoteData, PersonaMode, PersonaRole, initialFormData } from "../types";
+import { createLeadFromEstimator } from "./admin/salesCrmApi";
 
 function resolveUrlPersona(): { mode: PersonaMode | null; role: PersonaRole | null; skip: boolean } {
   if (typeof window === 'undefined') return { mode: null, role: null, skip: false };
@@ -107,6 +108,18 @@ export function EstimatorAppShell() {
     setQuoteData(data);
     setShowQuote(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Fire-and-forget: persist the lead for the admin pipeline
+    createLeadFromEstimator({
+      firstName: data.formData.firstName,
+      lastName: data.formData.lastName,
+      email: data.formData.workEmail,
+      phone: data.formData.mobilePhone,
+      companyName: data.formData.companyName,
+      websiteUrl: data.formData.website,
+    }).catch(() => {
+      // Silently swallow — lead creation is best-effort and must not block the quote UX
+    });
   };
 
   const handleNavigateToEstimator = () => {

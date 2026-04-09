@@ -25,12 +25,13 @@ import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
 /* ------------------------------------------------------------------ */
 
 const SOURCE_STYLES: Record<ContactSource, { label: string; className: string }> = {
+  website:   { label: 'Website',   className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300' },
   estimator: { label: 'Estimator', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
-  email:     { label: 'Email',     className: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
+  email:     { label: 'Gmail',     className: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
   linkedin:  { label: 'LinkedIn',  className: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
   upwork:    { label: 'Upwork',    className: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300' },
   referral:  { label: 'Referral',  className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' },
-  manual:    { label: 'Manual',    className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
+  manual:    { label: 'Other',     className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' },
 };
 
 function SourceBadge({ source }: { source: ContactSource }) {
@@ -39,33 +40,6 @@ function SourceBadge({ source }: { source: ContactSource }) {
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${s.className}`}>
       {s.label}
     </span>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Tag chips                                                          */
-/* ------------------------------------------------------------------ */
-
-function TagChips({ tags }: { tags: string[] }) {
-  if (!tags || tags.length === 0) return <span className="text-xs text-slate-400">—</span>;
-  const visible = tags.slice(0, 2);
-  const overflow = tags.length - 2;
-  return (
-    <div className="flex flex-wrap gap-1">
-      {visible.map((t) => (
-        <span
-          key={t}
-          className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-        >
-          {t}
-        </span>
-      ))}
-      {overflow > 0 && (
-        <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-          +{overflow} more
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -88,9 +62,12 @@ function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
       <AdminDataTableHeader>
         <AdminDataTableHeaderRow>
           <AdminDataTableHead>Lead</AdminDataTableHead>
+          <AdminDataTableHead>Company</AdminDataTableHead>
           <AdminDataTableHead>Source</AdminDataTableHead>
-          <AdminDataTableHead>Tags</AdminDataTableHead>
-          <AdminDataTableHead align="right">Added</AdminDataTableHead>
+          <AdminDataTableHead>Email</AdminDataTableHead>
+          <AdminDataTableHead>Phone</AdminDataTableHead>
+          <AdminDataTableHead>Website</AdminDataTableHead>
+          <AdminDataTableHead align="right">Created</AdminDataTableHead>
         </AdminDataTableHeaderRow>
       </AdminDataTableHeader>
       <AdminDataTableBody>
@@ -100,15 +77,29 @@ function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
               <p className="font-medium text-slate-900 dark:text-slate-50">
                 {contact.first_name} {contact.last_name}
               </p>
-              {contact.email && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">{contact.email}</p>
-              )}
+            </AdminDataTableCell>
+            <AdminDataTableCell className="text-sm text-slate-700 dark:text-slate-300">
+              {contact.account?.name ?? <span className="text-slate-400">—</span>}
             </AdminDataTableCell>
             <AdminDataTableCell>
               <SourceBadge source={contact.source} />
             </AdminDataTableCell>
-            <AdminDataTableCell>
-              <TagChips tags={contact.tags ?? []} />
+            <AdminDataTableCell className="text-sm text-slate-600 dark:text-slate-400">
+              {contact.email ? (
+                <a href={`mailto:${contact.email}`} className="hover:underline">{contact.email}</a>
+              ) : (
+                <span className="text-slate-400">—</span>
+              )}
+            </AdminDataTableCell>
+            <AdminDataTableCell className="text-sm text-slate-600 dark:text-slate-400">
+              {contact.phone || <span className="text-slate-400">—</span>}
+            </AdminDataTableCell>
+            <AdminDataTableCell className="text-sm text-slate-600 dark:text-slate-400">
+              {contact.website_url ? (
+                <a href={contact.website_url} target="_blank" rel="noopener noreferrer" className="hover:underline">{contact.website_url}</a>
+              ) : (
+                <span className="text-slate-400">—</span>
+              )}
             </AdminDataTableCell>
             <AdminDataTableCell className="text-right text-sm text-slate-500 dark:text-slate-400">
               {formatDateTime(contact.created_at)}
@@ -124,13 +115,15 @@ function LeadTable({ leads }: { leads: SalesContactRecord[] }) {
 /*  Tab bar                                                            */
 /* ------------------------------------------------------------------ */
 
-type LeadTab = 'all' | 'contact_form' | 'estimator' | 'gmail';
+type LeadTab = 'all' | 'website' | 'linkedin' | 'upwork' | 'gmail' | 'other';
 
 const TABS: { value: LeadTab; label: string }[] = [
-  { value: 'all',          label: 'All' },
-  { value: 'contact_form', label: 'Contact Form' },
-  { value: 'estimator',    label: 'Estimator' },
-  { value: 'gmail',        label: 'Gmail' },
+  { value: 'all',      label: 'All' },
+  { value: 'website',  label: 'Website' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'upwork',   label: 'Upwork' },
+  { value: 'gmail',    label: 'Gmail' },
+  { value: 'other',    label: 'Other' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -143,14 +136,20 @@ export function SalesPipelinePage() {
 
   if (loading) return <AdminLoadingState label="Loading leads…" />;
 
-  const estimatorLeads  = contacts.filter((c) => c.source === 'estimator');
-  const contactFormLeads = contacts.filter((c) => c.source !== 'estimator');
+  const websiteLeads    = contacts.filter((c) => c.source === 'website' || c.source === 'estimator');
+  const linkedinLeads   = contacts.filter((c) => c.source === 'linkedin');
+  const upworkLeads     = contacts.filter((c) => c.source === 'upwork');
+  const gmailLeads      = contacts.filter((c) => c.source === 'email');
+  const otherLeads      = contacts.filter((c) => c.source === 'manual' || c.source === 'referral');
 
   const visibleLeads: SalesContactRecord[] = (() => {
-    if (activeTab === 'all')          return contacts;
-    if (activeTab === 'contact_form') return contactFormLeads;
-    if (activeTab === 'estimator')    return estimatorLeads;
-    return []; // gmail — placeholder
+    if (activeTab === 'all')      return contacts;
+    if (activeTab === 'website')  return websiteLeads;
+    if (activeTab === 'linkedin') return linkedinLeads;
+    if (activeTab === 'upwork')   return upworkLeads;
+    if (activeTab === 'gmail')    return gmailLeads;
+    if (activeTab === 'other')    return otherLeads;
+    return [];
   })();
 
   const sourceLabel = CONTACT_SOURCE_OPTIONS.find((o) => o.value)?.label;
@@ -181,17 +180,17 @@ export function SalesPipelinePage() {
             variant="hero"
           />
           <AdminMetricCard
-            label="Contact Form"
-            value={String(contactFormLeads.length)}
-            helper="inbound contacts"
-            accentClassName="text-indigo-200"
+            label="Website"
+            value={String(websiteLeads.length)}
+            helper="estimator & site forms"
+            accentClassName="text-cyan-200"
             variant="hero"
           />
           <AdminMetricCard
-            label="Estimator"
-            value={String(estimatorLeads.length)}
-            helper="quote submissions"
-            accentClassName="text-cyan-200"
+            label="LinkedIn"
+            value={String(linkedinLeads.length)}
+            helper="inbound contacts"
+            accentClassName="text-indigo-200"
             variant="hero"
           />
         </div>
@@ -212,41 +211,12 @@ export function SalesPipelinePage() {
               }`}
             >
               {tab.label}
-              {tab.value === 'gmail' && (
-                <span className="ml-1.5 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                  Soon
-                </span>
-              )}
             </button>
           ))}
         </div>
 
         <div className="p-4">
-          {activeTab === 'gmail' ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-3 rounded-full bg-slate-100 p-4 dark:bg-slate-800">
-                <svg
-                  className="h-6 w-6 text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Gmail sync coming soon</p>
-              <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
-                Tag emails with <span className="font-medium text-slate-600 dark:text-slate-300">"Web Leads"</span> in Gmail and they will automatically appear here.
-              </p>
-            </div>
-          ) : (
-            <LeadTable leads={visibleLeads} />
-          )}
+          <LeadTable leads={visibleLeads} />
         </div>
       </div>
     </div>

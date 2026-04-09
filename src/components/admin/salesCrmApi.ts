@@ -53,6 +53,7 @@ export interface ContactMutationValues {
   lastName: string;
   email: string;
   phone: string;
+  websiteUrl: string;
   linkedinUrl: string;
   upworkUrl: string;
   source: ContactSource;
@@ -76,10 +77,11 @@ export interface DealMutationValues {
 // Option arrays
 // ---------------------------------------------------------------------------
 export const CONTACT_SOURCE_OPTIONS: { value: ContactSource; label: string }[] = [
-  { value: 'manual', label: 'Manual' },
-  { value: 'upwork', label: 'Upwork' },
+  { value: 'website', label: 'Website' },
   { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'email', label: 'Email' },
+  { value: 'upwork', label: 'Upwork' },
+  { value: 'email', label: 'Gmail' },
+  { value: 'manual', label: 'Other' },
   { value: 'referral', label: 'Referral' },
   { value: 'estimator', label: 'Estimator' },
 ];
@@ -157,6 +159,7 @@ function buildContactPayload(
     last_name: values.lastName.trim(),
     email: values.email.trim() || null,
     phone: values.phone.trim() || null,
+    website_url: values.websiteUrl.trim() || null,
     linkedin_url: values.linkedinUrl.trim() || null,
     upwork_url: values.upworkUrl.trim() || null,
     source: values.source,
@@ -291,5 +294,30 @@ export async function deleteDeal(id: string) {
 // ---------------------------------------------------------------------------
 export async function updateDealStage(id: string, stage: DealStage) {
   const result = await supabase.from('deals').update({ stage }).eq('id', id);
+  assertNoError(result);
+}
+
+// ---------------------------------------------------------------------------
+// Estimator → Lead creation
+// ---------------------------------------------------------------------------
+export interface EstimatorLeadInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  companyName: string;
+  websiteUrl: string;
+}
+
+export async function createLeadFromEstimator(input: EstimatorLeadInput) {
+  const result = await supabase.from('contacts').insert({
+    first_name: input.firstName.trim(),
+    last_name: input.lastName.trim(),
+    email: input.email.trim() || null,
+    phone: input.phone.trim() || null,
+    website_url: input.websiteUrl.trim() || null,
+    source: 'website' as ContactSource,
+    tags: ['estimator-quote'],
+  });
   assertNoError(result);
 }

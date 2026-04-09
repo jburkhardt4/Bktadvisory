@@ -84,7 +84,7 @@
     "vitest": "^4.1.0"
   },
   "scripts": {
-    "startup:all": "git pull --ff-only && node -v && npm -v && npm i && nohup npm run dev > .vscode/bkt-advisory-dev.log 2>&1 & npm run typecheck && npm test && npm run build",
+    "startup:all": "git pull --ff-only && node -v && npm -v && npm i && npm run typecheck && npm test && npm run build && npm run dev",
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",

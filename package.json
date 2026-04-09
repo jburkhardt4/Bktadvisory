@@ -84,7 +84,7 @@
     "vitest": "^4.1.0"
   },
   "scripts": {
-    "startup:all": "git pull --ff-only && node -v && npm -v && npm i && npm run typecheck && npm test && npm run build && npm run dev",
+    "startup:all": "git pull --ff-only && node -v && npm -v && npm i && npm run typecheck && npm test && npm run dev && npm run build",
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",

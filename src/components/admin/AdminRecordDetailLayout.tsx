@@ -177,7 +177,7 @@ export function AdminRecordDetailLayout({
   return (
     <div className="space-y-6">
       {headline}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[323px_1fr]">
         <div className="space-y-4">{left}</div>
         <div className="space-y-4">{right}</div>
       </div>

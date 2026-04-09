@@ -2,8 +2,12 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import OpenAI from "npm:openai@4.73.0";
+import { gcalRouter } from "./gcal.tsx";
 
 const app = new Hono();
+
+// Mount Google Calendar integration routes
+app.route("/gcal", gcalRouter);
 
 app.use('*', logger(console.log));
 

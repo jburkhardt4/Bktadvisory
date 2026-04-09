@@ -23,6 +23,7 @@ import { SalesPipelinePage } from './components/admin/SalesPipelinePage';
 import { SalesContactsPage } from './components/admin/SalesContactsPage';
 import { SalesAccountsPage } from './components/admin/SalesAccountsPage';
 import { SalesDealsPage } from './components/admin/SalesDealsPage';
+import { AdminCalendarPage } from './components/admin/AdminCalendarPage';
 
 export const router = createBrowserRouter([
   {
@@ -62,7 +63,7 @@ export const router = createBrowserRouter([
           { path: 'accounts', element: <SalesAccountsPage /> },
           { path: 'deals', element: <SalesDealsPage /> },
           // Sales — additional
-          { path: 'calendar', element: <div className="py-12 text-center text-sm text-slate-400">Calendar — coming soon.</div> },
+          { path: 'calendar', element: <AdminCalendarPage /> },
           { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
           // Delivery
           { path: 'quotes', element: <AdminQuotesPage /> },

@@ -82,11 +82,11 @@ export function ScheduleCallButton({
                   <img
                     src="https://bktadvisory.com/assets/01ab4ddf9498ad72150c22c58a71c1af4fd5772b-DOsu0GN4.png"
                     alt="BKT Advisory"
-                    className="absolute left-[45px] top-6 hidden h-[46px] w-auto sm:block"
+                    className="bkt-custom-logo absolute left-[45px] top-6 hidden h-[46px] w-auto sm:block"
                   />
-                  <img 
-                    alt="John Burkhardt" 
-                    src="https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo" 
+                  <img
+                    alt="John Burkhardt"
+                    src="https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo"
                     className="mx-auto mb-2 block h-16 w-16 rounded-full object-cover"
                   />
                   <h2 className="mb-1 text-2xl font-normal text-slate-900 dark:text-slate-50">John Burkhardt</h2>
@@ -94,7 +94,7 @@ export function ScheduleCallButton({
                 </div>
 
                 {/* Service Cards */}
-                <div className="flex flex-wrap justify-center gap-4 p-6">
+                <div className="flex flex-wrap justify-center gap-[28px] px-[45px] py-6">
                   {/* 15-Min Discovery */}
                   <div
                     onClick={() => openBooking('https://calendar.app.google/26nkEZE18gENpuGo8')}

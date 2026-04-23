@@ -145,6 +145,7 @@ export function SalesAccountsPage() {
               <AdminDataTableHeaderRow>
                 <AdminDataTableHead>Account</AdminDataTableHead>
                 <AdminDataTableHead>Industry</AdminDataTableHead>
+                <AdminDataTableHead align="right">Employees</AdminDataTableHead>
                 <AdminDataTableHead align="right">Contacts</AdminDataTableHead>
                 <AdminDataTableHead align="right">Deals</AdminDataTableHead>
                 <AdminDataTableHead align="right">Revenue</AdminDataTableHead>
@@ -167,6 +168,9 @@ export function SalesAccountsPage() {
                     </div>
                   </AdminDataTableCell>
                   <AdminDataTableCell>{account.industry || '—'}</AdminDataTableCell>
+                  <AdminDataTableCell className="text-right tabular-nums">
+                    {account.employee_count != null ? account.employee_count.toLocaleString() : '—'}
+                  </AdminDataTableCell>
                   <AdminDataTableCell className="text-right tabular-nums">{contactCountMap[account.id] ?? 0}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right tabular-nums">{dealCountMap[account.id] ?? 0}</AdminDataTableCell>
                   <AdminDataTableCell className="text-right font-medium tabular-nums text-slate-900 dark:text-slate-50">

@@ -131,6 +131,7 @@ export function SalesContactsPage() {
               <AdminDataTableHeaderRow>
                 <AdminDataTableHead>Contact</AdminDataTableHead>
                 <AdminDataTableHead>Account</AdminDataTableHead>
+                <AdminDataTableHead>Website</AdminDataTableHead>
                 <AdminDataTableHead>Source</AdminDataTableHead>
                 <AdminDataTableHead align="right">Deals</AdminDataTableHead>
                 <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
@@ -160,6 +161,21 @@ export function SalesContactsPage() {
                         {contact.account.name}
                       </NavLink>
                     ) : '—'}
+                  </AdminDataTableCell>
+                  <AdminDataTableCell>
+                    {contact.website_url ? (
+                      <a
+                        href={contact.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block max-w-[14rem] truncate text-blue-600 hover:underline dark:text-blue-400"
+                        title={contact.website_url}
+                      >
+                        {contact.website_url.replace(/^https?:\/\//, '')}
+                      </a>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </AdminDataTableCell>
                   <AdminDataTableCell>
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">

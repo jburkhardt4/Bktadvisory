@@ -414,6 +414,7 @@ export function SalesDealsPage() {
                   <AdminDataTableHead align="center">Stage</AdminDataTableHead>
                   <AdminDataTableHead align="right">Value</AdminDataTableHead>
                   <AdminDataTableHead align="right">Probability</AdminDataTableHead>
+                  <AdminDataTableHead align="right">Expected Close</AdminDataTableHead>
                   <AdminDataTableHead align="right">Last Updated</AdminDataTableHead>
                   <AdminDataTableHead align="right">Actions</AdminDataTableHead>
                 </AdminDataTableHeaderRow>
@@ -452,6 +453,9 @@ export function SalesDealsPage() {
                     </AdminDataTableCell>
                     <AdminDataTableCell className="text-right tabular-nums">
                       {deal.probability}%
+                    </AdminDataTableCell>
+                    <AdminDataTableCell className="text-right tabular-nums text-slate-600 dark:text-slate-400">
+                      {deal.expected_close ?? '—'}
                     </AdminDataTableCell>
                     <AdminDataTableCell className="text-right">{formatDateTime(deal.updated_at)}</AdminDataTableCell>
                     <AdminDataTableCell className="text-right">

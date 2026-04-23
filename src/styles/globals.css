@@ -51,6 +51,12 @@
   --bkt-on-brand-outline-hover: rgba(59, 130, 246, 0.85);
   --bkt-on-brand-outline-active: rgba(96, 165, 250, 0.95);
   --bkt-on-brand-outline-glow: 0 0 0 1px rgba(59, 130, 246, 0.35), 0 0 20px rgba(59, 130, 246, 0.28);
+
+  /* On-light outline — dark-blue standard for elements on white/slate-50 surfaces */
+  --bkt-on-light-outline: rgba(37, 99, 235, 0.32);
+  --bkt-on-light-outline-hover: rgba(29, 78, 216, 0.6);
+  --bkt-on-light-outline-active: rgba(29, 78, 216, 0.95);
+  --bkt-on-light-outline-glow: 0 0 0 1px rgba(37, 99, 235, 0.25), 0 6px 18px rgba(37, 99, 235, 0.18);
   
   --font-size: 16px;
   --background: #f8fafc;
@@ -112,6 +118,12 @@
   --bkt-on-brand-outline-hover: rgba(96, 165, 250, 0.9);
   --bkt-on-brand-outline-active: rgba(147, 197, 253, 1);
   --bkt-on-brand-outline-glow: 0 0 0 1px rgba(96, 165, 250, 0.4), 0 0 22px rgba(96, 165, 250, 0.32);
+
+  /* On-light outline — dark mode uses the same brighter blue family as on-brand */
+  --bkt-on-light-outline: rgba(59, 130, 246, 0.45);
+  --bkt-on-light-outline-hover: rgba(96, 165, 250, 0.8);
+  --bkt-on-light-outline-active: rgba(147, 197, 253, 1);
+  --bkt-on-light-outline-glow: 0 0 0 1px rgba(96, 165, 250, 0.35), 0 6px 18px rgba(59, 130, 246, 0.25);
   --background: #020617;
   --foreground: #f8fafc;
   --card: #0f172a;
@@ -472,6 +484,31 @@ html {
   .bkt-on-brand-outline.is-active {
     border-color: var(--bkt-on-brand-outline-active);
     box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  /* Shared on-light outline utility — use on elements sitting on white/slate-50 surfaces */
+  .bkt-on-light-outline {
+    border: 1px solid var(--bkt-on-light-outline);
+    transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+  }
+
+  .bkt-on-light-outline:hover {
+    border-color: var(--bkt-on-light-outline-hover);
+    box-shadow: var(--bkt-on-light-outline-glow);
+  }
+
+  .bkt-on-light-outline:focus-visible {
+    outline: none;
+    border-color: var(--bkt-on-light-outline-active);
+    box-shadow: var(--bkt-on-light-outline-glow);
+  }
+
+  .bkt-on-light-outline[data-state="open"],
+  .bkt-on-light-outline[data-state="active"],
+  .bkt-on-light-outline[aria-current="page"],
+  .bkt-on-light-outline.is-active {
+    border-color: var(--bkt-on-light-outline-active);
+    box-shadow: var(--bkt-on-light-outline-glow);
   }
 
   .bkt-tab-strip {

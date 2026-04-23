@@ -55,7 +55,7 @@ export function AdminFieldRow({
 }) {
   return (
     <div className="flex items-start gap-4 px-5 py-3">
-      <dt className="w-36 shrink-0 pt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+      <dt className="w-40 shrink-0 pt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
         {label}
       </dt>
       <dd className="min-w-0 flex-1 break-words text-sm text-slate-900 dark:text-slate-100">
@@ -177,9 +177,9 @@ export function AdminRecordDetailLayout({
   return (
     <div className="space-y-6">
       {headline}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[323px_1fr]">
-        <div className="space-y-4">{left}</div>
-        <div className="space-y-4">{right}</div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(360px,33%)_1fr]">
+        <div className="space-y-4 min-w-0">{left}</div>
+        <div className="space-y-4 min-w-0">{right}</div>
       </div>
     </div>
   );

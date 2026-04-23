@@ -655,7 +655,12 @@ export function AIChatbot({
             {!bookingIframeUrl ? (
               <>
                 {/* Header */}
-                <div className="flex flex-col items-center p-6 text-center border-b border-slate-200">
+                <div className="relative flex flex-col items-center p-6 text-center border-b border-slate-200">
+                  <img
+                    src="https://bktadvisory.com/assets/01ab4ddf9498ad72150c22c58a71c1af4fd5772b-DOsu0GN4.png"
+                    alt="BKT Advisory"
+                    className="absolute left-[45px] top-6 hidden h-[46px] w-auto sm:block"
+                  />
                   <img
                     alt="John Burkhardt"
                     src="https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo"

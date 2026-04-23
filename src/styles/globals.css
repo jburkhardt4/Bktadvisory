@@ -36,7 +36,7 @@
   --surface-muted: #ffffff;
   --bkt-nav-background: #ffffff;
   --bkt-nav-border: #e2e8f0;
-  --bkt-brand-gradient: linear-gradient(135deg, #0f172a 0%, #172554 48%, #312e81 100%);
+  --bkt-brand-gradient: linear-gradient(135deg, #0f172a 0%, #172554 68%, #1e3a8a 100%);
   --bkt-brand-border: rgba(148, 163, 184, 0.34);
   --bkt-brand-foreground: #f8fafc;
   --bkt-brand-muted: #cbd5e1;
@@ -91,7 +91,7 @@
   --surface-muted: #0f172a;
   --bkt-nav-background: #0f172a;
   --bkt-nav-border: #1e293b;
-  --bkt-brand-gradient: linear-gradient(135deg, #020617 0%, #172554 46%, #312e81 100%);
+  --bkt-brand-gradient: linear-gradient(135deg, #020617 0%, #172554 66%, #1e3a8a 100%);
   --bkt-brand-border: rgba(96, 165, 250, 0.18);
   --bkt-brand-foreground: #f8fafc;
   --bkt-brand-muted: #cbd5e1;

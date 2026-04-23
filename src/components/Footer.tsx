@@ -5,7 +5,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bkt-brand-band py-12">
+    <footer className="bkt-home-hero-gradient py-12">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-12 pb-8 border-b border-slate-800/90">
           {/* Brand */}

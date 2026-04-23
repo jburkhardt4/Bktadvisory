@@ -78,11 +78,16 @@ export function ScheduleCallButton({
             {!showBookingFrame ? (
               <>
                 {/* Header */}
-                <div className="border-b border-slate-200 p-6 text-center dark:border-slate-800">
+                <div className="relative border-b border-slate-200 p-6 text-center dark:border-slate-800">
+                  <img
+                    src="https://bktadvisory.com/assets/01ab4ddf9498ad72150c22c58a71c1af4fd5772b-DOsu0GN4.png"
+                    alt="BKT Advisory"
+                    className="absolute left-[45px] top-6 hidden h-[46px] w-auto sm:block"
+                  />
                   <img 
                     alt="John Burkhardt" 
                     src="https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo" 
-                    className="mb-2 h-16 w-16 rounded-full object-cover"
+                    className="mx-auto mb-2 block h-16 w-16 rounded-full object-cover"
                   />
                   <h2 className="mb-1 text-2xl font-normal text-slate-900 dark:text-slate-50">John Burkhardt</h2>
                   <p className="text-sm text-slate-600 dark:text-slate-300">Appointments</p>

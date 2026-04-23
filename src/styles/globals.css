@@ -45,6 +45,12 @@
   --bkt-surface-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --bkt-primary-shadow: 0 12px 30px rgba(37, 99, 235, 0.18);
   --bkt-soft-section: #f8fafc;
+
+  /* On-brand outline — dark-blue standard for elements sitting on brand gradient */
+  --bkt-on-brand-outline: rgba(37, 99, 235, 0.55);
+  --bkt-on-brand-outline-hover: rgba(59, 130, 246, 0.85);
+  --bkt-on-brand-outline-active: rgba(96, 165, 250, 0.95);
+  --bkt-on-brand-outline-glow: 0 0 0 1px rgba(59, 130, 246, 0.35), 0 0 20px rgba(59, 130, 246, 0.28);
   
   --font-size: 16px;
   --background: #f8fafc;
@@ -100,6 +106,12 @@
   --bkt-surface-shadow: none;
   --bkt-primary-shadow: 0 14px 34px rgba(29, 78, 216, 0.32);
   --bkt-soft-section: #020617;
+
+  /* On-brand outline — dark-blue standard (dark mode: slightly brighter for contrast) */
+  --bkt-on-brand-outline: rgba(59, 130, 246, 0.6);
+  --bkt-on-brand-outline-hover: rgba(96, 165, 250, 0.9);
+  --bkt-on-brand-outline-active: rgba(147, 197, 253, 1);
+  --bkt-on-brand-outline-glow: 0 0 0 1px rgba(96, 165, 250, 0.4), 0 0 22px rgba(96, 165, 250, 0.32);
   --background: #020617;
   --foreground: #f8fafc;
   --card: #0f172a;
@@ -319,14 +331,20 @@ html {
   .bkt-hero-diagram-node {
     @apply inline-flex min-h-[52px] items-center justify-center rounded-lg border-2 px-8 py-3 text-sm font-semibold text-slate-50 transition-all duration-300;
     background-color: rgba(255, 255, 255, 0.10);
-    border-color: rgba(37, 99, 235, 0.45);
+    border-color: var(--bkt-on-brand-outline);
     backdrop-filter: blur(12px);
   }
 
   .bkt-hero-diagram-node:hover {
     background-color: rgba(255, 255, 255, 0.15);
-    border-color: rgba(59, 130, 246, 0.7);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    border-color: var(--bkt-on-brand-outline-hover);
+    box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  .bkt-hero-diagram-node:focus-visible {
+    outline: none;
+    border-color: var(--bkt-on-brand-outline-active);
+    box-shadow: var(--bkt-on-brand-outline-glow);
   }
 
   .bkt-marquee {
@@ -351,11 +369,16 @@ html {
   }
 
   .bkt-tech-pill {
-    @apply inline-flex items-center rounded-full px-4 py-2 text-sm text-slate-50;
-    border: 1px solid rgba(59, 130, 246, 0.7);
+    @apply inline-flex items-center rounded-full px-4 py-2 text-sm text-slate-50 transition-all duration-200;
+    border: 1px solid var(--bkt-on-brand-outline);
     background-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(4px);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+
+  .bkt-tech-pill:hover {
+    border-color: var(--bkt-on-brand-outline-hover);
+    box-shadow: var(--bkt-on-brand-outline-glow);
   }
 
   .bkt-brand-surface {
@@ -413,7 +436,42 @@ html {
   }
 
   .bkt-outline-brand-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-slate-50 backdrop-blur-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent hover:border-white/30 hover:bg-white/15;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border bg-white/10 px-4 py-2 text-sm font-medium text-slate-50 backdrop-blur-sm transition-all focus-visible:outline-none hover:bg-white/15;
+    border-color: var(--bkt-on-brand-outline);
+  }
+
+  .bkt-outline-brand-button:hover {
+    border-color: var(--bkt-on-brand-outline-hover);
+    box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  .bkt-outline-brand-button:focus-visible {
+    border-color: var(--bkt-on-brand-outline-active);
+    box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  /* Shared on-brand outline utility — use on any element sitting on the brand gradient */
+  .bkt-on-brand-outline {
+    border: 1px solid var(--bkt-on-brand-outline);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+
+  .bkt-on-brand-outline:hover {
+    border-color: var(--bkt-on-brand-outline-hover);
+    box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  .bkt-on-brand-outline:focus-visible {
+    outline: none;
+    border-color: var(--bkt-on-brand-outline-active);
+    box-shadow: var(--bkt-on-brand-outline-glow);
+  }
+
+  .bkt-on-brand-outline[data-state="active"],
+  .bkt-on-brand-outline[aria-current="page"],
+  .bkt-on-brand-outline.is-active {
+    border-color: var(--bkt-on-brand-outline-active);
+    box-shadow: var(--bkt-on-brand-outline-glow);
   }
 
   .bkt-tab-strip {

@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 import { DealStageBadge } from '../portal/StatusBadge';
-import { AdminAccountForm } from './SalesEntityForms';
+import { AdminAccountForm, AdminContactForm, AdminDealForm } from './SalesEntityForms';
 import {
   AdminDeleteDialog,
   AdminLoadingState,
@@ -25,12 +25,18 @@ import {
   AdminRecordDetailLayout,
   RecordBreadcrumb,
 } from './AdminRecordDetailLayout';
+import { useSalesCrm } from './SalesCrmContext';
+import { useAdminCrm } from './AdminCrmContext';
 import {
+  createContact,
+  createDeal,
   deleteAccount,
   fetchAccountById,
   updateAccount,
   type AccountDetailRecord,
   type AccountMutationValues,
+  type ContactMutationValues,
+  type DealMutationValues,
 } from './salesCrmApi';
 import { formatCurrency, formatDateTime } from './adminCrmApi';
 import { PORTAL_HERO_SURFACE_CLASS } from '../portal/portalBranding';
@@ -39,6 +45,8 @@ export function AccountDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { role } = useAuth();
+  const { accounts, contacts, pipelines, refreshData } = useSalesCrm();
+  const { quotes } = useAdminCrm();
 
   const [record, setRecord] = useState<AccountDetailRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +57,8 @@ export function AccountDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeletingOpen, setIsDeletingOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreatingContact, setIsCreatingContact] = useState(false);
+  const [isCreatingDeal, setIsCreatingDeal] = useState(false);
 
   const refetch = useCallback(() => setFetchKey((k) => k + 1), []);
 
@@ -87,6 +97,22 @@ export function AccountDetailPage() {
     } finally {
       setIsDeleting(false);
     }
+  }
+
+  async function handleCreateContact(values: ContactMutationValues) {
+    await createContact(values);
+    await refreshData();
+    setIsCreatingContact(false);
+    toast.success('Contact created.');
+    refetch();
+  }
+
+  async function handleCreateDeal(values: DealMutationValues) {
+    await createDeal(values);
+    await refreshData();
+    setIsCreatingDeal(false);
+    toast.success('Deal created.');
+    refetch();
   }
 
   if (loading) return <AdminLoadingState label="Loading account…" />;
@@ -226,6 +252,15 @@ export function AccountDetailPage() {
               title="Contacts"
               count={record.contacts.length}
               emptyText="No contacts linked to this account."
+              action={
+                <Button
+                  size="sm"
+                  className="bkt-primary-button h-8 rounded-lg px-3 text-xs"
+                  onClick={() => setIsCreatingContact(true)}
+                >
+                  New Contact
+                </Button>
+              }
             >
               <table className="w-full text-sm">
                 <thead className="border-b border-slate-100 dark:border-slate-800">
@@ -262,6 +297,15 @@ export function AccountDetailPage() {
               title="Deals"
               count={record.deals.length}
               emptyText="No deals linked to this account."
+              action={
+                <Button
+                  size="sm"
+                  className="bkt-primary-button h-8 rounded-lg px-3 text-xs"
+                  onClick={() => setIsCreatingDeal(true)}
+                >
+                  Create Deal
+                </Button>
+              }
             >
               <table className="w-full text-sm">
                 <thead className="border-b border-slate-100 dark:border-slate-800">
@@ -311,6 +355,43 @@ export function AccountDetailPage() {
             initialRecord={record}
             onCancel={() => setIsEditing(false)}
             onSave={handleUpdate}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreatingContact} onOpenChange={setIsCreatingContact}>
+        <DialogContent className="max-w-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Contact</DialogTitle>
+            <DialogDescription>
+              Add a new contact linked to {record.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <AdminContactForm
+            accounts={accounts}
+            defaults={{ accountId: record.id }}
+            onCancel={() => setIsCreatingContact(false)}
+            onSave={handleCreateContact}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreatingDeal} onOpenChange={setIsCreatingDeal}>
+        <DialogContent className="max-w-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Deal</DialogTitle>
+            <DialogDescription>
+              Create a new deal linked to {record.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <AdminDealForm
+            contacts={contacts}
+            accounts={accounts}
+            pipelines={pipelines}
+            quotes={quotes}
+            defaults={{ accountId: record.id }}
+            onCancel={() => setIsCreatingDeal(false)}
+            onSave={handleCreateDeal}
           />
         </DialogContent>
       </Dialog>

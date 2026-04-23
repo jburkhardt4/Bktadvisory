@@ -70,22 +70,25 @@ export function AdminRelatedList({
   title,
   count,
   emptyText = 'No records found.',
+  action,
   children,
 }: {
   title: string;
   count: number;
   emptyText?: string;
+  action?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="bkt-shell-surface overflow-hidden">
-      <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-3.5 dark:border-slate-800">
+      <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
           {title}
         </h3>
         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
           {count}
         </span>
+        {action && <div className="ml-auto flex items-center gap-2">{action}</div>}
       </div>
       {count === 0 ? (
         <p className="px-5 py-6 text-sm text-slate-400">{emptyText}</p>

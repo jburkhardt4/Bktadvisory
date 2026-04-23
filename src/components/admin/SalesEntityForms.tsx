@@ -183,18 +183,21 @@ export function AdminAccountForm({
 // =====================================================================
 type ContactFormErrors = Partial<Record<keyof ContactMutationValues, string>>;
 
-function buildContactValues(record?: SalesContactRecord | null): ContactMutationValues {
+function buildContactValues(
+  record?: SalesContactRecord | null,
+  defaults?: Partial<ContactMutationValues>,
+): ContactMutationValues {
   return {
-    accountId: record?.account_id ?? '',
-    firstName: record?.first_name ?? '',
-    lastName: record?.last_name ?? '',
-    email: record?.email ?? '',
-    phone: record?.phone ?? '',
-    websiteUrl: record?.website_url ?? '',
-    linkedinUrl: record?.linkedin_url ?? '',
-    upworkUrl: record?.upwork_url ?? '',
-    source: record?.source ?? 'manual',
-    notes: record?.notes ?? '',
+    accountId: record?.account_id ?? defaults?.accountId ?? '',
+    firstName: record?.first_name ?? defaults?.firstName ?? '',
+    lastName: record?.last_name ?? defaults?.lastName ?? '',
+    email: record?.email ?? defaults?.email ?? '',
+    phone: record?.phone ?? defaults?.phone ?? '',
+    websiteUrl: record?.website_url ?? defaults?.websiteUrl ?? '',
+    linkedinUrl: record?.linkedin_url ?? defaults?.linkedinUrl ?? '',
+    upworkUrl: record?.upwork_url ?? defaults?.upworkUrl ?? '',
+    source: record?.source ?? defaults?.source ?? 'manual',
+    notes: record?.notes ?? defaults?.notes ?? '',
   };
 }
 
@@ -207,23 +210,26 @@ function validateContactValues(values: ContactMutationValues): ContactFormErrors
 export function AdminContactForm({
   accounts,
   initialRecord,
+  defaults,
   onCancel,
   onSave,
 }: {
   accounts: AccountRecord[];
   initialRecord?: SalesContactRecord | null;
+  defaults?: Partial<ContactMutationValues>;
   onCancel: () => void;
   onSave: (values: ContactMutationValues) => Promise<void>;
 }) {
-  const [values, setValues] = useState<ContactMutationValues>(buildContactValues(initialRecord));
+  const [values, setValues] = useState<ContactMutationValues>(buildContactValues(initialRecord, defaults));
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setValues(buildContactValues(initialRecord));
+    setValues(buildContactValues(initialRecord, defaults));
     setErrors({});
     setSubmitError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRecord]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -385,18 +391,19 @@ type DealFormErrors = Partial<Record<keyof DealMutationValues, string>>;
 function buildDealValues(
   record?: SalesDealRecord | null,
   defaultPipelineId?: string,
+  defaults?: Partial<DealMutationValues>,
 ): DealMutationValues {
   return {
-    pipelineId: record?.pipeline_id ?? defaultPipelineId ?? '',
-    contactId: record?.contact_id ?? '',
-    accountId: record?.account_id ?? '',
-    quoteId: record?.quote_id ?? '',
-    name: record?.name ?? '',
-    stage: record?.stage ?? 'identified',
-    value: record?.value != null ? String(record.value) : '',
-    probability: record?.probability != null ? String(record.probability) : '',
-    expectedClose: record?.expected_close ?? '',
-    owner: record?.owner ?? '',
+    pipelineId: record?.pipeline_id ?? defaults?.pipelineId ?? defaultPipelineId ?? '',
+    contactId: record?.contact_id ?? defaults?.contactId ?? '',
+    accountId: record?.account_id ?? defaults?.accountId ?? '',
+    quoteId: record?.quote_id ?? defaults?.quoteId ?? '',
+    name: record?.name ?? defaults?.name ?? '',
+    stage: record?.stage ?? defaults?.stage ?? 'identified',
+    value: record?.value != null ? String(record.value) : defaults?.value ?? '',
+    probability: record?.probability != null ? String(record.probability) : defaults?.probability ?? '',
+    expectedClose: record?.expected_close ?? defaults?.expectedClose ?? '',
+    owner: record?.owner ?? defaults?.owner ?? '',
   };
 }
 
@@ -413,6 +420,7 @@ export function AdminDealForm({
   pipelines,
   quotes,
   initialRecord,
+  defaults,
   onCancel,
   onSave,
 }: {
@@ -421,19 +429,21 @@ export function AdminDealForm({
   pipelines: PipelineRecord[];
   quotes: AdminQuoteRecord[];
   initialRecord?: SalesDealRecord | null;
+  defaults?: Partial<DealMutationValues>;
   onCancel: () => void;
   onSave: (values: DealMutationValues) => Promise<void>;
 }) {
   const defaultPipelineId = pipelines.find((p) => p.is_default)?.id ?? pipelines[0]?.id ?? '';
-  const [values, setValues] = useState<DealMutationValues>(buildDealValues(initialRecord, defaultPipelineId));
+  const [values, setValues] = useState<DealMutationValues>(buildDealValues(initialRecord, defaultPipelineId, defaults));
   const [errors, setErrors] = useState<DealFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setValues(buildDealValues(initialRecord, defaultPipelineId));
+    setValues(buildDealValues(initialRecord, defaultPipelineId, defaults));
     setErrors({});
     setSubmitError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRecord, defaultPipelineId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

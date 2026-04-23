@@ -26,6 +26,7 @@ import { SalesDealsPage } from './components/admin/SalesDealsPage';
 import { AccountDetailPage } from './components/admin/AccountDetailPage';
 import { ContactDetailPage } from './components/admin/ContactDetailPage';
 import { DealDetailPage } from './components/admin/DealDetailPage';
+import { BookingPage } from './components/BookingPage';
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: 'process', Component: ProcessPage },
       { path: 'about', Component: AboutPage },
       { path: 'environments', Component: EnvironmentsPage },
+      { path: 'schedule', Component: BookingPage },
       // Catch-all: fallback to Home
       { path: '*', Component: HomePage },
     ],

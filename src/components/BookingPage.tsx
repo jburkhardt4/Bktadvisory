@@ -43,7 +43,7 @@ const appointments: Appointment[] = [
     description:
       'A focused conversation covering background, experience, and alignment with the position.',
     slug: '30-minute-interview',
-    accent: 'from-indigo-500 to-indigo-600',
+    accent: 'from-[#3d35b8] to-[#3d35b8]',
   },
   {
     id: 'interview-60',

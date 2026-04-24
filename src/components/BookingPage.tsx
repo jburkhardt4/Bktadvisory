@@ -97,7 +97,7 @@ export function BookingPage() {
   return (
     <>
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172B] via-slate-900 to-blue-950 py-14 lg:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172B] via-slate-900 to-blue-950 pt-14 pb-8 lg:pt-20 lg:pb-10">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
           <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl" />
@@ -107,7 +107,7 @@ export function BookingPage() {
           {/* Logo */}
           <div className="mb-10 flex justify-center">
             <a href="https://bktadvisory.com" target="_blank" rel="noopener noreferrer">
-              <img src={BKT_LOGO} alt="BKT Advisory" className="h-12 w-auto" />
+              <img src={BKT_LOGO} alt="BKT Advisory" className="h-12 w-auto md:h-16" />
             </a>
           </div>
 
@@ -129,13 +129,13 @@ export function BookingPage() {
           <p className="mb-2 text-sm font-medium uppercase tracking-widest text-blue-400">
             Schedule an Interview
           </p>
-          <h1 className="mb-3 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
+          <h1 className="mb-1 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
             John Burkhardt
           </h1>
           <p className="mb-3 text-lg font-medium text-slate-300">
             Salesforce &amp; AI Systems Architect | Founder
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-14 mb-12 flex flex-wrap items-center justify-center gap-3">
             <a
               href="mailto:john@bktadvisory.com"
               className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
@@ -165,7 +165,7 @@ export function BookingPage() {
               href="https://www.salesforce.com/trailblazer/profile"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
             >
               <TrailheadIcon />
               Trailhead
@@ -175,7 +175,7 @@ export function BookingPage() {
       </section>
 
       {/* ── Cards ─────────────────────────────────────────────────────── */}
-      <section className="bg-slate-50 py-16 dark:bg-[#0a0f1e] lg:py-24">
+      <section className="bg-slate-50 pt-8 pb-16 dark:bg-[#0a0f1e] lg:pt-10 lg:pb-24">
         <div className="mx-auto max-w-[1100px] px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 lg:text-3xl">

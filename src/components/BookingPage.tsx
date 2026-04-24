@@ -190,11 +190,10 @@ export function BookingPage() {
         <div className="mx-auto max-w-[1100px] px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 lg:text-3xl">
-              Pick a Time That Works
+              Schedule an Interview
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-slate-500 dark:text-slate-400">
-              Select the meeting type below. Google Calendar availability syncs in real time so you
-              only see times that actually work.
+              Select the meeting type below. Please pick a time that works with your schedule.
             </p>
           </div>
 

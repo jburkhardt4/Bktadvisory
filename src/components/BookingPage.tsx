@@ -34,7 +34,7 @@ const appointments: Appointment[] = [
     description:
       'A quick introduction to learn about your role and the opportunity — ideal before a formal interview.',
     slug: 'intro-call',
-    accent: 'from-blue-500 to-blue-600',
+    accent: 'from-[#172554] to-[#172554]',
   },
   {
     id: 'interview-30',
@@ -149,7 +149,10 @@ export function BookingPage() {
               className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
             >
               <span className="text-slate-300 group-hover:text-slate-300"><MailIcon /></span>
-              <span className="group-hover:text-blue-400">john@bktadvisory.com</span>
+              <span className="group-hover:text-blue-400">
+                <span className="md:hidden">Email</span>
+                <span className="hidden md:inline">john@bktadvisory.com</span>
+              </span>
             </a>
             <a
               href="https://linkedin.com/in/johndavisburkhardt"

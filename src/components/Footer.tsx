@@ -52,7 +52,7 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-white text-sm uppercase tracking-wide font-semibold">Get In Touch</h4>
             <div className="space-y-2">
-              <p className="text-slate-300 text-sm">Ready to transform your CRM and AI stack?</p>
+              <p className="text-slate-300 text-sm">Ready to transform your CRM and AI tech stack?</p>
               <ScheduleCallButton variant="footer" />
             </div>
           </div>

@@ -11,7 +11,7 @@ import { BookingModal } from './BookingModal';
 const CAL_USERNAME = 'john-burkhardt';
 
 const BKT_LOGO =
-  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Home%20Logo%20-%20HD.png';
+  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/BKT%20Advisory%20-%20Portal%20Horizontal_White%20(Dark%20Theme)%20-%20HD.png';
 const HEADSHOT =
   'https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo';
 const MEET_LOGO =
@@ -87,7 +87,7 @@ export function BookingPage() {
   return (
     <>
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172B] via-slate-900 to-blue-950 py-20 lg:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0F172B] via-slate-900 to-blue-950 py-14 lg:py-20">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
           <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl" />
@@ -95,12 +95,12 @@ export function BookingPage() {
 
         <div className="relative mx-auto max-w-[780px] px-6 text-center lg:px-8">
           {/* Logo */}
-          <div className="mb-8 flex justify-center">
+          <div className="mb-10 flex justify-center">
             <img src={BKT_LOGO} alt="BKT Advisory" className="h-12 w-auto" />
           </div>
 
           {/* Headshot */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-8 flex justify-center">
             <div className="relative">
               <img
                 src={HEADSHOT}
@@ -114,14 +114,14 @@ export function BookingPage() {
             </div>
           </div>
 
-          <p className="mb-1 text-sm font-medium uppercase tracking-widest text-blue-400">
-            Schedule a Meeting
+          <p className="mb-2 text-sm font-medium uppercase tracking-widest text-blue-400">
+            Schedule an Interview
           </p>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
-            John&nbsp;&ldquo;JB&rdquo;&nbsp;Burkhardt
+          <h1 className="mb-3 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
+            John Burkhardt
           </h1>
-          <p className="mb-2 text-lg font-medium text-slate-300">
-            Salesforce &amp; AI Systems Architect &mdash; Founder, BKT Advisory
+          <p className="mb-3 text-lg font-medium text-slate-300">
+            Salesforce &amp; AI Systems Architect | Founder
           </p>
           <p className="text-sm text-slate-400">
             5x Salesforce Certified&nbsp;&nbsp;&middot;&nbsp;&nbsp;$837M+ Real Estate Transactions&nbsp;&nbsp;&middot;&nbsp;&nbsp;FinTech &amp; InsurTech

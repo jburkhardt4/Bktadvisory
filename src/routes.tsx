@@ -39,13 +39,14 @@ export const router = createBrowserRouter([
       { path: 'process', Component: ProcessPage },
       { path: 'about', Component: AboutPage },
       { path: 'environments', Component: EnvironmentsPage },
-      { path: 'schedule', Component: BookingPage },
       // Catch-all: fallback to Home
       { path: '*', Component: HomePage },
     ],
   },
   // Auth is a top-level route (no Layout shell)
   { path: '/auth', Component: AuthPage },
+  // Schedule — standalone shareable page (no nav/footer)
+  { path: '/schedule', Component: BookingPage },
   // Portal routes — auth-guarded
   {
     path: '/portal',

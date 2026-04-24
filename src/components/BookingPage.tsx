@@ -144,7 +144,7 @@ export function BookingPage() {
               john@bktadvisory.com
             </a>
             <a
-              href="https://linkedin.com/in/johnburkhardt"
+              href="https://linkedin.com/in/johndavisburkhardt"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"

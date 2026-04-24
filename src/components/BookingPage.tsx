@@ -81,14 +81,22 @@ const MailIcon = () => (
   </svg>
 );
 const UpworkIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M18.561 13.158c-1.102 0-2.135-.467-3.074-1.227l.228-1.076.008-.042c.207-1.143.849-3.06 2.839-3.06 1.492 0 2.703 1.212 2.703 2.703-.001 1.489-1.212 2.702-2.704 2.702zm0-8.entire.a4.44 4.44 0 0 0-4.436 4.218l-.028.309c-.187 1.755-1.168 2.98-2.504 2.98-1.307 0-2.451-1.108-2.451-2.986V4h-2.86v7.158c0 3.091 1.683 5.029 4.396 5.029 1.754 0 3.244-1.024 4.02-2.727.758 1.703 2.234 2.727 3.863 2.727C20.567 16.187 22 14.567 22 12.703c0-2.703-1.935-3.687-3.439-3.687zM7.18 4H4.32v5.674C4.32 11.38 5.568 12.6 7.18 12.6c1.614 0 2.862-1.22 2.862-2.926V4H7.18z" />
-  </svg>
+  <img
+    src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/upwork-white.svg"
+    onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/upwork-white-transparent-256.png'; }}
+    alt=""
+    className="h-4 w-4 object-contain"
+    aria-hidden="true"
+  />
 );
 const TrailheadIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.5 14.5h-7A1.5 1.5 0 0 1 7 15v-3.5a1.5 1.5 0 0 1 1.5-1.5H10V8.5a2 2 0 0 1 4 0V10h1.5A1.5 1.5 0 0 1 17 11.5V15a1.5 1.5 0 0 1-1.5 1.5z" />
-  </svg>
+  <img
+    src="https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/trailhead-white-outline.svg"
+    onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/trailhead-white-outline-transparent-256.png'; }}
+    alt=""
+    className="h-4 w-4 object-contain"
+    aria-hidden="true"
+  />
 );
 
 export function BookingPage() {
@@ -126,10 +134,15 @@ export function BookingPage() {
             </div>
           </div>
 
+<<<<<<< HEAD
           <p className="mb-2 text-sm font-medium uppercase tracking-widest text-blue-400">
             Schedule an Interview
           </p>
           <h1 className="mb-1 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
+=======
+          <div className="mx-auto mt-4 mb-2 h-px w-[100px] bg-blue-400"></div>
+          <h1 className="mb-3 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
+>>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
             John Burkhardt
           </h1>
           <p className="mb-3 text-lg font-medium text-slate-300">
@@ -138,44 +151,52 @@ export function BookingPage() {
           <div className="mt-14 mb-12 flex flex-wrap items-center justify-center gap-3">
             <a
               href="mailto:john@bktadvisory.com"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
+              className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
             >
-              <MailIcon />
-              john@bktadvisory.com
+              <span className="text-slate-300 group-hover:text-slate-300"><MailIcon /></span>
+              <span className="group-hover:text-blue-400">john@bktadvisory.com</span>
             </a>
             <a
               href="https://linkedin.com/in/johndavisburkhardt"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
+              className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
             >
-              <LinkedinIcon />
-              LinkedIn
+              <span className="text-slate-300 group-hover:text-slate-300"><LinkedinIcon /></span>
+              <span className="group-hover:text-blue-400">LinkedIn</span>
             </a>
             <a
               href="https://www.upwork.com/freelancers/~01dd56d750898225c0"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
+              className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
             >
               <UpworkIcon />
-              Upwork
+              <span className="group-hover:text-blue-400">Upwork</span>
             </a>
             <a
               href="https://www.salesforce.com/trailblazer/profile"
               target="_blank"
               rel="noopener noreferrer"
+<<<<<<< HEAD
               className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
+=======
+              className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
+>>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
             >
               <TrailheadIcon />
-              Trailhead
+              <span className="group-hover:text-blue-400">Trailhead</span>
             </a>
           </div>
         </div>
       </section>
 
       {/* ── Cards ─────────────────────────────────────────────────────── */}
+<<<<<<< HEAD
       <section className="bg-slate-50 pt-8 pb-16 dark:bg-[#0a0f1e] lg:pt-10 lg:pb-24">
+=======
+      <section className="bg-slate-50 pt-16 pb-16 dark:bg-[#0a0f1e] lg:pt-16 lg:pb-24">
+>>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
         <div className="mx-auto max-w-[1100px] px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 lg:text-3xl">

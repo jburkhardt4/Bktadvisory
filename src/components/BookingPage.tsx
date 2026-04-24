@@ -34,7 +34,7 @@ const appointments: Appointment[] = [
     description:
       'A quick introduction to learn about your role and the opportunity.',
     slug: 'intro-call',
-    accent: 'from-blue-500 to-blue-600',
+    accent: 'from-[#172554] to-[#172554]',
   },
   {
     id: 'interview-30',
@@ -43,7 +43,7 @@ const appointments: Appointment[] = [
     description:
       'A focused conversation covering background, experience, and alignment with the position.',
     slug: '30-minute-interview',
-    accent: 'from-indigo-500 to-indigo-600',
+    accent: 'from-[#3d35b8] to-[#3d35b8]',
   },
   {
     id: 'interview-60',
@@ -140,14 +140,17 @@ export function BookingPage() {
           <p className="mb-4 text-lg font-medium text-slate-300">
             Salesforce &amp; AI Systems Architect | Founder
           </p>
-          <div className="mx-auto mb-5 h-px w-[100px] bg-blue-400"></div>
-          <div className="mt-10 mb-12 flex flex-wrap items-center justify-center gap-3">
+          <div className="mx-auto mt-2 mb-5 h-px w-[100px] bg-blue-400"></div>
+          <div className="mt-10 mb-3 flex flex-wrap items-center justify-center gap-3">
             <a
               href="mailto:john@bktadvisory.com"
               className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
             >
               <span className="text-slate-300 group-hover:text-slate-300"><MailIcon /></span>
-              <span className="group-hover:text-blue-400">john@bktadvisory.com</span>
+              <span className="group-hover:text-blue-400">
+                <span className="md:hidden">Email</span>
+                <span className="hidden md:inline">john@bktadvisory.com</span>
+              </span>
             </a>
             <a
               href="https://linkedin.com/in/johndavisburkhardt"
@@ -185,11 +188,10 @@ export function BookingPage() {
         <div className="mx-auto max-w-[1100px] px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 lg:text-3xl">
-              Pick a Time That Works
+              Schedule an Interview
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-slate-500 dark:text-slate-400">
-              Select the meeting type below. Google Calendar availability syncs in real time so you
-              only see times that actually work.
+              Select the meeting type below. Please pick a time that works with your schedule.
             </p>
           </div>
 
@@ -237,7 +239,9 @@ export function BookingPage() {
             <a
               href="https://bktadvisory.com"
               className="underline underline-offset-2 transition-colors hover:text-slate-600 dark:hover:text-slate-400"
-            >
+            >git add Bktadvisoryprojectestimator/
+git commit -m "chore: add estimator application to repository"
+git push
               bktadvisory.com
             </a>
           </p>

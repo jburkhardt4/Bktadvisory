@@ -143,7 +143,7 @@ export function BookingPage() {
           <p className="mb-3 text-lg font-medium text-slate-300">
             Salesforce &amp; AI Systems Architect | Founder
           </p>
-          <div className="mt-14 mb-3.5 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-14 mb-3 flex flex-wrap items-center justify-center gap-3">
             <a
               href="mailto:john@bktadvisory.com"
               className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"

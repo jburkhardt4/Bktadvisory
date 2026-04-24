@@ -134,21 +134,16 @@ export function BookingPage() {
             </div>
           </div>
 
-<<<<<<< HEAD
           <p className="mb-2 text-sm font-medium uppercase tracking-widest text-blue-400">
             Schedule an Interview
           </p>
           <h1 className="mb-1 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
-=======
-          <div className="mx-auto mt-4 mb-2 h-px w-[100px] bg-blue-400"></div>
-          <h1 className="mb-3 text-4xl font-bold tracking-tight text-slate-50 lg:text-5xl">
->>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
             John Burkhardt
           </h1>
           <p className="mb-3 text-lg font-medium text-slate-300">
             Salesforce &amp; AI Systems Architect | Founder
           </p>
-          <div className="mt-14 mb-12 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-14 mb-3.5 flex flex-wrap items-center justify-center gap-3">
             <a
               href="mailto:john@bktadvisory.com"
               className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
@@ -178,11 +173,7 @@ export function BookingPage() {
               href="https://www.salesforce.com/trailblazer/profile"
               target="_blank"
               rel="noopener noreferrer"
-<<<<<<< HEAD
-              className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50 hover:text-slate-100"
-=======
               className="group inline-flex items-center gap-2 rounded-full border border-slate-700 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur-sm transition-colors hover:border-blue-500/50"
->>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
             >
               <TrailheadIcon />
               <span className="group-hover:text-blue-400">Trailhead</span>
@@ -192,11 +183,7 @@ export function BookingPage() {
       </section>
 
       {/* ── Cards ─────────────────────────────────────────────────────── */}
-<<<<<<< HEAD
       <section className="bg-slate-50 pt-8 pb-16 dark:bg-[#0a0f1e] lg:pt-10 lg:pb-24">
-=======
-      <section className="bg-slate-50 pt-16 pb-16 dark:bg-[#0a0f1e] lg:pt-16 lg:pb-24">
->>>>>>> 200b56bac8fdaf2f1208bd44c2177d9a31022701
         <div className="mx-auto max-w-[1100px] px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50 lg:text-3xl">

@@ -76,41 +76,41 @@ export function Hero() {
 
   return (
     <section className="bkt-home-hero-gradient relative overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-24">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           {/* Left Column: Copy & Actions (7 columns) */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-6 sm:space-y-8 min-w-0">
             {/* Eyebrow */}
-            <p className="text-slate-400 tracking-wide">
+            <p className="text-sm sm:text-base text-slate-400 tracking-wide">
               Technical Consulting Advisor | BKT Advisory
             </p>
 
             {/* Headline */}
-            <h1 className="text-[38px] font-bold text-slate-50 tracking-tight leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl lg:text-[38px] font-bold text-slate-50 tracking-tight leading-tight break-words">
               Building Predictable Growth Engines via Salesforce
               & AI Agents.
             </h1>
 
             {/* Subhead */}
-            <p className="text-xl text-slate-300 max-w-2xl text-[16px]">
+            <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
               Architecting systems that compress sales cycles
               and operationalize AI.
             </p>
 
             {/* Tech Stack Marquee */}
-            <div className="space-y-3">
+            <div className="space-y-3 sm:space-y-4">
               <TechMarqueeRow items={salesforceStack} direction="left" />
               <TechMarqueeRow items={nonSalesforceStack} direction="right" />
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <ScheduleCallButton />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
+              <ScheduleCallButton className="w-full sm:w-auto px-6 py-3 border border-slate-200/80 dark:border-white/15" />
               <a
                 href="https://estimator.bktadvisory.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/10 border-2 border-white/20 text-slate-50 rounded-lg hover:bg-white/15 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all duration-300 backdrop-blur-sm font-medium group"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-white/10 border border-white/20 text-slate-50 rounded-lg hover:bg-white/15 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all duration-300 backdrop-blur-sm font-medium group"
               >
                 <RocketIcon size={18} className="text-blue-300" />
                 Get an Instant Quote

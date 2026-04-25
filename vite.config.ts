@@ -64,6 +64,10 @@
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              // React core (heavy, shared) — isolate so other chunks can deduplicate.
+              if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+                return 'react-vendor';
+              }
               // Independent heavy libraries that don't cross-depend on each other
               if (id.includes('@supabase') || id.includes('@jsr/supabase')) {
                 return 'supabase-vendor';

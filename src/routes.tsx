@@ -1,32 +1,17 @@
 import { createBrowserRouter } from 'react-router';
+import type { ComponentType } from 'react';
 import { Layout } from './components/Layout';
 import { HomePage } from './components/HomePage';
-import { WorkPage } from './components/WorkPage';
-import { ServicesPage } from './components/ServicesPage';
-import { ProcessPage } from './components/ProcessPage';
-import { AboutPage } from './components/AboutPage';
-import { EnvironmentsPage } from './components/EnvironmentsPage';
-import { AuthPage } from './components/AuthPage';
-import { PortalPage } from './components/portal/PortalPage';
-import { PortalThemeLayout } from './components/portal/PortalThemeLayout';
-import { EstimatorAppShell } from './components/EstimatorAppShell';
-import { AdminRoute } from './components/AdminRoute';
-import { AdminPortalLayout } from './components/admin/AdminPortalLayout';
-import { AdminDashboardPage } from './components/admin/AdminDashboardPage';
-import {
-  AdminActivitiesPage,
-  AdminMilestonesPage,
-  AdminProjectsPage,
-  AdminQuotesPage,
-} from './components/admin/AdminEntityPages';
-import { SalesPipelinePage } from './components/admin/SalesPipelinePage';
-import { SalesContactsPage } from './components/admin/SalesContactsPage';
-import { SalesAccountsPage } from './components/admin/SalesAccountsPage';
-import { SalesDealsPage } from './components/admin/SalesDealsPage';
-import { AccountDetailPage } from './components/admin/AccountDetailPage';
-import { ContactDetailPage } from './components/admin/ContactDetailPage';
-import { DealDetailPage } from './components/admin/DealDetailPage';
-import { BookingPage } from './components/BookingPage';
+
+// ── Route-level code-splitting ──────────────────────────────────────────────
+// Each lazy() below becomes its own chunk; public visitors never download
+// admin/portal/estimator JavaScript unless they navigate there.
+const lazyComponent =
+  <T extends Record<string, unknown>>(loader: () => Promise<T>, exportName: keyof T) =>
+  async () => {
+    const mod = await loader();
+    return { Component: mod[exportName] as ComponentType };
+  };
 
 export const router = createBrowserRouter([
   {
@@ -34,43 +19,132 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: HomePage },
-      { path: 'work', Component: WorkPage },
-      { path: 'services', Component: ServicesPage },
-      { path: 'process', Component: ProcessPage },
-      { path: 'about', Component: AboutPage },
-      { path: 'environments', Component: EnvironmentsPage },
+      {
+        path: 'work',
+        lazy: lazyComponent(() => import('./components/WorkPage'), 'WorkPage'),
+      },
+      {
+        path: 'services',
+        lazy: lazyComponent(() => import('./components/ServicesPage'), 'ServicesPage'),
+      },
+      {
+        path: 'process',
+        lazy: lazyComponent(() => import('./components/ProcessPage'), 'ProcessPage'),
+      },
+      {
+        path: 'about',
+        lazy: lazyComponent(() => import('./components/AboutPage'), 'AboutPage'),
+      },
+      {
+        path: 'environments',
+        lazy: lazyComponent(() => import('./components/EnvironmentsPage'), 'EnvironmentsPage'),
+      },
       // Catch-all: fallback to Home
       { path: '*', Component: HomePage },
     ],
   },
   // Auth is a top-level route (no Layout shell)
-  { path: '/auth', Component: AuthPage },
+  {
+    path: '/auth',
+    lazy: lazyComponent(() => import('./components/AuthPage'), 'AuthPage'),
+  },
   // Schedule — standalone shareable page (no nav/footer)
-  { path: '/schedule', Component: BookingPage },
+  {
+    path: '/schedule',
+    lazy: lazyComponent(() => import('./components/BookingPage'), 'BookingPage'),
+  },
   // Portal routes — auth-guarded
   {
     path: '/portal',
-    element: <PortalThemeLayout />,
+    lazy: async () => {
+      const { PortalThemeLayout } = await import('./components/portal/PortalThemeLayout');
+      return { element: <PortalThemeLayout /> };
+    },
     children: [
-      { index: true, element: <PortalPage /> },
+      {
+        index: true,
+        lazy: lazyComponent(() => import('./components/portal/PortalPage'), 'PortalPage'),
+      },
       {
         path: 'admin',
-        element: (
-          <AdminRoute>
-            <AdminPortalLayout />
-          </AdminRoute>
-        ),
+        lazy: async () => {
+          const [{ AdminRoute }, { AdminPortalLayout }] = await Promise.all([
+            import('./components/AdminRoute'),
+            import('./components/admin/AdminPortalLayout'),
+          ]);
+          return {
+            element: (
+              <AdminRoute>
+                <AdminPortalLayout />
+              </AdminRoute>
+            ),
+          };
+        },
         children: [
           // Sales
-          { index: true, element: <AdminDashboardPage /> },
-          { path: 'pipeline', element: <SalesPipelinePage /> },
-          { path: 'sales-contacts', element: <SalesContactsPage /> },
-          { path: 'accounts', element: <SalesAccountsPage /> },
-          { path: 'accounts/:id', element: <AccountDetailPage /> },
-          { path: 'sales-contacts/:id', element: <ContactDetailPage /> },
-          { path: 'contacts/:id', element: <ContactDetailPage /> },
-          { path: 'deals', element: <SalesDealsPage /> },
-          { path: 'deals/:id', element: <DealDetailPage /> },
+          {
+            index: true,
+            lazy: lazyComponent(
+              () => import('./components/admin/AdminDashboardPage'),
+              'AdminDashboardPage',
+            ),
+          },
+          {
+            path: 'pipeline',
+            lazy: lazyComponent(
+              () => import('./components/admin/SalesPipelinePage'),
+              'SalesPipelinePage',
+            ),
+          },
+          {
+            path: 'sales-contacts',
+            lazy: lazyComponent(
+              () => import('./components/admin/SalesContactsPage'),
+              'SalesContactsPage',
+            ),
+          },
+          {
+            path: 'accounts',
+            lazy: lazyComponent(
+              () => import('./components/admin/SalesAccountsPage'),
+              'SalesAccountsPage',
+            ),
+          },
+          {
+            path: 'accounts/:id',
+            lazy: lazyComponent(
+              () => import('./components/admin/AccountDetailPage'),
+              'AccountDetailPage',
+            ),
+          },
+          {
+            path: 'sales-contacts/:id',
+            lazy: lazyComponent(
+              () => import('./components/admin/ContactDetailPage'),
+              'ContactDetailPage',
+            ),
+          },
+          {
+            path: 'contacts/:id',
+            lazy: lazyComponent(
+              () => import('./components/admin/ContactDetailPage'),
+              'ContactDetailPage',
+            ),
+          },
+          {
+            path: 'deals',
+            lazy: lazyComponent(
+              () => import('./components/admin/SalesDealsPage'),
+              'SalesDealsPage',
+            ),
+          },
+          {
+            path: 'deals/:id',
+            lazy: lazyComponent(
+              () => import('./components/admin/DealDetailPage'),
+              'DealDetailPage',
+            ),
+          },
           // Sales — additional
           {
             path: 'calendar',
@@ -91,10 +165,34 @@ export const router = createBrowserRouter([
           },
           { path: 'reports', element: <div className="py-12 text-center text-sm text-slate-400">Reports & Dashboards — coming soon.</div> },
           // Delivery
-          { path: 'quotes', element: <AdminQuotesPage /> },
-          { path: 'projects', element: <AdminProjectsPage /> },
-          { path: 'activities', element: <AdminActivitiesPage /> },
-          { path: 'milestones', element: <AdminMilestonesPage /> },
+          {
+            path: 'quotes',
+            lazy: lazyComponent(
+              () => import('./components/admin/AdminEntityPages'),
+              'AdminQuotesPage',
+            ),
+          },
+          {
+            path: 'projects',
+            lazy: lazyComponent(
+              () => import('./components/admin/AdminEntityPages'),
+              'AdminProjectsPage',
+            ),
+          },
+          {
+            path: 'activities',
+            lazy: lazyComponent(
+              () => import('./components/admin/AdminEntityPages'),
+              'AdminActivitiesPage',
+            ),
+          },
+          {
+            path: 'milestones',
+            lazy: lazyComponent(
+              () => import('./components/admin/AdminEntityPages'),
+              'AdminMilestonesPage',
+            ),
+          },
           { path: 'approvals', element: <div className="py-12 text-center text-sm text-slate-400">Client Approvals — coming soon.</div> },
           // AI / Automations
           { path: 'automation', element: <div className="py-12 text-center text-sm text-slate-400">Agent Workflows — coming in Phase 2.</div> },
@@ -106,5 +204,8 @@ export const router = createBrowserRouter([
     ],
   },
   // Estimator — inline with PersonaFunnel (Tech vs Non-Tech fork)
-  { path: '/estimator', Component: EstimatorAppShell },
+  {
+    path: '/estimator',
+    lazy: lazyComponent(() => import('./components/EstimatorAppShell'), 'EstimatorAppShell'),
+  },
 ]);

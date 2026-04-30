@@ -58,6 +58,10 @@ const appointments: Appointment[] = [
 ];
 
 // ── Icon helpers (no lucide-react) ──────────────────────────────────────────
+<<<<<<< HEAD
+
+=======
+>>>>>>> 59bdfe53027286d76bcb57dc84792b0975baa306
 const PhoneIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 13.93a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 3.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />
@@ -207,6 +211,13 @@ export function BookingPage() {
                 <span
                   className={`mb-4 inline-flex w-fit items-center rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
                 >
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+                  <img src={TIMELAPSE_HD} alt="" className="h-4 w-4 object-contain" aria-hidden="true" />
+>>>>>>> 59bdfe53027286d76bcb57dc84792b0975baa306
+>>>>>>> 90f2aa9c9b9db8bb7bf72b6ec91460b1f6f11894
                   {appt.duration}
                 </span>
 
@@ -244,7 +255,11 @@ export function BookingPage() {
             All meetings are conducted via Google Meet.
           </p>
           <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-600">
+<<<<<<< HEAD
+            © 2026 BKT Advisory. All rights reserved.
+=======
             © {new Date().getFullYear()} BKT Advisory. All rights reserved.
+>>>>>>> 59bdfe53027286d76bcb57dc84792b0975baa306
           </p>
         </div>
       </section>

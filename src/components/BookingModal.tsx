@@ -141,8 +141,27 @@ export function BookingModal({ open, onClose, calLink, title, duration, descript
               className="h-14 w-14 flex-shrink-0 rounded-full object-cover ring-2 ring-blue-500/40"
             />
             <div className="min-w-0">
+<<<<<<< HEAD
               <p className="flex items-center text-xs font-semibold uppercase tracking-widest text-blue-400">
                 <DurationIcon />
+=======
+<<<<<<< HEAD
+              <p className="flex items-center text-xs font-medium uppercase tracking-widest text-blue-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 -960 960 960"
+                  className="h-4 w-4 shrink-0"
+                  fill="currentColor"
+                  style={{ marginRight: '10px' }}
+                  aria-hidden="true"
+                >
+                  <path d="M480-240q100 0 170-70t70-170q0-100-70-170t-170-70v240L310-310q35 33 78.5 51.5T480-240Zm0 160q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                </svg>
+=======
+              <p className="flex items-center gap-1.5 text-xs font-medium text-blue-400">
+                <img src={TIMELAPSE_HD} alt="" className="h-4 w-4 flex-shrink-0 object-contain" aria-hidden="true" />
+>>>>>>> 59bdfe53027286d76bcb57dc84792b0975baa306
+>>>>>>> 90f2aa9c9b9db8bb7bf72b6ec91460b1f6f11894
                 <span className="sm:hidden">{duration.split(' ')[0]} mins</span>
                 <span className="hidden sm:inline">{duration.split(' ')[0]} minutes</span>
               </p>

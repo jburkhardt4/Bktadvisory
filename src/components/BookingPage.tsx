@@ -208,7 +208,7 @@ export function BookingPage() {
                 <span
                   className={`mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
                 >
-                  <img src={TIMELAPSE_HD} alt="" className="h-4 w-4 object-contain" aria-hidden="true" />
+                  <img src={TIMELAPSE_HD} alt="" className="h-3 w-3 object-contain" aria-hidden="true" />
                   {appt.duration}
                 </span>
 

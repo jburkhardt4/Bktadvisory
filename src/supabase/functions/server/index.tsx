@@ -871,11 +871,8 @@ app.post(`${ROUTE_PREFIX}/submit-quote`, async (c) => {
       },
     };
 
-    // Only send to Google Apps Script when a PDF is present.
-    if (
-      googlePayload.fileData.base64 &&
-      googleScriptUrl.includes("script.google.com")
-    ) {
+    // Always send lead data to Google Apps Script; PDF may be absent for large files.
+    if (googleScriptUrl.includes("script.google.com")) {
       console.log("📤 Sending data to Google Script...");
 
       const googleResponse = await fetch(googleScriptUrl, {

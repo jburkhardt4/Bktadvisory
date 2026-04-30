@@ -229,6 +229,36 @@ export function AIChatbot({
       return;
     }
 
+    // Handle "Schedule a call with John." locally — show booking cards directly
+    if (text.trim() === "Schedule a call with John.") {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const botMessage: Message = {
+        id: Date.now().toString() + "-bot",
+        text: "",
+        sender: "bot",
+        timestamp: new Date(),
+        isCalendarBooking: true,
+      };
+      setMessages((prev) => [...prev, botMessage]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Handle "Get a project estimate." locally — show estimator prompt with Yes/No
+    if (text.trim() === "Get a project estimate.") {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const botMessage: Message = {
+        id: Date.now().toString() + "-bot",
+        text: "I'd be happy to help you scope your project! Our interactive estimator walks you through your tech stack, integrations, and team needs to generate a detailed quote.\n\nWould you like me to help you draft a description of your project scope to get started?",
+        sender: "bot",
+        timestamp: new Date(),
+        isEstimatePrompt: true,
+      };
+      setMessages((prev) => [...prev, botMessage]);
+      setIsLoading(false);
+      return;
+    }
+
     // Handle "No" response from the estimate prompt flow
     if (text.trim() === "No") {
       await new Promise((resolve) => setTimeout(resolve, 600));

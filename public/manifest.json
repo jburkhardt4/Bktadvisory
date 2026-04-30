@@ -1,0 +1,23 @@
+{
+  "name": "BKT Advisory",
+  "short_name": "BKT Advisory",
+  "description": "BKT Advisory — expert advisory, project estimation, and client portal services.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -16,8 +16,7 @@ const HEADSHOT =
   'https://lh3.googleusercontent.com/a-/ALV-UjUKsVkb4rL7QwPkEtDwipBhlu3deHrsCazzdAfDDA_HQI9kdPI=s112-c-mo';
 const MEET_LOGO =
   'https://ssl.gstatic.com/calendar/images/conferenceproviders/logo_meet_2020q4_192px.svg';
-const TIMELAPSE_HD =
-  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/Timelapse%20-%20White-Transparent%20HD.PNG';
+
 
 interface Appointment {
   id: string;
@@ -206,9 +205,8 @@ export function BookingPage() {
                 className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(37,99,235,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500/30 dark:hover:shadow-[0_12px_40px_rgba(37,99,235,0.18)] dark:focus-visible:ring-offset-[#0a0f1e]"
               >
                 <span
-                  className={`mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
+                  className={`mb-4 inline-flex w-fit items-center rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
                 >
-                  <img src={TIMELAPSE_HD} alt="" className="h-3 w-3 object-contain" aria-hidden="true" />
                   {appt.duration}
                 </span>
 

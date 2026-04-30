@@ -57,9 +57,10 @@ const appointments: Appointment[] = [
 ];
 
 // ── Icon helpers (no lucide-react) ──────────────────────────────────────────
-const ClockIcon = () => (
-  <svg className="h-4 w-4" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true">
-    <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Zm26 140L350-480v-200h60v174l136 136-40 50Z" />
+
+const PhoneIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 13.93a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 3.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z" />
   </svg>
 );
 const ArrowRightIcon = () => (
@@ -204,9 +205,8 @@ export function BookingPage() {
                 className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(37,99,235,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-500/30 dark:hover:shadow-[0_12px_40px_rgba(37,99,235,0.18)] dark:focus-visible:ring-offset-[#0a0f1e]"
               >
                 <span
-                  className={`mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
+                  className={`mb-4 inline-flex w-fit items-center rounded-full bg-gradient-to-r ${appt.accent} px-3 py-1 text-xs font-semibold text-white shadow-sm`}
                 >
-                  <ClockIcon />
                   {appt.duration}
                 </span>
 
@@ -217,7 +217,13 @@ export function BookingPage() {
                   {appt.description}
                 </p>
 
-                <div className="mt-5 flex items-center gap-1.5">
+                {appt.id === 'intro' && (
+                  <div className="mt-5 flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                    <PhoneIcon />
+                    <span className="text-xs">Phone</span>
+                  </div>
+                )}
+                <div className={`${appt.id === 'intro' ? 'mt-2' : 'mt-5'} flex items-center gap-1.5`}>
                   <img src={MEET_LOGO} alt="Google Meet" className="h-4 w-4" />
                   <span className="text-xs text-slate-400 dark:text-slate-500">Google Meet</span>
                 </div>
@@ -235,15 +241,10 @@ export function BookingPage() {
           </div>
 
           <p className="mt-10 text-center text-xs text-slate-400 dark:text-slate-600">
-            All meetings are conducted via Google Meet.&nbsp;&nbsp;
-            <a
-              href="https://bktadvisory.com"
-              className="underline underline-offset-2 transition-colors hover:text-slate-600 dark:hover:text-slate-400"
-            >git add Bktadvisoryprojectestimator/
-git commit -m "chore: add estimator application to repository"
-git push
-              bktadvisory.com
-            </a>
+            All meetings are conducted via Google Meet.
+          </p>
+          <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-600">
+            © 2026 BKT Advisory. All rights reserved.
           </p>
         </div>
       </section>

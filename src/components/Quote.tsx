@@ -976,6 +976,8 @@ export function Quote({ data, onBack, personaMode }: QuoteProps) {
       if (sizeInMB > 5.5) {
         console.warn('PDF size is close to or exceeds Supabase Edge Function limit (6MB)');
         toast.warning('The generated PDF is too large to email automatically, but it will still be downloaded.');
+        // Still notify Google Sheets with lead data — PDF omitted due to size
+        await handleNotify('');
         pdf.save(filename);
         return;
       }

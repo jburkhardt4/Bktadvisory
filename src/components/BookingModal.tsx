@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Cal, { getCalApi } from '@calcom/embed-react';
 
+const TIMELAPSE_HD =
+  'https://hjrvtzkktodoxigezxqy.supabase.co/storage/v1/object/public/Logos/Timelapse%20-%20White-Transparent%20HD.PNG';
+
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18" />
@@ -128,8 +131,10 @@ export function BookingModal({ open, onClose, calLink, title, duration, descript
               className="h-14 w-14 flex-shrink-0 rounded-full object-cover ring-2 ring-blue-500/40"
             />
             <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-widest text-blue-400">
-                {duration}
+              <p className="flex items-center gap-1.5 text-xs font-medium text-blue-400">
+                <img src={TIMELAPSE_HD} alt="" className="h-4 w-4 flex-shrink-0 object-contain" aria-hidden="true" />
+                <span className="sm:hidden">{duration.split(' ')[0]} mins</span>
+                <span className="hidden sm:inline">{duration.split(' ')[0]} minutes</span>
               </p>
               <h2 className="mt-0.5 text-xl font-semibold text-slate-50 sm:text-2xl">
                 {title}

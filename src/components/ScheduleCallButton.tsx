@@ -7,11 +7,36 @@ interface ScheduleCallButtonProps {
   children?: React.ReactNode;
 }
 
-export function ScheduleCallButton({ 
-  variant = 'primary', 
+const CalendarDaysIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+export function ScheduleCallButton({
+  variant = 'primary',
   className = '',
-  children = 'Schedule Strategy Call'
+  children,
 }: ScheduleCallButtonProps) {
+  const content = children ?? (
+    <>
+      <CalendarDaysIcon size={16} />
+      <span>Schedule Strategy Call</span>
+    </>
+  );
   const [showModal, setShowModal] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
   const [showBookingFrame, setShowBookingFrame] = useState(false);
@@ -41,7 +66,7 @@ export function ScheduleCallButton({
         return `${baseClass} px-8 py-4 bg-transparent border border-white/20 text-slate-50 backdrop-blur-xl hover:bg-white/10 hover:border-white/30 ${className}`;
       case 'primary':
       default:
-        return `${baseClass} px-6 py-3 bg-blue-50 text-slate-900 shadow-lg hover:shadow-[0_0_30px_rgba(239,246,255,0.6)] dark:bg-white/10 dark:text-slate-50 dark:hover:bg-white/15 ${className}`;
+        return `${baseClass} px-6 py-3 text-sm bg-blue-50/80 text-slate-900 border border-[#1e293b] hover:bg-blue-50 hover:shadow-[0_0_30px_rgba(239,246,255,0.4)] dark:bg-white/5 dark:text-slate-50 dark:border-white/15 dark:hover:bg-white/10 ${className}`;
     }
   };
 
@@ -62,7 +87,7 @@ export function ScheduleCallButton({
         onClick={() => setShowModal(true)}
         className={getButtonClass()}
       >
-        {children}
+        {content}
       </button>
 
       {/* Main Modal - Rendered as Portal at document body level */}

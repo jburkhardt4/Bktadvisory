@@ -142,7 +142,8 @@ export function Navigation({ onNavigateToEstimator: _onNavigateToEstimator }: Na
 
           {/* ── Mobile hamburger ── */}
           <div className="lg:hidden flex items-center ml-auto">
-            <Link
+            {!isOpen && (
+              <Link
                 to={authed ? "/portal" : "/auth"}
                 className="bkt-secondary-button relative whitespace-nowrap px-3.5 py-2 mx-1 group"
               >
@@ -150,9 +151,12 @@ export function Navigation({ onNavigateToEstimator: _onNavigateToEstimator }: Na
                 {authed ? 'My Portal' : 'Sign In'}
                 <span className="absolute bottom-1.5 left-3.5 right-3.5 h-[2px] bg-blue-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
+            )}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="bkt-icon-button"
+              aria-expanded={isOpen}
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
             >
               {isOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
             </button>
@@ -180,21 +184,25 @@ export function Navigation({ onNavigateToEstimator: _onNavigateToEstimator }: Na
                 href="https://estimator.bktadvisory.com/home"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bkt-primary-button w-full px-4 py-2.5 duration-200"
+                className="inline-flex items-center justify-center gap-2 rounded-lg w-full h-12 px-4 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                style={{
+                  background:
+                    'linear-gradient(135deg, #0f172b 0%, #1E293B 20%, #172554 42%, #302a94 80%, #4f46e5 100%)',
+                }}
               >
-                <RocketIcon size={14} />
+                <RocketIcon size={16} />
                 Project Estimator
                 <ExternalLinkIcon size={12} />
               </a>
 
-              <ScheduleCallButton />
+              <ScheduleCallButton className="w-full h-12 py-0 border border-[#1e293b]" />
 
               <Link
                 to={authed ? "/portal" : "/auth"}
                 onClick={() => setIsOpen(false)}
-                className="bkt-secondary-button w-full justify-center px-4 py-2.5"
+                className="bkt-secondary-button w-full h-12 justify-center px-4 py-0 border border-[#172554]"
               >
-                <UserIcon size={15} />
+                <UserIcon size={16} />
                 {authed ? 'My Portal' : 'Sign In'}
               </Link>
             </div>

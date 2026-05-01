@@ -261,6 +261,7 @@ export function BookingPage() {
         calLink={active ? `${CAL_USERNAME}/${active.slug}` : ''}
         title={active?.title ?? ''}
         duration={active?.duration ?? ''}
+        badge={active?.badge ?? ''}
         description={active?.description ?? ''}
       />
     </>
